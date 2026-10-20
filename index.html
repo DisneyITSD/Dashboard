@@ -295,6 +295,7 @@ if (wb.Sheets['PTO']) {
         { defval:'' }
     );
 }
+    console.log("PTO DATA", ptoList);
 
 // Called OFF Sheet
 if (wb.Sheets['Called OFF']) {
@@ -305,6 +306,7 @@ if (wb.Sheets['Called OFF']) {
         { defval:'' }
     );
 }
+    console.log("CALLED OFF DATA", calledOffList);
 
     loadSup();
     buildScheduleView();
@@ -450,6 +452,18 @@ if (!st) {
     if (!value)
         return '';
 
+    // Excel serial date support
+    if (typeof value === 'number') {
+
+        let excelDate = new Date(
+            (value - 25569) * 86400 * 1000
+        );
+
+        return excelDate
+            .toISOString()
+            .split('T')[0];
+    }
+
     let d = new Date(value);
 
     if (isNaN(d))
@@ -479,7 +493,10 @@ let agentName =
 
 let selectedDate =
     document.getElementById('selectedDate').value;
-
+console.log(
+    "Selected Date:",
+    selectedDate
+);
 let isPTO = ptoList.some(x =>
     (x.Name || '')
         .trim()
