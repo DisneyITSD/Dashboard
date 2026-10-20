@@ -211,7 +211,13 @@ th:hover{background:#0b4a86}
     font-size:14px;
     color:#d8e6f5;
 }
-
+.logo{
+    height:70px;
+    width:auto;
+    background:white;
+    border-radius:8px;
+    padding:4px;
+}
 </style>
 </head>
 
@@ -232,19 +238,27 @@ th:hover{background:#0b4a86}
 
 <div class='tabs'>
 <button class='tab-btn active' onclick="showTab('lookupTab',this)">Agent Lookup</button>
-<button class='tab-btn' onclick="showTab('scheduleTab',this)">Agent Schedule</button>
-<button class='tab-btn' onclick="showTab('rosterTab',this)">Weekly Roster</button>
+<button class='tab-btn' onclick="showTab('scheduleTab',this)">Daily View</button>
+<button class='tab-btn' onclick="showTab('rosterTab',this)">Weekly View</button>
+<button class='tab-btn' onclick="showTab('ptoTab',this)">PTO</button>
+<button class='tab-btn' onclick="showTab('calledOffTab',this)">Called Off</button>
 </div>
 
 <div id='lookupTab'>
+
 <div class='controls'>
-<input type='file' id='excelFile' accept='.xlsx,.xls'>
-<input type="date" id="selectedDate">
 
-<select id='interval'></select>
-<select id='supervisor'><option>All Supervisors</option></select>
-<button onclick='runLookup()'>Show Staffing</button>
+    <input type="date" id="selectedDate">
 
+    <select id="interval"></select>
+
+    <select id="supervisor">
+        <option>All Supervisors</option>
+    </select>
+
+    <button onclick="runLookup()">
+        Show Staffing
+    </button>
 </div>
 
 <div class='cards'>
@@ -259,7 +273,7 @@ th:hover{background:#0b4a86}
 <div class='card'><h3>Lunch</h3>
 <div class='value' id='lunchCount'>0</div>
 </div>
-
+    
 <div class='card'>
     <h3>PTO</h3>
     <div class='value' id='ptoCount'>0</div>
@@ -292,7 +306,6 @@ th:hover{background:#0b4a86}
     <h2>Called Off</h2>
     <ul id='calledOffList'></ul>
 </div>
-
 </div>
 </div>
 
@@ -390,7 +403,95 @@ th:hover{background:#0b4a86}
 </div>
 </div>
 </div>
+<div id="ptoTab" style="display:none">
 
+    <div class="controls">
+
+    <input type="date"
+       id="ptoDate"
+       onchange="buildPTOTable()">
+
+    <select id="ptoSupervisor">
+        <option>All Supervisors</option>
+    </select>
+
+    <button onclick="buildPTOTable()">
+        Show PTO
+    </button>
+
+    <input
+        type="text"
+        id="ptoSearch"
+        placeholder="🔍 Search Agent..."
+        onkeyup="buildPTOTable()">
+
+</div>
+
+    <div class="panel">
+
+        <h2>PTO List</h2>
+
+        <table id="ptoTable">
+            <thead>
+                <tr>
+                    <th>Name</th>
+                    <th>Date</th>
+                </tr>
+            </thead>
+
+            <tbody></tbody>
+
+        </table>
+
+    </div>
+
+</div>
+
+    <div id="calledOffTab" style="display:none">
+
+   <div class="controls">
+
+    <input type="date"
+       id="calledOffDate"
+       onchange="buildCalledOffTable()">
+
+    <select id="calledOffSupervisor">
+        <option>All Supervisors</option>
+    </select>
+
+    <button onclick="buildCalledOffTable()">
+        Show Called Off
+    </button>
+
+    <input
+        type="text"
+        id="calledOffSearch"
+        placeholder="🔍 Search Agent..."
+        onkeyup="buildCalledOffTable()">
+
+</div>
+
+    <div class="panel">
+
+        <h2>Called Off List</h2>
+
+        <table id="calledOffTable">
+            <thead>
+                <tr>
+                    <th>Name</th>
+                    <th>Date</th>
+                </tr>
+            </thead>
+
+            <tbody></tbody>
+
+        </table>
+
+    </div>
+
+</div>
+
+    
 <script>
 let data = [];
 let ptoList = [];
@@ -535,7 +636,183 @@ html += `
         '#rosterTable tbody'
     ).innerHTML = html;
 }
-    
+    function buildPTOTable(){
+
+    if(!ptoList.length){
+        document.querySelector('#ptoTable tbody').innerHTML =
+            '<tr><td>No PTO records found</td></tr>';
+        return;
+    }
+
+    let columns = Object.keys(ptoList[0]);
+
+    let selectedSupervisor =
+    document.getElementById('ptoSupervisor').value;
+        
+        let selectedDate =
+    document.getElementById('ptoDate').value;
+
+let search =
+    document.getElementById('ptoSearch')
+    ?.value
+    .toUpperCase() || '';
+
+    document.querySelector('#ptoTable thead').innerHTML =
+        '<tr>' +
+        columns.map(c => `<th>${c}</th>`).join('') +
+        '</tr>';
+
+    let html = '';
+
+    ptoList
+.filter(r => {
+
+    let supervisorMatch =
+        selectedSupervisor === 'All Supervisors' ||
+        r.Supervisor === selectedSupervisor;
+
+    let searchMatch =
+        search === '' ||
+        (r.Name || '')
+        .toUpperCase()
+        .includes(search);
+
+    let dateMatch = true;
+
+    if(selectedDate){
+        dateMatch =
+            normalizeDate(r.Date) === selectedDate;
+    }
+
+    return (
+        supervisorMatch &&
+        searchMatch &&
+        dateMatch
+    );
+
+})
+.forEach(r => {
+
+        html += '<tr>';
+
+        columns.forEach(c => {
+            let value = r[c];
+
+if(typeof value === 'number' && value > 40000){
+
+    let d = new Date(
+        (value - 25569) * 86400 * 1000
+    );
+
+    value = d.toLocaleDateString(
+        'en-US',
+        {
+            month:'short',
+            day:'numeric',
+            year:'numeric'
+        }
+    );
+}
+
+
+html += `<td>${value || ''}</td>`;
+        });
+
+        html += '</tr>';
+
+    });
+
+    document.querySelector('#ptoTable tbody').innerHTML = html;
+}
+
+function buildCalledOffTable(){
+
+    if(!calledOffList.length){
+        document.querySelector('#calledOffTable tbody').innerHTML =
+            '<tr><td>No Called Off records found</td></tr>';
+        return;
+    }
+
+    let columns = Object.keys(calledOffList[0]);
+
+let selectedSupervisor =
+    document.getElementById('calledOffSupervisor').value;
+
+let selectedDate =
+    document.getElementById('calledOffDate').value;
+
+let search =
+    document.getElementById('calledOffSearch')
+    ?.value
+    .toUpperCase() || '';
+
+    document.querySelector('#calledOffTable thead').innerHTML =
+        '<tr>' +
+        columns.map(c => `<th>${c}</th>`).join('') +
+        '</tr>';
+
+    let html = '';
+
+    calledOffList
+.filter(r => {
+
+    let supervisorMatch =
+        selectedSupervisor === 'All Supervisors' ||
+        r.Supervisor === selectedSupervisor;
+
+    let searchMatch =
+        search === '' ||
+        (r.Name || '')
+        .toUpperCase()
+        .includes(search);
+
+    let dateMatch = true;
+
+    if(selectedDate){
+        dateMatch =
+            normalizeDate(r.Date) === selectedDate;
+    }
+
+    return (
+        supervisorMatch &&
+        searchMatch &&
+        dateMatch
+    );
+
+})
+.forEach(r => {
+
+        html += '<tr>';
+
+        columns.forEach(c => {
+
+    let value = r[c];
+
+    if(typeof value === 'number' && value > 40000){
+
+    let d = new Date(
+        (value - 25569) * 86400 * 1000
+    );
+
+    value = d.toLocaleDateString(
+        'en-US',
+        {
+            month:'short',
+            day:'numeric',
+            year:'numeric'
+        }
+    );
+}
+
+    html += `<td>${value || ''}</td>`;
+});
+
+        html += '</tr>';
+
+    });
+
+    document.querySelector('#calledOffTable tbody').innerHTML = html;
+}
 function getSelectedDay() {
 
     let selectedDate =
@@ -575,9 +852,19 @@ function formatExcelTime(v) {
 
 function showTab(id, b) {
 
-    document.getElementById('lookupTab').style.display = 'none';
-    document.getElementById('scheduleTab').style.display = 'none';
-    document.getElementById('rosterTab').style.display = 'none';
+document.getElementById('lookupTab').style.display = 'none';
+document.getElementById('scheduleTab').style.display = 'none';
+document.getElementById('rosterTab').style.display = 'none';
+document.getElementById('ptoTab').style.display = 'none';
+document.getElementById('calledOffTab').style.display = 'none';
+
+    if(id === 'ptoTab'){
+    buildPTOTable();
+}
+
+if(id === 'calledOffTab'){
+    buildCalledOffTable();
+}
 
     document.getElementById(id).style.display = 'block';
 
@@ -631,16 +918,23 @@ if (wb.Sheets['PTO']) {
 }
     console.log("PTO DATA", ptoList);
 
+    
 // Called OFF Sheet
-if (wb.Sheets['Called OFF']) {
+let calledOffSheet =
+    wb.SheetNames.find(
+        x => x.toUpperCase().includes('CALLED')
+    );
+
+if(calledOffSheet){
     console.log("CALLED OFF SHEET FOUND");
 
     calledOffList = XLSX.utils.sheet_to_json(
-        wb.Sheets['Called OFF'],
+        wb.Sheets[calledOffSheet],
         { defval:'' }
     );
 }
     console.log("CALLED OFF DATA", calledOffList);
+    console.log("CALLED OFF ROWS", calledOffList.length);
 
     loadSup();
     buildRosterView();
@@ -660,7 +954,16 @@ function loadSup() {
         su.map(x => `<option>${x}</option>`).join('');
 
 document.getElementById('supervisor').innerHTML = h;
+
 document.getElementById('scheduleSupervisor').innerHTML = h;
+
+if(document.getElementById('ptoSupervisor')){
+    document.getElementById('ptoSupervisor').innerHTML = h;
+}
+
+if(document.getElementById('calledOffSupervisor')){
+    document.getElementById('calledOffSupervisor').innerHTML = h;
+}
 
 if(document.getElementById('rosterSupervisor')){
     document.getElementById('rosterSupervisor').innerHTML = h;
