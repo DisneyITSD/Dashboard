@@ -9,10 +9,51 @@
 </script>
 
 <style>
-body{font-family:Segoe UI,Arial;
-background:#f4f6f9;
-margin:0;
-padding:20px}
+body{
+    font-family:Segoe UI,Arial;
+    background:#f4f6f9;
+    margin:0;
+    padding:15px;
+    box-sizing:border-box;
+}
+.roster-shift{
+    background:#ffd966; /* yellow */
+}
+
+.roster-off{
+    background:#d9d9d9; /* gray */
+    font-weight:bold;
+}
+*{
+    box-sizing:border-box;
+}
+
+    #agentSearch{
+    width:250px;
+    margin-left:0;
+}
+.schedule-container{
+    height:calc(100vh - 220px);
+    overflow-y:auto;
+    overflow-x:auto;
+    border:1px solid #ddd;
+    border-radius:8px;
+}
+
+.schedule-container thead th{
+    position: sticky;
+    top: 0;
+    z-index: 10;
+    background: #003366;
+    color: white;
+}
+
+    .controls{
+    position: sticky;
+    top: 0;
+    z-index: 20;
+    background: white;
+}
 
 .header
 {background:#003366;
@@ -49,24 +90,48 @@ box-shadow:0 2px 5px rgba(0,0,0,.1)}
 {padding:15px}
 
 .cards,
+.panels{
+    display:flex;
+    flex-wrap:wrap;
+    gap:15px;
+    margin-top:15px;
+}
 
-.panels
-{display:flex;
-gap:15px;
-margin-top:15px}
 
-.card
-{flex:1;
-padding:20px;
-text-align:center}
+.card{
+    flex:1 1 180px;
+    padding:20px;
+    text-align:center;
+}
 
+.card:nth-child(1){
+    border-top:5px solid #28a745;
+}
+
+.card:nth-child(2){
+    border-top:5px solid #ff9800;
+}
+
+.card:nth-child(3){
+    border-top:5px solid #dc3545;
+}
+
+.card:nth-child(4){
+    border-top:5px solid #17a2b8;
+}
+
+.card:nth-child(5){
+    border-top:5px solid #6c757d;
+}
 .value
 {font-size:40px;
 font-weight:bold}
 
-.panel
-{padding:15px;
-flex:1}
+.panel{
+    padding:15px;
+    flex:1 1 300px;
+}
+    
 select,
 input,
 button
@@ -108,6 +173,16 @@ th:hover{background:#0b4a86}
     color:#a71d2a;
     font-weight:bold;
 }
+    .controls{
+    display:flex;
+    align-items:center;
+    gap:10px;
+    flex-wrap:wrap;
+}
+    .roster-off{
+    background:#d9d9d9;
+}
+
 
 </style>
 </head>
@@ -117,6 +192,7 @@ th:hover{background:#0b4a86}
 <div class='tabs'>
 <button class='tab-btn active' onclick="showTab('lookupTab',this)">Agent Lookup</button>
 <button class='tab-btn' onclick="showTab('scheduleTab',this)">Agent Schedule</button>
+<button class='tab-btn' onclick="showTab('rosterTab',this)">Weekly Roster</button>
 </div>
 
 <div id='lookupTab'>
@@ -181,35 +257,97 @@ th:hover{background:#0b4a86}
 
 <div id='scheduleTab' style='display:none'>
 <div class='controls'>
-<select id='scheduleDay'>
-<option>Monday</option>
-<option>Tuesday</option>
-<option>Wednesday</option>
-<option>Thursday</option>
-<option>Friday</option>
-<option>Saturday</option>
-<option>Sunday</option></select>
+    <input type="date" id="scheduleDate">
 
-<select id='scheduleSupervisor'><option>All Supervisors</option></select>
+    <select id='scheduleSupervisor'>
+        <option>All Supervisors</option>
+    </select>
 
-<button onclick='buildScheduleView()'>Show Schedule</button>
+    <button onclick='buildScheduleView()'>
+        Show Schedule
+    </button>
+
+    <input
+        type="text"
+        id="agentSearch"
+        placeholder="🔍 Search Agent..."
+        onkeyup="buildScheduleView()">
 </div>
 
-<div class='panel' style='margin-top:15px'><h2>Agent Schedule</h2>
+<div class='panel'>
 
-<table id='scheduleTable'><thead><tr>
-<th onclick="sortSchedule('Name')">Agent ▲▼</th>
-<th onclick="sortSchedule('SHIFT')">Shift ▲▼</th>
-<th onclick="sortSchedule('Break 1')">Break1 ▲▼</th>
-<th onclick="sortSchedule('Lunch')">Lunch ▲▼</th>
-<th onclick="sortSchedule('Break 2')">Break2 ▲▼</th>
-<th onclick="sortSchedule('Break 3')">Break3 ▲▼</th>
-<th onclick="sortSchedule('Supervisor')">Supervisor ▲▼</th>
+    <div class="schedule-container">
+
+        <table id='scheduleTable'>
+            <thead>
+                <tr>
+                    <th onclick="sortSchedule('Name')">Agent ▲▼</th>
+                    <th onclick="sortSchedule('SHIFT')">Shift ▲▼</th>
+                    <th onclick="sortSchedule('Break 1')">Break1 ▲▼</th>
+                    <th onclick="sortSchedule('Lunch')">Lunch ▲▼</th>
+                    <th onclick="sortSchedule('Break 2')">Break2 ▲▼</th>
+                    <th onclick="sortSchedule('Break 3')">Break3 ▲▼</th>
+                    <th onclick="sortSchedule('Supervisor')">Supervisor ▲▼</th>
+                </tr>
+            </thead>
+
+            <tbody></tbody>
+         </table>
+
+    </div>
+
+</div>
+
+</div>
+
+<div id="rosterTab" style="display:none">
+
+    <div class="controls">
+
+        <select id="rosterSupervisor"
+                onchange="buildRosterView()">
+            <option>All Supervisors</option>
+        </select>
+
+        <input
+            type="text"
+            id="rosterSearch"
+            placeholder="🔍 Search Agent..."
+            onkeyup="buildRosterView()">
+
+    </div>
+
+    <div class="panel">
+
+        <div class="schedule-container">
+
+            <table id="rosterTable">
+
+<thead>
+<tr>
+<th onclick="sortRoster('Name')">Name ▲▼</th>
+<th onclick="sortRoster('Monday')">Monday ▲▼</th>
+<th onclick="sortRoster('Tuesday')">Tuesday ▲▼</th>
+<th onclick="sortRoster('Wednesday')">Wednesday ▲▼</th>
+<th onclick="sortRoster('Thursday')">Thursday ▲▼</th>
+<th onclick="sortRoster('Friday')">Friday ▲▼</th>
+<th onclick="sortRoster('Saturday')">Saturday ▲▼</th>
+<th onclick="sortRoster('Sunday')">Sunday ▲▼</th>
+<th onclick="sortRoster('Break 1')">Break1 ▲▼</th>
+<th onclick="sortRoster('Break 2')">Break2 ▲▼</th>
+<th onclick="sortRoster('Lunch')">Lunch ▲▼</th>
+<th onclick="sortRoster('Break 3')">Break3 ▲▼</th>
+<th onclick="sortRoster('Supervisor')">Supervisor ▲▼</th>
 </tr>
 </thead>
 
 <tbody></tbody>
-</table></div>
+
+</table>
+
+</div>
+</div>
+</div>
 </div>
 
 <script>
@@ -219,6 +357,9 @@ let calledOffList = [];
 
 let sortColumn = '';
 let sortAsc = true;
+
+let rosterSortColumn = '';
+let rosterSortAsc = true;
 
 // Populate interval dropdown
 for (let h = 0; h < 24; h++) {
@@ -230,6 +371,130 @@ for (let h = 0; h < 24; h++) {
     document.getElementById('selectedDate').value =
     new Date().toISOString().split('T')[0];
 
+function sortRoster(col){
+
+    if(rosterSortColumn === col){
+        rosterSortAsc = !rosterSortAsc;
+    }else{
+        rosterSortColumn = col;
+        rosterSortAsc = true;
+    }
+
+    buildRosterView();
+}
+    
+function buildRosterView(){
+
+    let html='';
+
+    let supervisor =
+    document.getElementById('rosterSupervisor')
+    ?.value || 'All Supervisors';
+
+let search =
+    document.getElementById('rosterSearch')
+    ?.value
+    .toUpperCase() || '';
+
+let rows = data.filter(r => {
+
+    let supervisorMatch =
+        supervisor === 'All Supervisors' ||
+        r.Supervisor === supervisor;
+
+    let agentMatch =
+        search === '' ||
+        (r.Name || '')
+            .toUpperCase()
+            .includes(search);
+
+    return supervisorMatch && agentMatch;
+});
+
+    if(rosterSortColumn){
+
+    rows.sort((a,b)=>{
+
+        let av = a[rosterSortColumn] || '';
+        let bv = b[rosterSortColumn] || '';
+
+        // Sort Name/Supervisor alphabetically
+        if(
+            rosterSortColumn === 'Name' ||
+            rosterSortColumn === 'Supervisor'
+        ){
+            return rosterSortAsc
+                ? String(av).localeCompare(String(bv))
+                : String(bv).localeCompare(String(av));
+        }
+
+        // Sort schedule columns by start time
+        let at =
+            av === 'OFF'
+            ? 9999
+            : tm(String(av).split('-')[0].trim());
+
+        let bt =
+            bv === 'OFF'
+            ? 9999
+            : tm(String(bv).split('-')[0].trim());
+
+        return rosterSortAsc
+            ? at - bt
+            : bt - at;
+
+    });
+
+}
+
+rows.forEach(r=>{
+
+html += `
+<tr>
+    <td>${r.Name || ''}</td>
+
+        <td class="${r.Monday==='OFF' ? 'roster-off' : 'roster-shift'}">
+        ${r.Monday || ''}
+    </td>
+
+    <td class="${r.Tuesday==='OFF' ? 'roster-off' : 'roster-shift'}">
+    ${r.Tuesday || ''}
+</td>
+
+<td class="${r.Wednesday==='OFF' ? 'roster-off' : 'roster-shift'}">
+    ${r.Wednesday || ''}
+</td>
+
+<td class="${r.Thursday==='OFF' ? 'roster-off' : 'roster-shift'}">
+    ${r.Thursday || ''}
+</td>
+
+<td class="${r.Friday==='OFF' ? 'roster-off' : 'roster-shift'}">
+    ${r.Friday || ''}
+</td>
+
+<td class="${r.Saturday==='OFF' ? 'roster-off' : 'roster-shift'}">
+    ${r.Saturday || ''}
+</td>
+
+<td class="${r.Sunday==='OFF' ? 'roster-off' : 'roster-shift'}">
+    ${r.Sunday || ''}
+</td>
+<td>${formatExcelTime(r['Break 1'])}</td>
+<td>${formatExcelTime(r['Break 2'])}</td>
+<td>${formatExcelTime(r['Lunch'])}</td>
+<td>${formatExcelTime(r['Break 3'])}</td>
+<td>${r.Supervisor || ''}</td>
+
+</tr>`;
+
+    });
+
+    document.querySelector(
+        '#rosterTable tbody'
+    ).innerHTML = html;
+}
+    
 function getSelectedDay() {
 
     let selectedDate =
@@ -268,8 +533,11 @@ function formatExcelTime(v) {
 }
 
 function showTab(id, b) {
+
     document.getElementById('lookupTab').style.display = 'none';
     document.getElementById('scheduleTab').style.display = 'none';
+    document.getElementById('rosterTab').style.display = 'none';
+
     document.getElementById(id).style.display = 'block';
 
     document
@@ -277,9 +545,19 @@ function showTab(id, b) {
         .forEach(x => x.classList.remove('active'));
 
     b.classList.add('active');
+
+    if(id === 'rosterTab'){
+        buildRosterView();
+    }
 }
 
 window.addEventListener('load', async () => {
+
+    document.getElementById('selectedDate').value =
+        new Date().toISOString().split('T')[0];
+
+    document.getElementById('scheduleDate').value =
+        new Date().toISOString().split('T')[0];
 
     const response = await fetch('./RawData.xlsx');
 
@@ -324,6 +602,7 @@ if (wb.Sheets['Called OFF']) {
     console.log("CALLED OFF DATA", calledOffList);
 
     loadSup();
+    buildRosterView();
     buildScheduleView();
     runLookup();
 });
@@ -339,9 +618,13 @@ function loadSup() {
         '<option>All Supervisors</option>' +
         su.map(x => `<option>${x}</option>`).join('');
 
-    document.getElementById('supervisor').innerHTML = h;
-    document.getElementById('scheduleSupervisor').innerHTML = h;
+document.getElementById('supervisor').innerHTML = h;
+document.getElementById('scheduleSupervisor').innerHTML = h;
+
+if(document.getElementById('rosterSupervisor')){
+    document.getElementById('rosterSupervisor').innerHTML = h;
 }
+    } //
 
 function tm(v) {
     if (v === '' || v == null) return null;
@@ -587,10 +870,26 @@ document.getElementById('ptoCount').textContent =
 document.getElementById('calledOffCount').textContent =
     calledOff.length;
 
-    document.getElementById('workingList').innerHTML =
+w.sort((a, b) => {
+
+    const order = {
+        working: 1,
+        break: 2,
+        lunch: 3
+    };
+
+    if (order[a.type] !== order[b.type]) {
+        return order[a.type] - order[b.type];
+    }
+
+    return a.name.localeCompare(b.name);
+});
+
+document.getElementById('workingList').innerHTML =
     w.map(x =>
         `<li class="${x.type}">${x.name}</li>`
     ).join('');
+
 
     document.getElementById('breakList').innerHTML =
         b.map(x =>
@@ -626,16 +925,44 @@ function sortSchedule(col) {
 }
 
 function buildScheduleView() {
-    let day =
-        document.getElementById('scheduleDay').value;
+    const selectedDate =
+    document.getElementById('scheduleDate').value;
+
+const days = [
+    'Sunday',
+    'Monday',
+    'Tuesday',
+    'Wednesday',
+    'Thursday',
+    'Friday',
+    'Saturday'
+];
+
+let day =
+    days[new Date(selectedDate).getDay()];
 
     let s =
         document.getElementById('scheduleSupervisor').value;
 
-    let rows = [...data].filter(r =>
+let search =
+    document.getElementById('agentSearch')
+    ? document.getElementById('agentSearch').value.trim().toUpperCase()
+    : '';
+
+let rows = [...data].filter(r => {
+
+    let supervisorMatch =
         s === 'All Supervisors' ||
-        r.Supervisor === s
-    );
+        r.Supervisor === s;
+
+    let agentMatch =
+        search === '' ||
+        (r.Name || '')
+            .toUpperCase()
+            .includes(search);
+
+    return supervisorMatch && agentMatch;
+});
 
     if (sortColumn) {
         rows.sort((a, b) => {
