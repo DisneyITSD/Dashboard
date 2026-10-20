@@ -88,11 +88,26 @@ th:hover{background:#0b4a86}
 
 .off{background:#ffe5e5}
 
-.working{border-left:4px solid green}
+.working{
+    border-left:4px solid #28a745;
+    padding-left:6px;
+}
 
-.break{border-left:4px solid orange}
+.break{
+    border-left:4px solid #ff9800;
+    padding-left:6px;
+    background:#fff3cd;
+    color:#b26a00;
+    font-weight:bold;
+}
 
-.lunch{border-left:4px solid red}ul{list-style:none;padding:0}
+.lunch{
+    border-left:4px solid #dc3545;
+    padding-left:6px;
+    background:#f8d7da;
+    color:#a71d2a;
+    font-weight:bold;
+}
 
 </style>
 </head>
@@ -533,16 +548,27 @@ if (isCalledOff) {
             return;
 
 if (st === 'Working') {
-    w.push(r.Name);
+    w.push({
+        name: r.Name,
+        type: 'working'
+    });
 }
 
 if (st === 'Break') {
-    w.push(r.Name + ' (Break)');
+    w.push({
+        name: r.Name + ' (Break)',
+        type: 'break'
+    });
+
     b.push(r.Name);
 }
 
 if (st === 'Lunch') {
-    w.push(r.Name + ' (Lunch)');
+    w.push({
+        name: r.Name + ' (Lunch)',
+        type: 'lunch'
+    });
+
     l.push(r.Name);
 }    });
 
@@ -562,9 +588,9 @@ document.getElementById('calledOffCount').textContent =
     calledOff.length;
 
     document.getElementById('workingList').innerHTML =
-        w.map(x =>
-            `<li class="working">${x}</li>`
-        ).join('');
+    w.map(x =>
+        `<li class="${x.type}">${x.name}</li>`
+    ).join('');
 
     document.getElementById('breakList').innerHTML =
         b.map(x =>
