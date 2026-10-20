@@ -271,18 +271,18 @@ data = XLSX.utils.sheet_to_json(
 // PTO Sheet
 if (wb.Sheets['PTO']) {
     console.log("PTO SHEET FOUND");
-    ptoList = XLSX.utils
-        .sheet_to_json(wb.Sheets['PTO'])
-        .map(x => (x.Name || '').trim().toUpperCase());
-}
+    ptoList = XLSX.utils.sheet_to_json(
+    wb.Sheets['PTO'],
+    { defval:'' }
+);
 
 // Called OFF Sheet
 if (wb.Sheets['Called OFF']) {
     console.log("CALLED OFF SHEET FOUND");
-    calledOffList = XLSX.utils
-        .sheet_to_json(wb.Sheets['Called OFF'])
-        .map(x => (x.Name || '').trim().toUpperCase());
-}
+    calledOffList = XLSX.utils.sheet_to_json(
+    wb.Sheets['Called OFF'],
+    { defval:'' }
+);
 
     loadSup();
     buildScheduleView();
