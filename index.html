@@ -256,6 +256,8 @@ window.addEventListener('load', async () => {
         type: 'array'
     });
 
+    console.log(wb.SheetNames);
+
     let s =
         wb.SheetNames.find(v =>
             v.toLowerCase().includes('raw')
@@ -268,6 +270,7 @@ data = XLSX.utils.sheet_to_json(
 
 // PTO Sheet
 if (wb.Sheets['PTO']) {
+    console.log("PTO SHEET FOUND");
     ptoList = XLSX.utils
         .sheet_to_json(wb.Sheets['PTO'])
         .map(x => (x.Name || '').trim().toUpperCase());
@@ -275,6 +278,7 @@ if (wb.Sheets['PTO']) {
 
 // Called OFF Sheet
 if (wb.Sheets['Called OFF']) {
+    console.log("CALLED OFF SHEET FOUND");
     calledOffList = XLSX.utils
         .sheet_to_json(wb.Sheets['Called OFF'])
         .map(x => (x.Name || '').trim().toUpperCase());
@@ -282,6 +286,7 @@ if (wb.Sheets['Called OFF']) {
 
     loadSup();
     buildScheduleView();
+    runLookup();
 });
 
 function loadSup() {
