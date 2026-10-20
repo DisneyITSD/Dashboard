@@ -107,14 +107,7 @@ th:hover{background:#0b4a86}
 <div id='lookupTab'>
 <div class='controls'>
 <input type='file' id='excelFile' accept='.xlsx,.xls'>
-<select id='day'>
-<option>Monday</option>
-<option>Tuesday</option>
-<option>Wednesday</option>
-<option>Thursday</option>
-<option>Friday</option>
-<option>Saturday</option>
-<option>Sunday</option></select>
+<input type="date" id="selectedDate">
 
 <select id='interval'></select>
 <select id='supervisor'><option>All Supervisors</option></select>
@@ -219,7 +212,32 @@ for (let h = 0; h < 24; h++) {
             `<option>${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}</option>`;
     }
 }
+    document.getElementById('selectedDate').value =
+    new Date().toISOString().split('T')[0];
 
+function getSelectedDay() {
+
+    let selectedDate =
+        document.getElementById('selectedDate').value;
+
+    if (!selectedDate)
+        return 'Monday';
+
+    const days = [
+        'Sunday',
+        'Monday',
+        'Tuesday',
+        'Wednesday',
+        'Thursday',
+        'Friday',
+        'Saturday'
+    ];
+
+    return days[
+        new Date(selectedDate).getDay()
+    ];
+}
+    
 function formatExcelTime(v) {
     if (v === '' || v == null) return '';
 
