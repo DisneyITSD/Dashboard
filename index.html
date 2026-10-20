@@ -1,0 +1,508 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>WFM Command Center v3</title>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js">
+</script>
+
+<style>
+body{font-family:Segoe UI,Arial;
+background:#f4f6f9;
+margin:0;
+padding:20px}
+
+.header
+{background:#003366;
+color:#fff;
+padding:20px;
+border-radius:10px;
+font-size:32px;
+font-weight:bold}
+
+.tabs{margin:15px 0}
+
+.tab-btn
+{background:#003366;
+color:#fff;
+border:none;
+padding:10px 16px;
+border-radius:5px;
+cursor:pointer;
+margin-right:6px}
+
+.active
+{background:#0b74de}
+
+.controls,
+
+.panel,
+
+.card
+{background:#fff;
+border-radius:10px;
+box-shadow:0 2px 5px rgba(0,0,0,.1)}
+
+.controls
+{padding:15px}
+
+.cards,
+
+.panels
+{display:flex;
+gap:15px;
+margin-top:15px}
+
+.card
+{flex:1;
+padding:20px;
+text-align:center}
+
+.value
+{font-size:40px;
+font-weight:bold}
+
+.panel
+{padding:15px;
+flex:1}
+select,
+input,
+button
+{padding:8px;
+margin-right:8px}
+
+table{width:100%;
+border-collapse:collapse}
+
+th,
+td{border:1px solid #ddd;
+padding:8px}
+
+th{background:#003366;
+color:#fff;
+cursor:pointer}
+
+th:hover{background:#0b4a86}
+
+.off{background:#ffe5e5}
+
+.working{border-left:4px solid green}
+
+.break{border-left:4px solid orange}
+
+.lunch{border-left:4px solid red}ul{list-style:none;padding:0}
+
+</style>
+</head>
+
+<body>
+<div class='header'>WFM Command Center</div>
+<div class='tabs'>
+<button class='tab-btn active' onclick="showTab('lookupTab',this)">Agent Lookup</button>
+<button class='tab-btn' onclick="showTab('scheduleTab',this)">Agent Schedule</button>
+</div>
+
+<div id='lookupTab'>
+<div class='controls'>
+<input type='file' id='excelFile' accept='.xlsx,.xls'>
+<select id='day'>
+<option>Monday</option>
+<option>Tuesday</option>
+<option>Wednesday</option>
+<option>Thursday</option>
+<option>Friday</option>
+<option>Saturday</option>
+<option>Sunday</option></select>
+
+<select id='interval'></select>
+<select id='supervisor'><option>All Supervisors</option></select>
+<button onclick='runLookup()'>Show Staffing</button>
+
+</div>
+
+<div class='cards'>
+<div class='card'><h3>Working</h3>
+<div class='value' id='workingCount'>0</div>
+</div>
+
+<div class='card'><h3>Break</h3>
+<div class='value' id='breakCount'>0</div>
+</div>
+
+<div class='card'><h3>Lunch</h3>
+<div class='value' id='lunchCount'>0</div>
+</div>
+</div>
+
+<div class='panels'>
+<div class='panel'><h2>Working Agents</h2>
+<ul id='workingList'></ul>
+</div>
+
+<div class='panel'><h2>Break</h2>
+<ul id='breakList'></ul></div>
+
+<div class='panel'><h2>Lunch</h2>
+<ul id='lunchList'></ul></div>
+
+</div>
+</div>
+
+<div id='scheduleTab' style='display:none'>
+<div class='controls'>
+<select id='scheduleDay'>
+<option>Monday</option>
+<option>Tuesday</option>
+<option>Wednesday</option>
+<option>Thursday</option>
+<option>Friday</option>
+<option>Saturday</option>
+<option>Sunday</option></select>
+
+<select id='scheduleSupervisor'><option>All Supervisors</option></select>
+
+<button onclick='buildScheduleView()'>Show Schedule</button>
+</div>
+
+<div class='panel' style='margin-top:15px'><h2>Agent Schedule</h2>
+
+<table id='scheduleTable'><thead><tr>
+<th onclick="sortSchedule('Name')">Agent ▲▼</th>
+<th onclick="sortSchedule('SHIFT')">Shift ▲▼</th>
+<th onclick="sortSchedule('Break 1')">Break1 ▲▼</th>
+<th onclick="sortSchedule('Lunch')">Lunch ▲▼</th>
+<th onclick="sortSchedule('Break 2')">Break2 ▲▼</th>
+<th onclick="sortSchedule('Break 3')">Break3 ▲▼</th>
+<th onclick="sortSchedule('Supervisor')">Supervisor ▲▼</th>
+</tr>
+</thead>
+
+<tbody></tbody>
+</table></div>
+</div>
+
+<script>
+let data = [];
+let sortColumn = '';
+let sortAsc = true;
+
+// Populate interval dropdown
+for (let h = 0; h < 24; h++) {
+    for (let m = 0; m < 60; m += 30) {
+        document.getElementById('interval').innerHTML +=
+            `<option>${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}</option>`;
+    }
+}
+
+function formatExcelTime(v) {
+    if (v === '' || v == null) return '';
+
+    if (typeof v === 'number') {
+        let mins = Math.round(v * 1440);
+
+        return String(Math.floor(mins / 60)).padStart(2, '0') +
+            ':' +
+            String(mins % 60).padStart(2, '0');
+    }
+
+    return v;
+}
+
+function showTab(id, b) {
+    document.getElementById('lookupTab').style.display = 'none';
+    document.getElementById('scheduleTab').style.display = 'none';
+    document.getElementById(id).style.display = 'block';
+
+    document
+        .querySelectorAll('.tab-btn')
+        .forEach(x => x.classList.remove('active'));
+
+    b.classList.add('active');
+}
+
+document.getElementById('excelFile').addEventListener('change', e => {
+    let r = new FileReader();
+
+    r.onload = x => {
+        let wb = XLSX.read(x.target.result, {
+            type: 'array'
+        });
+
+        let s =
+            wb.SheetNames.find(v =>
+                v.toLowerCase().includes('raw')
+            ) || wb.SheetNames[0];
+
+        data = XLSX.utils.sheet_to_json(
+            wb.Sheets[s],
+            { defval: '' }
+        );
+
+        loadSup();
+        buildScheduleView();
+    };
+
+    r.readAsArrayBuffer(e.target.files[0]);
+});
+
+function loadSup() {
+    let su = [
+        ...new Set(
+            data.map(x => x.Supervisor).filter(Boolean)
+        )
+    ];
+
+    let h =
+        '<option>All Supervisors</option>' +
+        su.map(x => `<option>${x}</option>`).join('');
+
+    document.getElementById('supervisor').innerHTML = h;
+    document.getElementById('scheduleSupervisor').innerHTML = h;
+}
+
+function tm(v) {
+    if (v === '' || v == null) return null;
+
+    if (typeof v === 'number')
+        return Math.round(v * 1440);
+
+    let p = v.toString().trim().split(':');
+
+    if (p.length < 2) return null;
+
+    return parseInt(p[0]) * 60 + parseInt(p[1]);
+}
+
+function im(v) {
+    let p = v.split(':');
+
+    return parseInt(p[0]) * 60 + parseInt(p[1]);
+}
+
+function getStatus(r, d, i) {
+    const days = [
+        'Monday',
+        'Tuesday',
+        'Wednesday',
+        'Thursday',
+        'Friday',
+        'Saturday',
+        'Sunday'
+    ];
+
+    let c = im(i);
+
+function chk(sh,p){
+    if(
+        !sh ||
+        sh.toString().trim().toUpperCase() === 'OFF'
+    ) return null;
+
+    let a = sh.toString().split('-');
+
+    if(a.length != 2)
+        return null;
+
+    let st = tm(a[0].trim()),
+        en = tm(a[1].trim());
+
+        if (en < st) {
+            if (
+                (p && c <= en) ||
+                (!p && c >= st)
+            )
+                return 'Working';
+
+            return null;
+        }
+
+        return c >= st && c < en
+            ? 'Working'
+            : null;
+    }
+
+let st = chk(r[d], false);
+
+if (!st) {
+
+    let prevDay =
+        days[(days.indexOf(d) + 6) % 7];
+
+    let prevShift =
+        (r[prevDay] || '').toString().trim();
+
+    if (
+        prevShift &&
+        prevShift.toUpperCase() !== 'OFF' &&
+        prevShift.includes('-')
+    ) {
+
+        let parts = prevShift.split('-');
+
+        let start = tm(parts[0].trim());
+        let end = tm(parts[1].trim());
+
+        // Only carry over TRUE overnight shifts
+        if (end < start) {
+            st = chk(prevShift, true);
+        }
+    }
+}
+
+    if (!st)
+        return null;
+
+    let lu = tm(r['Lunch']);
+
+    if (
+        lu != null &&
+        c >= lu &&
+        c < lu + 60
+    )
+        return 'Lunch';
+
+    for (let b of [
+        r['Break 1'],
+        r['Break 2'],
+        r['Break 3']
+    ]) {
+        let bt = tm(b);
+
+        if (
+            bt != null &&
+            c >= bt &&
+            c < bt + 15
+        )
+            return 'Break';
+    }
+
+    return 'Working';
+}
+
+function runLookup() {
+    let d = document.getElementById('day').value;
+    let i = document.getElementById('interval').value;
+    let s = document.getElementById('supervisor').value;
+
+    let w = [];
+    let b = [];
+    let l = [];
+
+    data.forEach(r => {
+        if (
+            s !== 'All Supervisors' &&
+            r.Supervisor !== s
+        )
+            return;
+
+        let st = getStatus(r, d, i);
+
+        if (!st)
+            return;
+
+if (st === 'Working') {
+    w.push(r.Name);
+}
+
+if (st === 'Break') {
+    w.push(r.Name + ' (Break)');
+    b.push(r.Name);
+}
+
+if (st === 'Lunch') {
+    w.push(r.Name + ' (Lunch)');
+    l.push(r.Name);
+}    });
+
+document.getElementById('workingCount').textContent =
+    w.length;
+
+    document.getElementById('breakCount').textContent =
+        b.length;
+
+    document.getElementById('lunchCount').textContent =
+        l.length;
+
+    document.getElementById('workingList').innerHTML =
+        w.map(x =>
+            `<li class="working">${x}</li>`
+        ).join('');
+
+    document.getElementById('breakList').innerHTML =
+        b.map(x =>
+            `<li class="break">${x}</li>`
+        ).join('');
+
+    document.getElementById('lunchList').innerHTML =
+        l.map(x =>
+            `<li class="lunch">${x}</li>`
+        ).join('');
+}
+
+function sortSchedule(col) {
+    if (sortColumn === col) {
+        sortAsc = !sortAsc;
+    } else {
+        sortColumn = col;
+        sortAsc = true;
+    }
+
+    buildScheduleView();
+}
+
+function buildScheduleView() {
+    let day =
+        document.getElementById('scheduleDay').value;
+
+    let s =
+        document.getElementById('scheduleSupervisor').value;
+
+    let rows = [...data].filter(r =>
+        s === 'All Supervisors' ||
+        r.Supervisor === s
+    );
+
+    if (sortColumn) {
+        rows.sort((a, b) => {
+            let av =
+                sortColumn === 'SHIFT'
+                    ? (a[day] || '')
+                    : (a[sortColumn] || '');
+
+            let bv =
+                sortColumn === 'SHIFT'
+                    ? (b[day] || '')
+                    : (b[sortColumn] || '');
+
+            return sortAsc
+                ? String(av).localeCompare(String(bv))
+                : String(bv).localeCompare(String(av));
+        });
+    }
+
+    let html = '';
+
+    rows.forEach(r => {
+        let shift = r[day] || 'OFF';
+
+        html += `
+        <tr class="${shift === 'OFF' ? 'off' : ''}">
+            <td>${r.Name || ''}</td>
+            <td>${shift}</td>
+            <td>${formatExcelTime(r['Break 1'])}</td>
+            <td>${formatExcelTime(r['Lunch'])}</td>
+            <td>${formatExcelTime(r['Break 2'])}</td>
+            <td>${formatExcelTime(r['Break 3'])}</td>
+            <td>${r.Supervisor || ''}</td>
+        </tr>`;
+    });
+
+    document.querySelector(
+        '#scheduleTable tbody'
+    ).innerHTML = html;
+}
+</script>
+</body>
+</html>
