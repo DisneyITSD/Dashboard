@@ -445,6 +445,19 @@ if (!st) {
     return 'Working';
 }
 
+    function normalizeDate(value) {
+
+    if (!value)
+        return '';
+
+    let d = new Date(value);
+
+    if (isNaN(d))
+        return '';
+
+    return d.toISOString().split('T')[0];
+}
+
 function runLookup() {
     let d = getSelectedDay();
     let i = document.getElementById('interval').value;
@@ -472,33 +485,20 @@ let isPTO = ptoList.some(x =>
         .trim()
         .toUpperCase() === agentName
     &&
-    String(x.Date || '').trim() === selectedDate
+    normalizeDate(x.Date) === selectedDate
 );
 
-if (isPTO) {
-    pto.push(r.Name);
-    return;
-} {
-    pto.push(r.Name);
-    return;
-}
+if (isPTO) 
 
 let isCalledOff = calledOffList.some(x =>
     (x.Name || '')
         .trim()
         .toUpperCase() === agentName
     &&
-    String(x.Date || '').trim() === selectedDate
+    normalizeDate(x.Date) === selectedDate
 );
 
-if (isCalledOff) {
-    calledOff.push(r.Name);
-    return;
-}
-        {
-    calledOff.push(r.Name);
-    return;
-}
+if (isCalledOff) 
 
         if (
             s !== 'All Supervisors' &&
