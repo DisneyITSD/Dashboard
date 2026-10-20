@@ -446,7 +446,7 @@ if (!st) {
 }
 
 function runLookup() {
-    let d = document.getElementById('day').value;
+    let d = getSelectedDay();
     let i = document.getElementById('interval').value;
     let s = document.getElementById('supervisor').value;
 
@@ -464,12 +464,38 @@ let agentName =
     .trim()
     .toUpperCase();
 
-if (ptoList.includes(agentName)) {
+let selectedDate =
+    document.getElementById('selectedDate').value;
+
+let isPTO = ptoList.some(x =>
+    (x.Name || '')
+        .trim()
+        .toUpperCase() === agentName
+    &&
+    String(x.Date || '').trim() === selectedDate
+);
+
+if (isPTO) {
+    pto.push(r.Name);
+    return;
+} {
     pto.push(r.Name);
     return;
 }
 
-if (calledOffList.includes(agentName)) {
+let isCalledOff = calledOffList.some(x =>
+    (x.Name || '')
+        .trim()
+        .toUpperCase() === agentName
+    &&
+    String(x.Date || '').trim() === selectedDate
+);
+
+if (isCalledOff) {
+    calledOff.push(r.Name);
+    return;
+}
+        {
     calledOff.push(r.Name);
     return;
 }
