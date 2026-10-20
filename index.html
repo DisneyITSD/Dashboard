@@ -483,22 +483,26 @@ let selectedDate =
 let isPTO = ptoList.some(x =>
     (x.Name || '')
         .trim()
-        .toUpperCase() === agentName
-    &&
+        .toUpperCase() === agentName &&
     normalizeDate(x.Date) === selectedDate
 );
 
-if (isPTO) 
+if (isPTO) {
+    pto.push(r.Name);
+    return;
+}
 
 let isCalledOff = calledOffList.some(x =>
     (x.Name || '')
         .trim()
-        .toUpperCase() === agentName
-    &&
+        .toUpperCase() === agentName &&
     normalizeDate(x.Date) === selectedDate
 );
 
-if (isCalledOff) 
+if (isCalledOff) {
+    calledOff.push(r.Name);
+    return;
+}
 
         if (
             s !== 'All Supervisors' &&
