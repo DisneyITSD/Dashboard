@@ -9,6 +9,34 @@
 </script>
 
 <style>
+
+    .header{
+    background:#003366;
+    color:white;
+    padding:15px 25px;
+
+    display:flex;
+    align-items:center;
+    gap:20px;
+}
+
+.logo{
+    height:70px;
+    width:auto;
+    background:white;
+    border-radius:8px;
+    padding:4px;
+}
+
+.title{
+    font-size:32px;
+    font-weight:bold;
+}
+
+.subtitle{
+    font-size:14px;
+    color:#d8e6f5;
+}
 body{
     font-family:Segoe UI,Arial;
     background:#f4f6f9;
@@ -54,14 +82,6 @@ body{
     z-index: 20;
     background: white;
 }
-
-.header
-{background:#003366;
-color:#fff;
-padding:20px;
-border-radius:10px;
-font-size:32px;
-font-weight:bold}
 
 .tabs{margin:15px 0}
 
@@ -182,13 +202,34 @@ th:hover{background:#0b4a86}
     .roster-off{
     background:#d9d9d9;
 }
+.title{
+    font-size:32px;
+    font-weight:bold;
+}
 
+.subtitle{
+    font-size:14px;
+    color:#d8e6f5;
+}
 
 </style>
 </head>
 
 <body>
-<div class='header'>WFM Command Center</div>
+<div class="header">
+    <img src="logo.png" class="logo">
+
+    <div>
+        <div class="title">
+            Workforce Management Dashboard
+        </div>
+
+        <div class="subtitle">
+            WFM Command Center
+        </div>
+    </div>
+</div>
+
 <div class='tabs'>
 <button class='tab-btn active' onclick="showTab('lookupTab',this)">Agent Lookup</button>
 <button class='tab-btn' onclick="showTab('scheduleTab',this)">Agent Schedule</button>
