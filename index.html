@@ -217,6 +217,14 @@ th:hover{background:#0b4a86}
     border-radius:8px;
     padding:4px;
 }
+
+..timezone-row{
+    display:flex;
+    justify-content:flex-end;
+    align-items:center;
+    gap:10px;
+    margin-bottom:10px;
+}
 </style>
 </head>
 
@@ -234,7 +242,14 @@ th:hover{background:#0b4a86}
         </div>
     </div>
 </div>
+<div class="timezone-row">
+    <label><strong>Time Zone:</strong></label>
 
+    <select id="timezone" onchange="refreshAllViews()">
+        <option value="EDT">EDT (US Eastern)</option>
+        <option value="PH">PH Time</option>
+    </select>
+</div>
 <div class='tabs'>
 <button class='tab-btn active' onclick="showTab('lookupTab',this)">Agent Lookup</button>
 <button class='tab-btn' onclick="showTab('scheduleTab',this)">Daily View</button>
@@ -245,6 +260,7 @@ th:hover{background:#0b4a86}
 
 <div id='lookupTab'>
 
+<!-- Agent Lookup Controls -->
 <div class='controls'>
 
     <input type="date" id="selectedDate">
@@ -258,6 +274,7 @@ th:hover{background:#0b4a86}
     <button onclick="runLookup()">
         Show Staffing
     </button>
+
 </div>
 
 <div class='cards'>
@@ -502,15 +519,6 @@ let sortAsc = true;
 let rosterSortColumn = '';
 let rosterSortAsc = true;
 
-// Populate interval dropdown
-for (let h = 0; h < 24; h++) {
-    for (let m = 0; m < 60; m += 30) {
-        document.getElementById('interval').innerHTML +=
-            `<option>${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}</option>`;
-    }
-}
-    document.getElementById('selectedDate').value =
-    new Date().toISOString().split('T')[0];
 
 function sortRoster(col){
 
@@ -595,31 +603,45 @@ html += `
     <td>${r.Name || ''}</td>
 
         <td class="${r.Monday==='OFF' ? 'roster-off' : 'roster-shift'}">
-        ${r.Monday || ''}
+        ${r.Monday === 'OFF'
+    ? 'OFF'
+    : convertShiftRange(r.Monday)}
     </td>
 
     <td class="${r.Tuesday==='OFF' ? 'roster-off' : 'roster-shift'}">
-    ${r.Tuesday || ''}
+    ${r.Tuesday === 'OFF'
+    ? 'OFF'
+    : convertShiftRange(r.Tuesday)}
 </td>
 
 <td class="${r.Wednesday==='OFF' ? 'roster-off' : 'roster-shift'}">
-    ${r.Wednesday || ''}
+    ${r.Wednesday === 'OFF'
+    ? 'OFF'
+    : convertShiftRange(r.Wednesday)}
 </td>
 
 <td class="${r.Thursday==='OFF' ? 'roster-off' : 'roster-shift'}">
-    ${r.Thursday || ''}
+    ${r.Thursday === 'OFF'
+    ? 'OFF'
+    : convertShiftRange(r.Thursday)}
 </td>
 
 <td class="${r.Friday==='OFF' ? 'roster-off' : 'roster-shift'}">
-    ${r.Friday || ''}
+    ${r.Friday === 'OFF'
+    ? 'OFF'
+    : convertShiftRange(r.Friday)}
 </td>
 
 <td class="${r.Saturday==='OFF' ? 'roster-off' : 'roster-shift'}">
-    ${r.Saturday || ''}
+    ${r.Saturday === 'OFF'
+    ? 'OFF'
+    : convertShiftRange(r.Saturday)}
 </td>
 
 <td class="${r.Sunday==='OFF' ? 'roster-off' : 'roster-shift'}">
-    ${r.Sunday || ''}
+    ${r.Sunday === 'OFF'
+    ? 'OFF'
+    : convertShiftRange(r.Sunday)}
 </td>
 <td>${formatTimeRange(r['Break 1'], 15)}</td>
 <td>${formatTimeRange(r['Break 2'], 15)}</td>
@@ -834,6 +856,118 @@ function getSelectedDay() {
         new Date(selectedDate).getDay()
     ];
 }
+
+ function getOffsetHours(){
+
+    let tz =
+        document.getElementById('timezone')?.value || 'EDT';
+
+    return tz === 'PH' ? 12 : 0;
+}
+
+function convertTime(timeValue){
+
+    if(!timeValue)
+        return '';
+
+    let mins;
+
+    if(typeof timeValue === 'number'){
+
+        mins = Math.round(
+            timeValue * 1440
+        );
+
+    }else{
+
+        let p =
+            timeValue.toString().split(':');
+
+        mins =
+            parseInt(p[0]) * 60 +
+            parseInt(p[1]);
+    }
+
+    mins += getOffsetHours() * 60;
+
+    mins =
+        ((mins % 1440) + 1440) % 1440;
+
+    return (
+        String(Math.floor(mins / 60))
+        .padStart(2,'0')
+        + ':' +
+        String(mins % 60)
+        .padStart(2,'0')
+    );
+}
+
+function formatAMPM(time24){
+
+    if(!time24)
+        return '';
+
+    let [hours, mins] =
+        time24.split(':');
+
+    hours = parseInt(hours);
+
+    let suffix =
+        hours >= 12 ? 'PM' : 'AM';
+
+    hours = hours % 12;
+
+    if(hours === 0)
+        hours = 12;
+
+    return (
+        String(hours)
+        .padStart(2,'0')
+        + ':' +
+        mins +
+        ' ' +
+        suffix
+    );
+}
+
+function convertShiftRange(shift){
+
+    if(
+        !shift ||
+        shift === 'OFF' ||
+        !shift.includes('-')
+    ){
+        return shift;
+    }
+
+    let parts = shift.split('-');
+
+    let start =
+        convertTime(parts[0].trim());
+
+    let end =
+        convertTime(parts[1].trim());
+
+    return (
+        formatAMPM(start)
+        + ' - ' +
+        formatAMPM(end)
+    );
+}
+
+function refreshAllViews(){
+
+    runLookup();
+
+    buildScheduleView();
+
+    buildRosterView();
+
+    buildPTOTable();
+
+    buildCalledOffTable();
+}
+  
     
 function formatExcelTime(v) {
     if (v === '' || v == null) return '';
@@ -848,38 +982,35 @@ function formatExcelTime(v) {
 
     return v;
 }
-    function formatTimeRange(v, duration) {
+    function formatTimeRange(v,duration){
 
-    if (v === '' || v == null) {
+    if(v === '' || v == null){
         return '';
     }
 
-    let startMins;
-
-    if (typeof v === 'number') {
-        startMins = Math.round(v * 1440);
-    } else {
-        let p = v.toString().split(':');
-
-        startMins =
-            parseInt(p[0]) * 60 +
-            parseInt(p[1]);
-    }
-
-    let endMins = startMins + duration;
-
     let start =
-        String(Math.floor(startMins / 60) % 24).padStart(2, '0') +
-        ':' +
-        String(startMins % 60).padStart(2, '0');
+        convertTime(v);
+
+    let startMins =
+        im(start);
+
+    let endMins =
+        (startMins + duration) % 1440;
 
     let end =
-        String(Math.floor(endMins / 60) % 24).padStart(2, '0') +
-        ':' +
-        String(endMins % 60).padStart(2, '0');
+        String(Math.floor(endMins / 60))
+        .padStart(2,'0')
+        + ':' +
+        String(endMins % 60)
+        .padStart(2,'0');
 
-    return `${start} - ${end}`;
+    return (
+        formatAMPM(start)
+        + ' - ' +
+        formatAMPM(end)
+    );
 }
+
 
 function showTab(id, b) {
 
@@ -909,8 +1040,41 @@ if(id === 'calledOffTab'){
         buildRosterView();
     }
 }
-
 window.addEventListener('load', async () => {
+
+    const interval =
+    document.getElementById('interval');
+
+for (let h = 0; h < 24; h++) {
+
+    for (let m = 0; m < 60; m += 30) {
+
+        let valueTime =
+            String(h).padStart(2,'0')
+            + ':'
+            + String(m).padStart(2,'0');
+
+        let hour12 =
+            h % 12 || 12;
+
+        let suffix =
+            h >= 12 ? 'PM' : 'AM';
+
+        let displayTime =
+            String(hour12).padStart(2,'0')
+            + ':'
+            + String(m).padStart(2,'0')
+            + ' '
+            + suffix;
+
+        interval.innerHTML +=
+            `<option value="${valueTime}">
+                ${displayTime}
+            </option>`;
+    }
+}
+
+interval.value = '09:00';
 
     document.getElementById('selectedDate').value =
         new Date().toISOString().split('T')[0];
@@ -919,7 +1083,7 @@ window.addEventListener('load', async () => {
         new Date().toISOString().split('T')[0];
 
     const response = await fetch('./RawData.xlsx');
-
+    
     const arrayBuffer = await response.arrayBuffer();
 
     const wb = XLSX.read(arrayBuffer, {
@@ -1169,7 +1333,10 @@ function getStatus(r, d, i) {
 
 function runLookup() {
     let d = getSelectedDay();
-    let i = document.getElementById('interval').value;
+    let i =
+    convertTime(
+        document.getElementById('interval').value
+    );
     let s = document.getElementById('supervisor').value;
     
     let currentMinutes = im(i);
@@ -1440,6 +1607,14 @@ let rows = [...data].filter(r => {
 
     rows.forEach(r => {
         let shift = r[day] || 'OFF';
+
+if(
+    shift !== 'OFF' &&
+    shift.includes('-')
+){
+    shift =
+        convertShiftRange(shift);
+}
 
         html += `
         <tr class="${shift === 'OFF' ? 'off' : ''}">
