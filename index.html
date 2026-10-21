@@ -5,8 +5,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>WFM Command Center v3</title>
 
-<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js">
-</script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 
 <style>
 
@@ -622,10 +621,10 @@ html += `
 <td class="${r.Sunday==='OFF' ? 'roster-off' : 'roster-shift'}">
     ${r.Sunday || ''}
 </td>
-<td>${formatExcelTime(r['Break 1'])}</td>
-<td>${formatExcelTime(r['Break 2'])}</td>
-<td>${formatExcelTime(r['Lunch'])}</td>
-<td>${formatExcelTime(r['Break 3'])}</td>
+<td>${formatTimeRange(r['Break 1'], 15)}</td>
+<td>${formatTimeRange(r['Break 2'], 15)}</td>
+<td>${formatTimeRange(r['Lunch'], 60)}</td>
+<td>${formatTimeRange(r['Break 3'], 15)}</td>
 <td>${r.Supervisor || ''}</td>
 
 </tr>`;
@@ -848,6 +847,38 @@ function formatExcelTime(v) {
     }
 
     return v;
+}
+    function formatTimeRange(v, duration) {
+
+    if (v === '' || v == null) {
+        return '';
+    }
+
+    let startMins;
+
+    if (typeof v === 'number') {
+        startMins = Math.round(v * 1440);
+    } else {
+        let p = v.toString().split(':');
+
+        startMins =
+            parseInt(p[0]) * 60 +
+            parseInt(p[1]);
+    }
+
+    let endMins = startMins + duration;
+
+    let start =
+        String(Math.floor(startMins / 60) % 24).padStart(2, '0') +
+        ':' +
+        String(startMins % 60).padStart(2, '0');
+
+    let end =
+        String(Math.floor(endMins / 60) % 24).padStart(2, '0') +
+        ':' +
+        String(endMins % 60).padStart(2, '0');
+
+    return `${start} - ${end}`;
 }
 
 function showTab(id, b) {
@@ -1140,6 +1171,8 @@ function runLookup() {
     let d = getSelectedDay();
     let i = document.getElementById('interval').value;
     let s = document.getElementById('supervisor').value;
+    
+    let currentMinutes = im(i);
 
 let w = [];
 let b = [];
@@ -1216,22 +1249,54 @@ if (st === 'Working') {
 }
 
 if (st === 'Break') {
+
+    let breakTime = '';
+
+    for (let br of [
+        r['Break 1'],
+        r['Break 2'],
+        r['Break 3']
+    ]) {
+
+        let bt = tm(br);
+
+        if (
+    bt != null &&
+    currentMinutes >= bt &&
+    currentMinutes < bt + 15
+) {
+            breakTime =
+                formatTimeRange(br, 15);
+            break;
+        }
+    }
+
     w.push({
         name: r.Name + ' (Break)',
         type: 'break'
     });
 
-    b.push(r.Name);
+    b.push({
+        name: r.Name,
+        time: breakTime
+    });
 }
 
 if (st === 'Lunch') {
+
     w.push({
         name: r.Name + ' (Lunch)',
         type: 'lunch'
     });
 
-    l.push(r.Name);
-}    });
+    l.push({
+        name: r.Name,
+        time: formatTimeRange(
+            r['Lunch'],
+            60
+        )
+    });
+}
 
 document.getElementById('workingCount').textContent =
     w.length;
@@ -1270,14 +1335,20 @@ document.getElementById('workingList').innerHTML =
 
 
     document.getElementById('breakList').innerHTML =
-        b.map(x =>
-            `<li class="break">${x}</li>`
-        ).join('');
+    b.map(x =>
+        `<li class="break">
+            <strong>${x.name}</strong><br>
+            <small>${x.time}</small>
+        </li>`
+    ).join('');
 
     document.getElementById('lunchList').innerHTML =
-        l.map(x =>
-            `<li class="lunch">${x}</li>`
-        ).join('');
+    l.map(x =>
+        `<li class="lunch">
+            <strong>${x.name}</strong><br>
+            <small>${x.time}</small>
+        </li>`
+    ).join('');
 
 document.getElementById('ptoList').innerHTML =
     pto.map(x =>
@@ -1292,7 +1363,9 @@ document.getElementById('calledOffList').innerHTML =
         </li>`
     ).join('');
 
-}
+}); // closes data.forEach
+
+} // closes runLookup
 
 function sortSchedule(col) {
     if (sortColumn === col) {
@@ -1372,10 +1445,10 @@ let rows = [...data].filter(r => {
         <tr class="${shift === 'OFF' ? 'off' : ''}">
             <td>${r.Name || ''}</td>
             <td>${shift}</td>
-            <td>${formatExcelTime(r['Break 1'])}</td>
-            <td>${formatExcelTime(r['Lunch'])}</td>
-            <td>${formatExcelTime(r['Break 2'])}</td>
-            <td>${formatExcelTime(r['Break 3'])}</td>
+            <td>${formatTimeRange(r['Break 1'], 15)}</td>
+<td>${formatTimeRange(r['Lunch'], 60)}</td>
+<td>${formatTimeRange(r['Break 2'], 15)}</td>
+<td>${formatTimeRange(r['Break 3'], 15)}</td>
             <td>${r.Supervisor || ''}</td>
         </tr>`;
     });
