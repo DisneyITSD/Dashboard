@@ -354,7 +354,7 @@ th:hover{background:#0b4a86}
     <div class='value' id='ptoCount'>0</div>
 </div>
 
-<div class='card'><h3>🚫 Called Off</h3>
+<div class='card'><h3>🚦 Attendance Alerts</h3>
     <div class='value' id='calledOffCount'>0</div>
 </div>
 
@@ -567,6 +567,8 @@ th:hover{background:#0b4a86}
 
     
 <script>
+let estData = [];
+let phData = [];
 let data = [];
 let ptoList = [];
 let calledOffList = [];
@@ -653,54 +655,41 @@ let rows = data.filter(r => {
     });
 
 }
-
+console.log(rows[0]);
 rows.forEach(r=>{
 
 html += `
 <tr>
     <td>${r.Name || ''}</td>
 
-        <td class="${r.Monday==='OFF' ? 'roster-off' : 'roster-shift'}">
-        ${r.Monday === 'OFF'
-    ? 'OFF'
-    : convertShiftRange(r.Monday)}
-    </td>
-
-    <td class="${r.Tuesday==='OFF' ? 'roster-off' : 'roster-shift'}">
-    ${r.Tuesday === 'OFF'
-    ? 'OFF'
-    : convertShiftRange(r.Tuesday)}
+        <td class="${(r['Monday'] || 'OFF') === 'OFF' ? 'roster-off' : 'roster-shift'}">
+    ${r['Monday'] || 'OFF'}
 </td>
 
-<td class="${r.Wednesday==='OFF' ? 'roster-off' : 'roster-shift'}">
-    ${r.Wednesday === 'OFF'
-    ? 'OFF'
-    : convertShiftRange(r.Wednesday)}
+<td class="${(r['Tuesday'] || 'OFF') === 'OFF' ? 'roster-off' : 'roster-shift'}">
+    ${r['Tuesday'] || 'OFF'}
 </td>
 
-<td class="${r.Thursday==='OFF' ? 'roster-off' : 'roster-shift'}">
-    ${r.Thursday === 'OFF'
-    ? 'OFF'
-    : convertShiftRange(r.Thursday)}
+<td class="${(r['Wednesday'] || 'OFF') === 'OFF' ? 'roster-off' : 'roster-shift'}">
+    ${r['Wednesday'] || 'OFF'}
 </td>
 
-<td class="${r.Friday==='OFF' ? 'roster-off' : 'roster-shift'}">
-    ${r.Friday === 'OFF'
-    ? 'OFF'
-    : convertShiftRange(r.Friday)}
+<td class="${(r['Thursday'] || 'OFF') === 'OFF' ? 'roster-off' : 'roster-shift'}">
+    ${r['Thursday'] || 'OFF'}
 </td>
 
-<td class="${r.Saturday==='OFF' ? 'roster-off' : 'roster-shift'}">
-    ${r.Saturday === 'OFF'
-    ? 'OFF'
-    : convertShiftRange(r.Saturday)}
+<td class="${(r['Friday'] || 'OFF') === 'OFF' ? 'roster-off' : 'roster-shift'}">
+    ${r['Friday'] || 'OFF'}
 </td>
 
-<td class="${r.Sunday==='OFF' ? 'roster-off' : 'roster-shift'}">
-    ${r.Sunday === 'OFF'
-    ? 'OFF'
-    : convertShiftRange(r.Sunday)}
+<td class="${(r['Saturday'] || 'OFF') === 'OFF' ? 'roster-off' : 'roster-shift'}">
+    ${r['Saturday'] || 'OFF'}
 </td>
+
+<td class="${(r['Sunday'] || 'OFF') === 'OFF' ? 'roster-off' : 'roster-shift'}">
+    ${r['Sunday'] || 'OFF'}
+</td>
+
 <td>${formatTimeRange(r['Break 1'], 15)}</td>
 <td>${formatTimeRange(r['Break 2'], 15)}</td>
 <td>${formatTimeRange(r['Lunch'], 60)}</td>
@@ -915,14 +904,9 @@ function getSelectedDay() {
     ];
 }
 
- function getOffsetHours(){
-
-    let tz =
-        document.getElementById('timezone')?.value || 'EDT';
-
-    return tz === 'PH' ? 12 : 0;
+function getOffsetHours(){
+    return 0;
 }
-
 function convertTime(timeValue){
 
     if(!timeValue)
@@ -1013,7 +997,23 @@ function convertShiftRange(shift){
     );
 }
 
+    function loadTimezoneData(){
+
+    const tz =
+        document.getElementById('timezone').value;
+
+    data =
+        tz === 'PH'
+        ? phData
+        : estData;
+
+}
+    
 function refreshAllViews(){
+
+    loadTimezoneData();
+
+    loadSup();
 
     runLookup();
 
@@ -1150,15 +1150,17 @@ interval.value = '09:00';
 
     console.log(wb.SheetNames);
 
-    let s =
-        wb.SheetNames.find(v =>
-            v.toLowerCase().includes('raw')
-        ) || wb.SheetNames[0];
-
-data = XLSX.utils.sheet_to_json(
-    wb.Sheets[s],
-    { defval: '' }
+    estData = XLSX.utils.sheet_to_json(
+    wb.Sheets['EST'],
+    { defval:'' }
 );
+
+phData = XLSX.utils.sheet_to_json(
+    wb.Sheets['PH'],
+    { defval:'' }
+);
+
+data = estData; // default timezone
 
 // PTO Sheet
 if (wb.Sheets['PTO']) {
@@ -1189,10 +1191,16 @@ if(calledOffSheet){
     console.log("CALLED OFF DATA", calledOffList);
     console.log("CALLED OFF ROWS", calledOffList.length);
 
-    loadSup();
-    buildRosterView();
-    buildScheduleView();
-    runLookup();
+    loadTimezoneData();
+
+loadSup();
+
+buildRosterView();
+
+buildScheduleView();
+
+runLookup();
+    
 });
 
 function loadSup() {
@@ -1581,12 +1589,52 @@ document.getElementById('ptoList').innerHTML =
     ).join('');
 
 document.getElementById('calledOffList').innerHTML =
-    calledOff.map(x =>
-        `<li style="margin-bottom:12px;padding:8px;border-left:4px solid #dc3545;background:#fff5f5;">
-            <strong>${x.name}</strong><br>
-            <small>Reason: ${x.reason}</small>
-        </li>`
-    ).join('');
+    calledOff.map(x => {
+
+        let reason = x.reason || '';
+
+        let icon = '🚫';
+        let color = '#dc3545';
+        let header = 'Called Off';
+
+        if(reason.toUpperCase().includes('RUNNING LATE')){
+            icon = '⏰';
+            color = '#ff9800';
+            header = reason;
+        }
+        else if(reason.toUpperCase().includes('LEFT EARLY')){
+            icon = '↘️';
+            color = '#9c27b0';
+            header = 'Left Early';
+        }
+        else if(reason.toUpperCase().includes('NCNS')){
+            icon = '❌';
+            color = '#000';
+            header = 'NCNS';
+        }
+
+        return `
+        <li style="
+            margin-bottom:12px;
+            padding:12px;
+            border-left:5px solid ${color};
+            background:#fff;
+            border-radius:8px;
+        ">
+            <div style="
+                font-weight:bold;
+                color:${color};
+                margin-bottom:5px;
+            ">
+                ${icon} ${header}
+            </div>
+
+            <div>
+                ${x.name}
+            </div>
+        </li>
+        `;
+    }).join('');
 
 }); // closes data.forEach
 
@@ -1666,13 +1714,7 @@ let rows = [...data].filter(r => {
     rows.forEach(r => {
         let shift = r[day] || 'OFF';
 
-if(
-    shift !== 'OFF' &&
-    shift.includes('-')
-){
-    shift =
-        convertShiftRange(shift);
-}
+shift = shift || 'OFF';
 
         html += `
         <tr class="${shift === 'OFF' ? 'off' : ''}">
