@@ -1958,15 +1958,20 @@ if (st === 'Break') {
         let bt = tm(br);
 
         if (
-    bt != null &&
-    currentMinutes >= bt &&
-    currentMinutes < bt + 15
-) {
+            bt != null &&
+            currentMinutes >= bt &&
+            currentMinutes < bt + 15
+        ) {
             breakTime =
                 formatTimeRange(br, 15);
             break;
         }
     }
+
+    w.push({
+        name: r.Name,
+        type: 'break'
+    });
 
     b.push({
         name: r.Name,
@@ -1975,6 +1980,11 @@ if (st === 'Break') {
 }
 
 if (st === 'Lunch') {
+
+    w.push({
+        name: r.Name,
+        type: 'lunch'
+    });
 
     l.push({
         name: r.Name,
