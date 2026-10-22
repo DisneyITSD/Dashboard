@@ -137,13 +137,14 @@ box-shadow:0 2px 5px rgba(0,0,0,.1)}
     flex-wrap:wrap;
     gap:10px;
     margin-top:10px;
+    align-items:stretch;
 }
 
 
 .card{
     flex:1 1 180px;
-    padding:12px;
-    min-height:110px;
+    padding:10px;
+    min-height:95px;
     text-align:center;
     transition:all .2s ease;
     cursor:pointer;
@@ -151,7 +152,7 @@ box-shadow:0 2px 5px rgba(0,0,0,.1)}
 }
 
 .card h3{
-    margin:8px 0;
+    margin:4px 0;
     font-size:22px;
     font-weight:700;
 }
@@ -217,10 +218,19 @@ box-shadow:0 2px 5px rgba(0,0,0,.1)}
     box-shadow:0 2px 8px rgba(0,0,0,.08);
 }
 .panel{
-    padding:15px;
+    padding:8px;
     flex:1 1 300px;
-    max-height:400px;
-    overflow-y:auto;
+    min-height:350px;
+}
+
+.panel ul{
+    list-style:none;
+    padding-left:0;
+    margin:0;
+}
+
+.panel li{
+    padding:4px 0;
 }
 
 select{
@@ -276,23 +286,21 @@ th:hover{background:#0b4a86}
 
 .working{
     border-left:4px solid #28a745;
-    padding-left:6px;
+    padding-left:8px;
 }
 
 .break{
     border-left:4px solid #ff9800;
-    padding-left:6px;
+    padding-left:8px;
     background:#fff3cd;
     color:#b26a00;
-    font-weight:bold;
 }
 
 .lunch{
     border-left:4px solid #dc3545;
-    padding-left:6px;
+    padding-left:8px;
     background:#f8d7da;
     color:#a71d2a;
-    font-weight:bold;
 }
     .controls{
     display:flex;
@@ -372,6 +380,16 @@ th::after{
 th:hover::after{
     opacity:1;
 }
+
+#staffingPercent,
+#breakPercent,
+#lunchPercent,
+#ptoPercent,
+#attendancePercent{
+    font-size:14px;
+    font-weight:700;
+    margin-top:-5px;
+}
 </style>
 </head>
 
@@ -445,6 +463,16 @@ th:hover::after{
 
 <div class='value' id='workingCount'>0</div>
 
+<div id="staffingPercent"
+     style="
+        font-size:14px;
+        font-weight:700;
+        color:#28a745;
+        margin-top:-5px;
+     ">
+    0%
+</div>
+
 </div>
 
 <div class='card'
@@ -454,6 +482,9 @@ th:hover::after{
 
 <div class='value' id='breakCount'>0</div>
 
+<div id="breakPercent">
+    0%
+</div>
 </div>
 
 <div class='card'
@@ -462,6 +493,10 @@ th:hover::after{
 <h3>🍽️ Lunch</h3>
 
 <div class='value' id='lunchCount'>0</div>
+
+<div id="lunchPercent">
+    0%
+</div>
 
 </div>
     
@@ -472,6 +507,9 @@ th:hover::after{
 
 <div class='value' id='ptoCount'>0</div>
 
+<div id="ptoPercent">
+    0%
+</div>
 </div>
 
 <div class='card'
@@ -481,28 +519,32 @@ th:hover::after{
 
 <div class='value' id='calledOffCount'>0</div>
 
+<div id="attendancePercent">
+    0%
 </div>
 
 </div>
-
-<div class='panels'>
-<div class='panel'><h2></h2>
-<ul id='workingList'></ul>
 </div>
 
-<div class='panel'><h2></h2>
-<ul id='breakList'></ul></div>
-
-<div class='panel'><h2></h2>
-<ul id='lunchList'></ul></div>
+<div class="panels">
 
 <div class='panel'>
-    <h2></h2>
+    <ul id='workingList'></ul>
+</div>
+
+<div class='panel'>
+    <ul id='breakList'></ul>
+</div>
+
+<div class='panel'>
+    <ul id='lunchList'></ul>
+</div>
+
+<div class='panel'>
     <ul id='ptoList'></ul>
 </div>
 
 <div class='panel'>
-    <h2></h2>
     <ul id='calledOffList'></ul>
 </div>
 </div>
@@ -1327,15 +1369,10 @@ function updateRealtime(){
     document.getElementById('selectedDate').value =
         `${yyyy}-${mm}-${dd}`;
 
-    let mins =
-        Math.floor(
-            now.getMinutes() / 30
-        ) * 30;
-
     document.getElementById('interval').value =
-        String(now.getHours()).padStart(2,'0')
-        + ':'
-        + String(mins).padStart(2,'0');
+    String(now.getHours()).padStart(2,'0')
+    + ':'
+    + String(now.getMinutes()).padStart(2,'0');
 
     runLookup();
 
@@ -1811,10 +1848,25 @@ function getStatus(r, d, i) {
 
 function runLookup() {
     let d = getSelectedDay();
-    let i =
-    convertTime(
-        document.getElementById('interval').value
-    );
+    let i;
+
+if(realtimeMode){
+
+    const now = new Date();
+
+    i =
+        String(now.getHours()).padStart(2,'0')
+        + ':'
+        + String(now.getMinutes()).padStart(2,'0');
+
+}else{
+
+    i =
+        convertTime(
+            document.getElementById('interval').value
+        );
+
+}
     let s = document.getElementById('supervisor').value;
     
     let currentMinutes = im(i);
@@ -1916,11 +1968,6 @@ if (st === 'Break') {
         }
     }
 
-    w.push({
-        name: r.Name + ' (Break)',
-        type: 'break'
-    });
-
     b.push({
         name: r.Name,
         time: breakTime
@@ -1928,11 +1975,6 @@ if (st === 'Break') {
 }
 
 if (st === 'Lunch') {
-
-    w.push({
-        name: r.Name + ' (Lunch)',
-        type: 'lunch'
-    });
 
     l.push({
         name: r.Name,
@@ -1942,9 +1984,53 @@ if (st === 'Lunch') {
         )
     });
 }
-
 document.getElementById('workingCount').textContent =
     w.length;
+        let totalAgents =
+    w.length +
+    b.length +
+    l.length +
+    pto.length +
+    calledOff.length;
+
+let workingPct =
+    totalAgents > 0
+    ? ((w.length / totalAgents) * 100).toFixed(1)
+    : 0;
+
+let breakPct =
+    totalAgents > 0
+    ? ((b.length / totalAgents) * 100).toFixed(1)
+    : 0;
+
+let lunchPct =
+    totalAgents > 0
+    ? ((l.length / totalAgents) * 100).toFixed(1)
+    : 0;
+
+let ptoPct =
+    totalAgents > 0
+    ? ((pto.length / totalAgents) * 100).toFixed(1)
+    : 0;
+
+let attendancePct =
+    totalAgents > 0
+    ? ((calledOff.length / totalAgents) * 100).toFixed(1)
+    : 0;
+
+document.getElementById('staffingPercent').textContent =
+    workingPct + '% of team';
+        document.getElementById('breakPercent').textContent =
+    breakPct + '% of team';
+
+document.getElementById('lunchPercent').textContent =
+    lunchPct + '% of team';
+
+document.getElementById('ptoPercent').textContent =
+    ptoPct + '% of team';
+
+document.getElementById('attendancePercent').textContent =
+    attendancePct + '% of team';
 
     document.getElementById('breakCount').textContent =
         b.length;
@@ -1957,7 +2043,7 @@ document.getElementById('ptoCount').textContent =
 
 document.getElementById('calledOffCount').textContent =
     calledOff.length;
-
+    
 w.sort((a, b) => {
 
     const order = {
@@ -1975,7 +2061,9 @@ w.sort((a, b) => {
 
 document.getElementById('workingList').innerHTML =
     w.map(x =>
-        `<li class="${x.type}">${x.name}</li>`
+        `<li class="${x.type}">
+            ${x.name}
+        </li>`
     ).join('');
 
 
