@@ -135,24 +135,33 @@ box-shadow:0 2px 5px rgba(0,0,0,.1)}
 .panels{
     display:flex;
     flex-wrap:wrap;
-    gap:15px;
-    margin-top:15px;
+    gap:10px;
+    margin-top:10px;
 }
 
 
 .card{
     flex:1 1 180px;
-    padding:20px;
+    padding:12px;
+    min-height:110px;
     text-align:center;
     transition:all .2s ease;
     cursor:pointer;
+    border-radius:14px;
+}
+
+.card h3{
+    margin:8px 0;
+    font-size:22px;
+    font-weight:700;
 }
 
 .card:hover{
     transform:translateY(-6px) scale(1.02);
     box-shadow:0 10px 22px rgba(0,0,0,.18);
 }
-    .card:active{
+
+.card:active{
     transform:scale(.98);
 }
 
@@ -175,13 +184,34 @@ box-shadow:0 2px 5px rgba(0,0,0,.1)}
 .card:nth-child(5){
     border-top:5px solid #6c757d;
 }
+
 .value{
-    font-size:50px;
+    font-size:40px;
     font-weight:700;
     color:#003366;
 }
+    #workingCount{
+    color:#28a745;
+}
+
+#breakCount{
+    color:#ff9800;
+}
+
+#lunchCount{
+    color:#dc3545;
+}
+
+#ptoCount{
+    color:#17a2b8;
+}
+
+#calledOffCount{
+    color:#dc3545;
+}
+
 .controls{
-    padding:15px;
+    padding:10px 15px;
     background:white;
     border-radius:12px;
     box-shadow:0 2px 8px rgba(0,0,0,.08);
@@ -189,6 +219,8 @@ box-shadow:0 2px 5px rgba(0,0,0,.1)}
 .panel{
     padding:15px;
     flex:1 1 300px;
+    max-height:400px;
+    overflow-y:auto;
 }
 
 select{
@@ -379,7 +411,7 @@ th:hover::after{
     </select>
 </div>
 <div class='tabs'>
-<button class='tab-btn active' onclick="showTab('lookupTab',this)">🔍 Agent Lookup</button>
+<button class='tab-btn active' onclick="showTab('lookupTab',this)">🔍 Dashboard</button>
 <button class='tab-btn' onclick="showTab('scheduleTab',this)">📅 Daily View</button>
 <button class='tab-btn' onclick="showTab('rosterTab',this)">📊 Weekly View</button>
 <button class='tab-btn' onclick="showTab('ptoTab',this)">🏖️PTO</button>
