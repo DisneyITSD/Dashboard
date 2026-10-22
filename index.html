@@ -145,12 +145,15 @@ box-shadow:0 2px 5px rgba(0,0,0,.1)}
     padding:20px;
     text-align:center;
     transition:all .2s ease;
-    cursor:default;
+    cursor:pointer;
 }
 
 .card:hover{
-    transform:translateY(-4px);
-    box-shadow:0 8px 18px rgba(0,0,0,.15);
+    transform:translateY(-6px) scale(1.02);
+    box-shadow:0 10px 22px rgba(0,0,0,.18);
+}
+    .card:active{
+    transform:scale(.98);
 }
 
 .card:nth-child(1){
@@ -319,6 +322,24 @@ th:hover{background:#0b4a86}
     border-radius:12px;
     box-shadow:0 2px 8px rgba(0,0,0,.08);
 }
+    th{
+    background:#003366;
+    color:white;
+    cursor:pointer;
+    position:relative;
+    transition:.2s;
+}
+
+th::after{
+    content:' ↕';
+    opacity:0;
+    font-size:11px;
+    transition:.2s;
+}
+
+th:hover::after{
+    opacity:1;
+}
 </style>
 </head>
 
@@ -385,24 +406,49 @@ th:hover{background:#0b4a86}
 </div>
 
 <div class='cards'>
-<div class='card'><h3>🟢 Working</h3>
+<div class='card'
+     onclick="goToTab('scheduleTab')">
+
+<h3>🟢 Working</h3>
+
 <div class='value' id='workingCount'>0</div>
+
 </div>
 
-<div class='card'><h3>☕ Break</h3>
+<div class='card'
+     onclick="goToTab('scheduleTab')">
+
+<h3>☕ Break</h3>
+
 <div class='value' id='breakCount'>0</div>
+
 </div>
 
-<div class='card'><h3>🍽️ Lunch</h3>
+<div class='card'
+     onclick="goToTab('scheduleTab')">
+
+<h3>🍽️ Lunch</h3>
+
 <div class='value' id='lunchCount'>0</div>
+
 </div>
     
-<div class='card'><h3>🏖️ PTO</h3>
-    <div class='value' id='ptoCount'>0</div>
+<div class='card'
+     onclick="goToTab('ptoTab')">
+
+<h3>🏖️ PTO</h3>
+
+<div class='value' id='ptoCount'>0</div>
+
 </div>
 
-<div class='card'><h3>🚦 Attendance Alerts</h3>
-    <div class='value' id='calledOffCount'>0</div>
+<div class='card'
+     onclick="goToTab('calledOffTab')">
+
+<h3>🚦 Attendance Alerts</h3>
+
+<div class='value' id='calledOffCount'>0</div>
+
 </div>
 
 </div>
@@ -454,17 +500,17 @@ th:hover{background:#0b4a86}
     <div class="schedule-container">
 
         <table id='scheduleTable'>
-            <thead>
-                <tr>
-                    <th onclick="sortSchedule('Name')">Agent ▲▼</th>
-                    <th onclick="sortSchedule('SHIFT')">Shift ▲▼</th>
-                    <th onclick="sortSchedule('Break 1')">Break1 ▲▼</th>
-                    <th onclick="sortSchedule('Lunch')">Lunch ▲▼</th>
-                    <th onclick="sortSchedule('Break 2')">Break2 ▲▼</th>
-                    <th onclick="sortSchedule('Break 3')">Break3 ▲▼</th>
-                    <th onclick="sortSchedule('Supervisor')">Supervisor ▲▼</th>
-                </tr>
-            </thead>
+           <thead>
+    <tr>
+        <th onclick="sortSchedule('Name')">👤 Agent</th>
+        <th onclick="sortSchedule('SHIFT')">🕒 Shift</th>
+        <th onclick="sortSchedule('Break 1')">☕ B1</th>
+        <th onclick="sortSchedule('Lunch')">🍽️ Lunch</th>
+        <th onclick="sortSchedule('Break 2')">☕ B2</th>
+        <th onclick="sortSchedule('Break 3')">☕ B3</th>
+        <th onclick="sortSchedule('Supervisor')">🧑‍💼 Supervisor</th>
+    </tr>
+</thead>
 
             <tbody></tbody>
          </table>
@@ -500,19 +546,20 @@ th:hover{background:#0b4a86}
 
 <thead>
 <tr>
-<th onclick="sortRoster('Name')">Name ▲▼</th>
-<th onclick="sortRoster('Monday')">Monday ▲▼</th>
-<th onclick="sortRoster('Tuesday')">Tuesday ▲▼</th>
-<th onclick="sortRoster('Wednesday')">Wednesday ▲▼</th>
-<th onclick="sortRoster('Thursday')">Thursday ▲▼</th>
-<th onclick="sortRoster('Friday')">Friday ▲▼</th>
-<th onclick="sortRoster('Saturday')">Saturday ▲▼</th>
-<th onclick="sortRoster('Sunday')">Sunday ▲▼</th>
-<th onclick="sortRoster('Break 1')">Break1 ▲▼</th>
-<th onclick="sortRoster('Break 2')">Break2 ▲▼</th>
-<th onclick="sortRoster('Lunch')">Lunch ▲▼</th>
-<th onclick="sortRoster('Break 3')">Break3 ▲▼</th>
-<th onclick="sortRoster('Supervisor')">Supervisor ▲▼</th>
+<th onclick="sortRoster('Name')">👤 Agent</th>
+<th onclick="sortRoster('Monday')">📆 Mon</th>
+<th onclick="sortRoster('Tuesday')">📆 Tue</th>
+<th onclick="sortRoster('Wednesday')">📆 Wed</th>
+<th onclick="sortRoster('Thursday')">📆 Thu</th>
+<th onclick="sortRoster('Friday')">📆 Fri</th>
+<th onclick="sortRoster('Saturday')">📆 Sat</th>
+<th onclick="sortRoster('Sunday')">📆 Sun</th>
+<th onclick="sortRoster('Break 1')">☕ B1</th>
+<th onclick="sortRoster('Break 2')">☕ B2</th>
+<th onclick="sortRoster('Lunch')">🍽️ Lunch</th>
+<th onclick="sortRoster('Break 3')">☕ B3</th>
+
+<th onclick="sortRoster('Supervisor')">🧑‍💼 Supervisor</th>
 </tr>
 </thead>
 
@@ -552,7 +599,8 @@ th:hover{background:#0b4a86}
 
         <h2>PTO List</h2>
 
-        <table id="ptoTable">
+        <div class="schedule-container">
+    <table id="ptoTable">
             <thead>
                 <tr>
                     <th>Name</th>
@@ -562,7 +610,7 @@ th:hover{background:#0b4a86}
 
             <tbody></tbody>
 
-        </table>
+        </table></div>
 
     </div>
 
@@ -625,6 +673,11 @@ let sortAsc = true;
 
 let rosterSortColumn = '';
 let rosterSortAsc = true;
+let ptoSortColumn = '';
+let ptoSortAsc = true;
+
+let attendanceSortColumn = '';
+let attendanceSortAsc = true;
 let realtimeMode = false;
 let realtimeTimer = null;
 let clockTimer = null;
@@ -754,6 +807,18 @@ html += `
         '#rosterTable tbody'
     ).innerHTML = html;
 }
+
+    function sortPTO(col){
+
+    if(ptoSortColumn === col){
+        ptoSortAsc = !ptoSortAsc;
+    }else{
+        ptoSortColumn = col;
+        ptoSortAsc = true;
+    }
+
+    buildPTOTable();
+}
     function buildPTOTable(){
 
     if(!ptoList.length){
@@ -776,13 +841,55 @@ let search =
     .toUpperCase() || '';
 
     document.querySelector('#ptoTable thead').innerHTML =
-        '<tr>' +
-        columns.map(c => `<th>${c}</th>`).join('') +
-        '</tr>';
+    '<tr>' +
+    columns.map(c => {
+
+    let title = c;
+
+    if(c === 'Name')
+        title = '👤 Agent';
+
+    if(c === 'Date')
+        title = '📅 Date';
+
+    if(c === 'Supervisor')
+        title = '🧑‍💼 Supervisor';
+
+    return `
+        <th onclick="sortPTO('${c}')">
+            ${title}
+        </th>
+    `;
+}).join('') +
+    '</tr>';
 
     let html = '';
+        let rows = [...ptoList];
 
-    ptoList
+if(ptoSortColumn){
+
+    rows.sort((a,b)=>{
+
+        let av = a[ptoSortColumn] || '';
+        let bv = b[ptoSortColumn] || '';
+
+        if(ptoSortColumn === 'Date'){
+
+    return ptoSortAsc
+        ? new Date(av) - new Date(bv)
+        : new Date(bv) - new Date(av);
+
+}
+
+return ptoSortAsc
+    ? String(av).localeCompare(String(bv))
+    : String(bv).localeCompare(String(av));
+
+    });
+
+}
+
+    rows
 .filter(r => {
 
     let supervisorMatch =
@@ -792,8 +899,8 @@ let search =
     let searchMatch =
         search === '' ||
         (r.Name || '')
-        .toUpperCase()
-        .includes(search);
+            .toUpperCase()
+            .includes(search);
 
     let dateMatch = true;
 
@@ -843,6 +950,18 @@ html += `<td>${value || ''}</td>`;
     document.querySelector('#ptoTable tbody').innerHTML = html;
 }
 
+    function sortAttendance(col){
+
+    if(attendanceSortColumn === col){
+        attendanceSortAsc = !attendanceSortAsc;
+    }else{
+        attendanceSortColumn = col;
+        attendanceSortAsc = true;
+    }
+
+    buildCalledOffTable();
+}
+
 function buildCalledOffTable(){
 
     if(!calledOffList.length){
@@ -865,13 +984,59 @@ let search =
     .toUpperCase() || '';
 
     document.querySelector('#calledOffTable thead').innerHTML =
-        '<tr>' +
-        columns.map(c => `<th>${c}</th>`).join('') +
-        '</tr>';
+    '<tr>' +
+    columns.map(c => {
+
+    let title = c;
+
+    if(c === 'Name')
+        title = '👤 Agent';
+
+    if(c === 'Date')
+        title = '📅 Date';
+
+    if(c === 'Reason')
+        title = '🚦 Alert Type';
+
+    if(c === 'Supervisor')
+        title = '🧑‍💼 Supervisor';
+
+    return `
+        <th onclick="sortAttendance('${c}')">
+            ${title}
+        </th>
+    `;
+})
+.join('') +
+    '</tr>';
 
     let html = '';
+    let rows = [...calledOffList];
 
-    calledOffList
+if(attendanceSortColumn){
+
+    rows.sort((a,b)=>{
+
+    let av = a[attendanceSortColumn] || '';
+    let bv = b[attendanceSortColumn] || '';
+
+    if(attendanceSortColumn === 'Date'){
+
+        return attendanceSortAsc
+            ? new Date(av) - new Date(bv)
+            : new Date(bv) - new Date(av);
+
+    }
+
+    return attendanceSortAsc
+        ? String(av).localeCompare(String(bv))
+        : String(bv).localeCompare(String(av));
+
+});
+
+}
+
+    rows
 .filter(r => {
 
     let supervisorMatch =
@@ -881,8 +1046,8 @@ let search =
     let searchMatch =
         search === '' ||
         (r.Name || '')
-        .toUpperCase()
-        .includes(search);
+            .toUpperCase()
+            .includes(search);
 
     let dateMatch = true;
 
@@ -1246,6 +1411,36 @@ function formatExcelTime(v) {
     );
 }
 
+    function goToTab(tabId){
+
+    document.querySelectorAll('.tab-btn')
+        .forEach(btn =>
+            btn.classList.remove('active')
+        );
+
+    document.getElementById('lookupTab').style.display = 'none';
+    document.getElementById('scheduleTab').style.display = 'none';
+    document.getElementById('rosterTab').style.display = 'none';
+    document.getElementById('ptoTab').style.display = 'none';
+    document.getElementById('calledOffTab').style.display = 'none';
+
+    document.getElementById(tabId).style.display = 'block';
+
+    if(tabId === 'scheduleTab'){
+        document.querySelectorAll('.tab-btn')[1]
+            .classList.add('active');
+    }
+
+    if(tabId === 'ptoTab'){
+        document.querySelectorAll('.tab-btn')[3]
+            .classList.add('active');
+    }
+
+    if(tabId === 'calledOffTab'){
+        document.querySelectorAll('.tab-btn')[4]
+            .classList.add('active');
+    }
+}
 
 function showTab(id, b) {
 
