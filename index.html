@@ -901,7 +901,20 @@ html += `
         return;
     }
 
-    let columns = Object.keys(ptoList[0]);
+    const tz =
+    document.getElementById('timezone').value;
+
+const dateColumn =
+    tz === 'PH'
+        ? 'PH Date'
+        : 'EST Date';
+
+let columns = [
+    'Name',
+    dateColumn,
+    'Reason',
+    'Supervisor'
+];
 
     let selectedSupervisor =
     document.getElementById('ptoSupervisor').value;
@@ -923,8 +936,12 @@ let search =
     if(c === 'Name')
         title = '👤 Agent';
 
-    if(c === 'Date')
-        title = '📅 Date';
+    if(
+    c === 'EST Date' ||
+    c === 'PH Date'
+){
+    title = '📅 Date';
+}
 
     if(c === 'Supervisor')
         title = '🧑‍💼 Supervisor';
@@ -947,7 +964,10 @@ if(ptoSortColumn){
         let av = a[ptoSortColumn] || '';
         let bv = b[ptoSortColumn] || '';
 
-        if(ptoSortColumn === 'Date'){
+        if(
+    ptoSortColumn === 'EST Date' ||
+    ptoSortColumn === 'PH Date'
+){
 
     return ptoSortAsc
         ? new Date(av) - new Date(bv)
@@ -980,7 +1000,7 @@ return ptoSortAsc
 
     if(selectedDate){
         dateMatch =
-            normalizeDate(r.Date) === selectedDate;
+    getPTODate(r) === selectedDate;
     }
 
     return (
@@ -1368,6 +1388,14 @@ function updateRealtime(){
 
     document.getElementById('selectedDate').value =
         `${yyyy}-${mm}-${dd}`;
+    document.getElementById('ptoDate').value =
+    `${yyyy}-${mm}-${dd}`;
+
+document.getElementById('calledOffDate').value =
+    `${yyyy}-${mm}-${dd}`;
+
+document.getElementById('scheduleDate').value =
+    `${yyyy}-${mm}-${dd}`;
 
     document.getElementById('interval').value =
     String(now.getHours()).padStart(2,'0')
@@ -1376,9 +1404,13 @@ function updateRealtime(){
 
     runLookup();
 
-    buildScheduleView();
+buildScheduleView();
 
-    buildRosterView();
+buildRosterView();
+
+buildPTOTable();
+
+buildCalledOffTable();
 }
 
 function updateClock(){
@@ -1577,6 +1609,11 @@ interval.value = '09:00';
 
     document.getElementById('selectedDate').value =
         new Date().toISOString().split('T')[0];
+    document.getElementById('ptoDate').value =
+    new Date().toISOString().split('T')[0];
+
+document.getElementById('calledOffDate').value =
+    new Date().toISOString().split('T')[0];
 
     document.getElementById('scheduleDate').value =
         new Date().toISOString().split('T')[0];
@@ -1845,7 +1882,18 @@ function getStatus(r, d, i) {
 
     return d.toISOString().split('T')[0];
 }
+function getPTODate(record){
 
+    const tz =
+        document.getElementById('timezone').value;
+
+    let dateValue =
+        tz === 'PH'
+            ? record['PH Date']
+            : record['EST Date'];
+
+    return normalizeDate(dateValue);
+}
 function runLookup() {
     let d = getSelectedDay();
     let i;
@@ -1895,7 +1943,7 @@ let isPTO = ptoList.some(x =>
     (x.Name || '')
         .trim()
         .toUpperCase() === agentName &&
-    normalizeDate(x.Date) === selectedDate
+    getPTODate(x) === selectedDate
 );
 
 if (isPTO) {
