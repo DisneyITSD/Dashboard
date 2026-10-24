@@ -2525,7 +2525,20 @@ let rows = [...data].filter(r => {
             .toUpperCase()
             .includes(search);
 
-    return supervisorMatch && agentMatch;
+    let shift =
+        (r[day] || 'OFF')
+        .toString()
+        .trim()
+        .toUpperCase();
+
+    let notOff =
+        shift !== 'OFF';
+
+    return (
+        supervisorMatch &&
+        agentMatch &&
+        notOff
+    );
 });
 
     if (sortColumn) {
