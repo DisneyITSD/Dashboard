@@ -390,6 +390,12 @@ th:hover::after{
     font-weight:700;
     margin-top:-5px;
 }
+
+#timezoneHint{
+    font-size:13px;
+    color:#6c757d;
+    font-style:italic;
+}
 </style>
 </head>
 
@@ -407,7 +413,23 @@ th:hover::after{
         </div>
     </div>
 </div>
-    
+    <div class="timezone-row">
+
+    <label>
+        <strong>Time Zone:</strong>
+    </label>
+
+    <select id="timezone"
+            onchange="refreshAllViews(); updateClock();">
+        <option value="EDT">EDT (US Eastern)</option>
+        <option value="PH">PH Time</option>
+    </select>
+
+    <span id="timezoneHint">
+        ℹ️ Select your preferred time zone before starting Live Mode.
+    </span>
+
+</div>
     <div class="live-bar">
 
     <button id="realtimeBtn"
@@ -420,14 +442,7 @@ th:hover::after{
     </span>
 
 </div>
-<div class="timezone-row">
-    <label><strong>Time Zone:</strong></label>
 
-    <select id="timezone" onchange="refreshAllViews(); updateClock();">
-        <option value="EDT">EDT (US Eastern)</option>
-        <option value="PH">PH Time</option>
-    </select>
-</div>
 <div class='tabs'>
 <button class='tab-btn active' onclick="showTab('lookupTab',this)">🔍 Dashboard</button>
 <button class='tab-btn' onclick="showTab('scheduleTab',this)">📅 Daily View</button>
@@ -1961,7 +1976,29 @@ function isAgentOnPTO(record){
 
     if(realtimeMode){
 
-        now = new Date();
+if(tz === 'PH'){
+
+    now = new Date(
+        new Date().toLocaleString(
+            "en-US",
+            {
+                timeZone: "Asia/Manila"
+            }
+        )
+    );
+
+}else{
+
+    now = new Date(
+        new Date().toLocaleString(
+            "en-US",
+            {
+                timeZone: "America/New_York"
+            }
+        )
+    );
+
+}
 
     }else{
 
@@ -2002,6 +2039,98 @@ function isAgentOnPTO(record){
 
     return d.toISOString().split('T')[0];
 }
+
+  function isAgentCalledOff(record){
+
+    const tz =
+        document.getElementById('timezone').value;
+
+    const callOffDate =
+        tz === 'PH'
+            ? normalizeDate(record['PH Date'])
+            : normalizeDate(record['EST Date']);
+
+    const callOffShift =
+        tz === 'PH'
+            ? record['PH SHIFT']
+            : record['EST SHIFT'];
+
+    if(!callOffDate || !callOffShift){
+        return false;
+    }
+
+    let parts = callOffShift.split('-');
+
+    if(parts.length !== 2){
+        return false;
+    }
+
+    let startTime = parts[0].trim();
+    let endTime = parts[1].trim();
+
+    let start = new Date(
+        `${callOffDate}T${startTime}:00`
+    );
+
+    let end = new Date(
+        `${callOffDate}T${endTime}:00`
+    );
+
+    if(end <= start){
+        end.setDate(end.getDate() + 1);
+    }
+
+    let now;
+
+    if(realtimeMode){
+
+    if(tz === 'PH'){
+
+    now = new Date(
+        new Date().toLocaleString(
+            "en-US",
+            {
+                timeZone: "Asia/Manila"
+            }
+        )
+    );
+
+}else{
+
+    now = new Date(
+        new Date().toLocaleString(
+            "en-US",
+            {
+                timeZone: "America/New_York"
+            }
+        )
+    );
+
+}        
+        
+    }else{
+
+        let lookupDate =
+            document.getElementById('selectedDate').value;
+
+        let lookupTime =
+            document.getElementById('interval').value;
+
+        now = new Date(
+            `${lookupDate}T${lookupTime}:00`
+        );
+
+    }
+      console.log(
+    record.Name,
+    callOffShift,
+    start,
+    end
+);
+
+    return now >= start && now < end;
+}
+    
 function getPTODate(record){
 
     const tz =
@@ -2121,33 +2250,36 @@ if (ptoRecord) {
 
     return;
 }
-const tz =
-    document.getElementById('timezone').value;
-
-const calledOffDateField =
-    tz === 'PH'
-        ? 'PH Date'
-        : 'EST Date';
         
-let isCalledOff = calledOffList.some(x =>
+let coRecord = calledOffList.find(x =>
+
     (x.Name || '')
         .trim()
-        .toUpperCase() === agentName &&
-    normalizeDate(x[calledOffDateField]) === selectedDate
-);
-
-if (isCalledOff) {
-
-    let coRecord = calledOffList.find(x =>
-    (x.Name || '')
+        .toUpperCase() ===
+    (r.Name || '')
         .trim()
-        .toUpperCase() === agentName &&
-    normalizeDate(x[calledOffDateField]) === selectedDate
+        .toUpperCase()
+
+    &&
+
+    (x.Supervisor || '')
+        .trim()
+        .toUpperCase() ===
+    (r.Supervisor || '')
+        .trim()
+        .toUpperCase()
+
+    &&
+
+    isAgentCalledOff(x)
+
 );
+
+if (coRecord) {
 
     calledOff.push({
         name: r.Name,
-        reason: coRecord?.Reason || 'No Reason Provided'
+        reason: coRecord.Reason || 'No Reason Provided'
     });
 
     return;
