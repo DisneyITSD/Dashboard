@@ -1086,8 +1086,11 @@ let search =
     if(c === 'Name')
         title = '👤 Agent';
 
-    if(c === 'Date')
-        title = '📅 Date';
+    if(c === 'EST Date' ||
+        c === 'PH Date'
+        ){
+    title = '📅 Date';
+        }
 
     if(c === 'Reason')
         title = '🚦 Alert Type';
@@ -1143,18 +1146,27 @@ if(attendanceSortColumn){
             .toUpperCase()
             .includes(search);
 
-    let dateMatch = true;
+   let dateMatch = true;
 
-    if(selectedDate){
-        dateMatch =
-            normalizeDate(r.Date) === selectedDate;
-    }
+if(selectedDate){
 
-    return (
-        supervisorMatch &&
-        searchMatch &&
-        dateMatch
-    );
+    const tz =
+        document.getElementById('timezone').value;
+
+    dateMatch =
+        normalizeDate(
+            tz === 'PH'
+                ? r['PH Date']
+                : r['EST Date']
+        ) === selectedDate;
+
+}
+
+return (
+    supervisorMatch &&
+    searchMatch &&
+    dateMatch
+);
 
 })
 .forEach(r => {
@@ -1693,6 +1705,8 @@ if (wb.Sheets['PTO']) {
     );
 }
     console.log("PTO DATA", ptoList);
+    console.log("PTO COUNT:", ptoList.length);
+    console.log("FIRST PTO:", ptoList[0]);
 
     
 // Called OFF Sheet
@@ -1711,6 +1725,8 @@ if(calledOffSheet){
 }
     console.log("CALLED OFF DATA", calledOffList);
     console.log("CALLED OFF ROWS", calledOffList.length);
+    console.log("CALLED OFF COUNT:", calledOffList.length);
+    console.log("FIRST CALLED OFF:", calledOffList[0]);
 
     loadTimezoneData();
 
@@ -2105,22 +2121,29 @@ if (ptoRecord) {
 
     return;
 }
+const tz =
+    document.getElementById('timezone').value;
 
+const calledOffDateField =
+    tz === 'PH'
+        ? 'PH Date'
+        : 'EST Date';
+        
 let isCalledOff = calledOffList.some(x =>
     (x.Name || '')
         .trim()
         .toUpperCase() === agentName &&
-    normalizeDate(x.Date) === selectedDate
+    normalizeDate(x[calledOffDateField]) === selectedDate
 );
 
 if (isCalledOff) {
 
     let coRecord = calledOffList.find(x =>
-        (x.Name || '')
-            .trim()
-            .toUpperCase() === agentName &&
-        normalizeDate(x.Date) === selectedDate
-    );
+    (x.Name || '')
+        .trim()
+        .toUpperCase() === agentName &&
+    normalizeDate(x[calledOffDateField]) === selectedDate
+);
 
     calledOff.push({
         name: r.Name,
