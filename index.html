@@ -396,6 +396,11 @@ th:hover::after{
     color:#6c757d;
     font-style:italic;
 }
+
+button:disabled{
+    opacity:.5;
+    cursor:not-allowed;
+}
 </style>
 </head>
 
@@ -418,7 +423,7 @@ th:hover::after{
 
     <button id="realtimeBtn"
             onclick="toggleRealtime()">
-        🟢 Live Staffing
+        🟢 Live Mode (EST)
     </button>
 
     <span id="liveClock">
@@ -433,6 +438,7 @@ th:hover::after{
 <button class='tab-btn' onclick="showTab('rosterTab',this)">📊 Weekly View</button>
 <button class='tab-btn' onclick="showTab('ptoTab',this)">🏖️PTO</button>
 <button class='tab-btn' onclick="showTab('calledOffTab',this)">🚦 Attendance Alerts</button>
+<button class='tab-btn' onclick="showTab('missingTab',this)">🔎 Missing Agent Checker</button>
 </div>
 
 <div id='lookupTab'>
@@ -733,6 +739,54 @@ th:hover::after{
 
 </div>
 
+<div id="missingTab" style="display:none">
+
+<div class="controls">
+
+    <div style="
+    width:100%;
+    background:#e8f4ff;
+    border-left:5px solid #1e88e5;
+    color:#003366;
+    padding:12px;
+    border-radius:8px;
+    margin-bottom:10px;
+">
+    ⚠️ <strong>Live Mode (EST) is required.</strong>
+    The Missing Agent Checker compares your pasted list against the current Dashboard Working list. Enable Live Mode before running the check.
+</div>
+    
+    <textarea id="agentPaste"
+              placeholder="Paste agents here, one per line..."
+              style="
+                width:500px;
+                height:180px;
+                resize:vertical;
+                border:1px solid #ddd;
+                border-radius:8px;
+                padding:10px;
+              ">
+    </textarea>
+
+    <button id="missingCheckBtn" onclick="checkMissingAgents()">Check Missing Agents</button>
+
+</div>
+
+<div class="panels">
+
+    <div class="panel">
+        <h2>✅ Found Working</h2>
+        <ul id="foundAgents"></ul>
+    </div>
+
+    <div class="panel">
+        <h2>❌ Missing</h2>
+        <ul id="missingAgents"></ul>
+    </div>
+
+</div>
+
+</div>    
     
 <script>
 let estData = [];
@@ -740,6 +794,7 @@ let phData = [];
 let data = [];
 let ptoList = [];
 let calledOffList = [];
+let currentWorkingAgents = [];
 
 let sortColumn = '';
 let sortAsc = true;
@@ -1318,6 +1373,10 @@ function convertShiftRange(shift){
         btn.innerHTML =
     '🔴 Stop Live Mode (EST)';
 
+        document.getElementById(
+    'missingCheckBtn'
+).disabled = false;
+
         updateRealtime();
 
         realtimeTimer =
@@ -1337,7 +1396,11 @@ function convertShiftRange(shift){
     }else{
 
         btn.innerHTML =
-            '🟢 Live Staffing';
+            '🟢 LIVE MODE (EST)';
+
+        document.getElementById(
+    'missingCheckBtn'
+).disabled = true;
 
         clearInterval(realtimeTimer);
         clearInterval(clockTimer);
@@ -1532,6 +1595,7 @@ function formatExcelTime(v) {
     document.getElementById('rosterTab').style.display = 'none';
     document.getElementById('ptoTab').style.display = 'none';
     document.getElementById('calledOffTab').style.display = 'none';
+    document.getElementById('missingTab').style.display = 'none';
 
     document.getElementById(tabId).style.display = 'block';
 
@@ -1558,6 +1622,7 @@ document.getElementById('scheduleTab').style.display = 'none';
 document.getElementById('rosterTab').style.display = 'none';
 document.getElementById('ptoTab').style.display = 'none';
 document.getElementById('calledOffTab').style.display = 'none';
+document.getElementById('missingTab').style.display = 'none';
 
     if(id === 'ptoTab'){
     buildPTOTable();
@@ -1580,6 +1645,10 @@ if(id === 'calledOffTab'){
     }
 }
 window.addEventListener('load', async () => {
+    
+    document.getElementById(
+    'missingCheckBtn'
+).disabled = true;
 
     const interval =
     document.getElementById('interval');
@@ -2274,6 +2343,10 @@ w.sort((a, b) => {
 
     return a.name.localeCompare(b.name);
 });
+    currentWorkingAgents =
+    w.map(x =>
+        x.name.toUpperCase().trim()
+    );
 
 document.getElementById('workingList').innerHTML =
     w.map(x =>
@@ -2469,6 +2542,49 @@ shift = shift || 'OFF';
     document.querySelector(
         '#scheduleTable tbody'
     ).innerHTML = html;
+}
+    function checkMissingAgents(){
+
+    if(!realtimeMode){
+
+        alert(
+            "⚠️ Live Mode (EST) must be enabled to ensure the Working list is current before checking for missing agents."
+        );
+
+        return;
+    }
+
+    let pasted =
+        document.getElementById('agentPaste')
+        .value
+        .split('\n')
+        .map(x => x.trim().toUpperCase())
+        .filter(Boolean);
+
+    let found = [];
+    let missing = [];
+
+    currentWorkingAgents.forEach(agent => {
+
+        if(pasted.includes(agent)){
+            found.push(agent);
+        }else{
+            missing.push(agent);
+        }
+
+    });
+
+    document.getElementById('foundAgents').innerHTML =
+        found.map(x =>
+            `<li class="working">${x}</li>`
+        ).join('');
+
+    document.getElementById('missingAgents').innerHTML =
+        missing.map(x =>
+            `<li style="color:red;font-weight:bold">
+                ${x}
+             </li>`
+        ).join('');
 }
 </script>
 </body>
