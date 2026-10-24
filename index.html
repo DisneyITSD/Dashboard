@@ -423,7 +423,7 @@ th:hover::after{
 <div class="timezone-row">
     <label><strong>Time Zone:</strong></label>
 
-    <select id="timezone" onchange="refreshAllViews()">
+    <select id="timezone" onchange="refreshAllViews(); updateClock();">
         <option value="EDT">EDT (US Eastern)</option>
         <option value="PH">PH Time</option>
     </select>
@@ -1218,8 +1218,12 @@ function getOffsetHours(){
 }
 function convertTime(timeValue){
 
-    if(!timeValue)
-        return '';
+    if(
+    timeValue === '' ||
+    timeValue === null ||
+    timeValue === undefined
+)
+    return '';
 
     let mins;
 
@@ -1314,8 +1318,11 @@ function convertShiftRange(shift){
 
     if(realtimeMode){
 
-        btn.innerHTML =
-            '🔴 Stop Live Mode';
+        const selectedTZ =
+    document.getElementById('timezone').value;
+
+btn.innerHTML =
+    `🔴 Stop Live Mode (${selectedTZ})`;
 
         document.getElementById('timezone')
     .disabled = true;
@@ -1351,25 +1358,34 @@ function convertShiftRange(shift){
 
 function updateRealtime(){
 
-    const now = new Date();
+    const selectedTZ =
+    document.getElementById('timezone').value;
 
-    const userTimeZone =
-        Intl.DateTimeFormat()
-        .resolvedOptions()
-        .timeZone;
+let now;
 
-    // Auto-select timezone
-    if(userTimeZone === 'Asia/Manila'){
+if(selectedTZ === 'PH'){
 
-        document.getElementById('timezone').value =
-            'PH';
+    now = new Date(
+        new Date().toLocaleString(
+            "en-US",
+            {
+                timeZone: "Asia/Manila"
+            }
+        )
+    );
 
-    }else{
+}else{
 
-        document.getElementById('timezone').value =
-            'EDT';
+    now = new Date(
+        new Date().toLocaleString(
+            "en-US",
+            {
+                timeZone: "America/New_York"
+            }
+        )
+    );
 
-    }
+}
 
     loadTimezoneData();
 
@@ -1415,7 +1431,34 @@ buildCalledOffTable();
 
 function updateClock(){
 
-    const now = new Date();
+    const tz =
+    document.getElementById('timezone').value;
+
+let now;
+
+if(tz === 'PH'){
+
+    now = new Date(
+        new Date().toLocaleString(
+            "en-US",
+            {
+                timeZone: "Asia/Manila"
+            }
+        )
+    );
+
+}else{
+
+    now = new Date(
+        new Date().toLocaleString(
+            "en-US",
+            {
+                timeZone: "America/New_York"
+            }
+        )
+    );
+
+}
 
     const time =
         now.toLocaleTimeString(
@@ -1438,7 +1481,7 @@ function updateClock(){
         );
 
     document.getElementById('liveClock').innerHTML =
-        `🕒 ${time} &nbsp; | &nbsp; 📅 ${date}`;
+    `🕒 ${time} &nbsp; | &nbsp; 📅 ${date} &nbsp; | &nbsp; 🌎 ${tz}`;
 }
     function loadTimezoneData(){
 
@@ -1857,7 +1900,68 @@ function getStatus(r, d, i) {
     return 'Working';
 }
 
+function isAgentOnPTO(record){
 
+    const tz =
+        document.getElementById('timezone').value;
+
+    const ptoDate =
+        tz === 'PH'
+            ? normalizeDate(record['PH Date'])
+            : normalizeDate(record['EST Date']);
+
+    const ptoShift =
+        tz === 'PH'
+            ? record['PH SHIFT']
+            : record['EST SHIFT'];
+
+    if(!ptoDate || !ptoShift){
+        return false;
+    }
+
+    let parts = ptoShift.split('-');
+
+    if(parts.length !== 2){
+        return false;
+    }
+
+    let startTime = parts[0].trim();
+    let endTime = parts[1].trim();
+
+    let start = new Date(
+        `${ptoDate}T${startTime}:00`
+    );
+
+    let end = new Date(
+        `${ptoDate}T${endTime}:00`
+    );
+
+    // overnight shift
+    if(end <= start){
+        end.setDate(end.getDate() + 1);
+    }
+
+    let now;
+
+    if(realtimeMode){
+
+        now = new Date();
+
+    }else{
+
+        let lookupDate =
+            document.getElementById('selectedDate').value;
+
+        let lookupTime =
+            document.getElementById('interval').value;
+
+        now = new Date(
+            `${lookupDate}T${lookupTime}:00`
+        );
+    }
+
+    return now >= start && now < end;
+}
     function normalizeDate(value) {
 
     if (!value)
@@ -1900,12 +2004,41 @@ function runLookup() {
 
 if(realtimeMode){
 
-    const now = new Date();
+    const tz =
+    document.getElementById('timezone').value;
 
-    i =
-        String(now.getHours()).padStart(2,'0')
-        + ':'
-        + String(now.getMinutes()).padStart(2,'0');
+let now;
+
+if(tz === 'PH'){
+
+    now = new Date(
+        new Date().toLocaleString(
+            "en-US",
+            {
+                timeZone: "Asia/Manila"
+            }
+        )
+    );
+
+}else{
+
+    now = new Date(
+        new Date().toLocaleString(
+            "en-US",
+            {
+                timeZone: "America/New_York"
+            }
+        )
+    );
+
+}
+
+i =
+    String(now.getHours()).padStart(2,'0')
+    + ':'
+    + String(now.getMinutes()).padStart(2,'0');
+
+    console.log("LIVE LOOKUP TIME:", i);
 
 }else{
 
@@ -1915,6 +2048,7 @@ if(realtimeMode){
         );
 
 }
+    
     let s = document.getElementById('supervisor').value;
     
     let currentMinutes = im(i);
@@ -1939,15 +2073,36 @@ console.log(
     "Selected Date:",
     selectedDate
 );
-let isPTO = ptoList.some(x =>
+let ptoRecord = ptoList.find(x =>
+
     (x.Name || '')
         .trim()
-        .toUpperCase() === agentName &&
-    getPTODate(x) === selectedDate
+        .toUpperCase() ===
+    (r.Name || '')
+        .trim()
+        .toUpperCase()
+
+    &&
+
+    (x.Supervisor || '')
+        .trim()
+        .toUpperCase() ===
+    (r.Supervisor || '')
+        .trim()
+        .toUpperCase()
+
+    &&
+
+    isAgentOnPTO(x)
+
 );
 
-if (isPTO) {
-    pto.push(r.Name);
+if (ptoRecord) {
+
+    pto.push({
+    name: r.Name
+});
+
     return;
 }
 
@@ -2142,9 +2297,31 @@ document.getElementById('workingList').innerHTML =
     ).join('');
 
 document.getElementById('ptoList').innerHTML =
-    pto.map(x =>
-        `<li>${x}</li>`
-    ).join('');
+
+    pto.map(x=>`
+
+        <li style="
+            margin-bottom:12px;
+            padding:12px;
+            border-left:5px solid #17a2b8;
+            background:#f4fbff;
+            border-radius:8px;
+        ">
+            <div style="
+                font-weight:bold;
+                color:#17a2b8;
+                margin-bottom:8px;
+            ">
+                PTO
+            </div>
+
+            <div>
+                ${x.name}
+            </div>
+
+        </li>
+
+    `).join('');
 
 document.getElementById('calledOffList').innerHTML =
     calledOff.map(x => {
