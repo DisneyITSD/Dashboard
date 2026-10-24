@@ -904,8 +904,7 @@ html += `
 
 let columns = [
     'Name',
-    dateColumn,
-    'Reason',
+    'EST Date',
     'Supervisor'
 ];
 
@@ -926,18 +925,14 @@ let search =
 
     let title = c;
 
-    if(c === 'Name')
-        title = '👤 Agent';
+if(c === 'Name')
+    title = '👤 Agent Name';
 
-    if(
-    c === 'EST Date' ||
-    c === 'PH Date'
-){
+if(c === 'EST Date')
     title = '📅 Date';
-}
 
-    if(c === 'Supervisor')
-        title = '🧑‍💼 Supervisor';
+if(c === 'Supervisor')
+    title = '🧑‍💼 Supervisor';
 
     return `
         <th onclick="sortPTO('${c}')">
@@ -1057,7 +1052,12 @@ function buildCalledOffTable(){
         return;
     }
 
-    let columns = Object.keys(calledOffList[0]);
+    let columns = [
+    'Name',
+    'EST Date',
+    'Reason',
+    'Supervisor'
+];
 
 let selectedSupervisor =
     document.getElementById('calledOffSupervisor').value;
@@ -1076,20 +1076,17 @@ let search =
 
     let title = c;
 
-    if(c === 'Name')
-        title = '👤 Agent';
+   if(c === 'Name')
+    title = '👤 Agent Name';
 
-    if(c === 'EST Date' ||
-        c === 'PH Date'
-        ){
+if(c === 'EST Date')
     title = '📅 Date';
-        }
 
-    if(c === 'Reason')
-        title = '🚦 Alert Type';
+if(c === 'Reason')
+    title = '🚦 Reason';
 
-    if(c === 'Supervisor')
-        title = '🧑‍💼 Supervisor';
+if(c === 'Supervisor')
+    title = '🧑‍💼 Supervisor';
 
     return `
         <th onclick="sortAttendance('${c}')">
@@ -2029,11 +2026,7 @@ const callOffShift =
 }
     
 function getPTODate(record){
-
-    return normalizeDate(
-        record['EST Date']
-    );
-
+    return normalizeDate(record['EST Date']);
 }
     
 function runLookup() {
