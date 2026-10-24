@@ -741,52 +741,82 @@ button:disabled{
 
 <div id="missingTab" style="display:none">
 
-<div class="controls">
-
+    <!-- Note -->
     <div style="
-    width:100%;
-    background:#e8f4ff;
-    border-left:5px solid #1e88e5;
-    color:#003366;
-    padding:12px;
-    border-radius:8px;
-    margin-bottom:10px;
-">
-    ⚠️ <strong>Live Mode (EST) is required.</strong>
-    The Missing Agent Checker compares your pasted list against the current Dashboard Working list. Enable Live Mode before running the check.
-</div>
-    
-    <textarea id="agentPaste"
-              placeholder="Paste agents here, one per line..."
-              style="
-                width:500px;
-                height:180px;
-                resize:vertical;
-                border:1px solid #ddd;
-                border-radius:8px;
-                padding:10px;
-              ">
-    </textarea>
-
-    <button id="missingCheckBtn" onclick="checkMissingAgents()">Check Missing Agents</button>
-
-</div>
-
-<div class="panels">
-
-    <div class="panel">
-        <h2>✅ Found Working</h2>
-        <ul id="foundAgents"></ul>
+        width:100%;
+        flex-basis:100%;
+        background:#e8f4ff;
+        border-left:5px solid #1e88e5;
+        color:#003366;
+        padding:12px;
+        border-radius:8px;
+        margin-bottom:15px;
+    ">
+        ⚠️ <strong>Live Mode (EST) is required.</strong>
+        The Missing Agent Checker compares your pasted list against the current Dashboard Working list.
+        Enable Live Mode before running the check.
     </div>
 
-    <div class="panel">
-        <h2>❌ Missing</h2>
-        <ul id="missingAgents"></ul>
+    <div class="controls" style="
+        display:flex;
+        align-items:flex-start;
+        gap:20px;
+    ">
+
+        <!-- Left Side -->
+        <div style="
+            display:flex;
+            flex-direction:column;
+            width:500px;
+        ">
+
+            <textarea
+                id="agentPaste"
+                placeholder="Paste agents here, one per line..."
+                style="
+                    width:100%;
+                    height:180px;
+                    resize:vertical;
+                    border:1px solid #ddd;
+                    border-radius:8px;
+                    padding:10px;
+                "
+            ></textarea>
+
+            <button
+                id="missingCheckBtn"
+                onclick="checkMissingAgents()"
+                style="
+                    margin-top:10px;
+                    width:220px;
+                ">
+                Check Missing Agents
+            </button>
+
+        </div>
+
+        <!-- Right Side -->
+        <div style="
+            display:flex;
+            gap:20px;
+            flex:1;
+        ">
+
+            <div class="panel" style="flex:1;">
+                <h2>✅ Found Working</h2>
+                <ul id="foundAgents"></ul>
+            </div>
+
+            <div class="panel" style="flex:1;">
+                <h2>❌ Missing</h2>
+                <ul id="missingAgents"></ul>
+            </div>
+
+        </div>
+
     </div>
 
 </div>
-
-</div>    
     
 <script>
 let estData = [];
