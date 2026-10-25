@@ -2768,6 +2768,16 @@ shift = shift || 'OFF';
         '#scheduleTable tbody'
     ).innerHTML = html;
 }
+
+    function toProperCase(name){
+
+    return name
+        .toLowerCase()
+        .replace(/\b\w/g, function(letter){
+            return letter.toUpperCase();
+        });
+
+}
     function checkMissingAgents(){
 
     if(!realtimeMode){
@@ -2808,14 +2818,14 @@ let unexpected = [];
 });
 
     document.getElementById('foundAgents').innerHTML =
-        found.map(x =>
-            `<li class="working">${x}</li>`
-        ).join('');
+    found.map(x =>
+        `<li class="working">${toProperCase(x)}</li>`
+    ).join('');
 
 document.getElementById('missingAgents').innerHTML =
     missing.map(x =>
         `<li style="color:red;font-weight:bold">
-            ${x}
+            ${toProperCase(x)}
          </li>`
     ).join('');
 
@@ -2825,7 +2835,7 @@ document.getElementById('unexpectedAgents').innerHTML =
             color:#ff9800;
             font-weight:bold;
         ">
-            ${x}
+            ${toProperCase(x)}
         </li>`
     ).join('');
 
