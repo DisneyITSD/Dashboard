@@ -1014,6 +1014,7 @@ html += `
 let columns = [
     'Name',
     'EST Date',
+    'Reason',
     'Supervisor'
 ];
 
@@ -1039,6 +1040,9 @@ if(c === 'Name')
 
 if(c === 'EST Date')
     title = '📅 Date';
+
+if(c === 'Reason')
+    title = '🚦 Reason';
 
 if(c === 'Supervisor')
     title = '🧑‍💼 Supervisor';
@@ -2222,28 +2226,38 @@ console.log(
     "Selected Date:",
     selectedDate
 );
-let ptoRecord = ptoList.find(x =>
+let ptoRecord = ptoList.find(x => {
 
-    (x.Name || '')
-        .trim()
-        .toUpperCase() ===
-    (r.Name || '')
-        .trim()
-        .toUpperCase()
+    const sameAgent =
 
-    &&
+        (x.Name || '')
+            .trim()
+            .toUpperCase() ===
+        (r.Name || '')
+            .trim()
+            .toUpperCase();
 
-    normalizeDate(x['EST Date']) === selectedDate
+    const sameDate =
 
+        getPTODate(x) === selectedDate;
+
+    return sameAgent && sameDate;
+
+});
+        console.log(
+    "Checking PTO:",
+    r.Name,
+    selectedDate,
+    ptoRecord
 );
 
 if (ptoRecord) {
 
     pto.push({
-    name: r.Name
-});
+        name: ptoRecord.Name,
+        reason: ptoRecord.Reason || ''
+    });
 
-    return;
 }
         
 let coRecord = calledOffList.find(x =>
@@ -2443,30 +2457,47 @@ document.getElementById('workingList').innerHTML =
 
 document.getElementById('ptoList').innerHTML =
 
-    pto.map(x=>`
+    pto.map(x => {
 
+        let reason = x.reason || 'Leave';
+
+        let icon = '🏖️';
+        let color = '#17a2b8';
+
+        if(reason.toUpperCase().includes('LOA')){
+            icon = '👶';
+            color = '#9c27b0';
+        }
+        else if(reason.toUpperCase().includes('BEREAVEMENT')){
+            icon = '🕊️';
+            color = '#6c757d';
+        }
+        else if(reason.toUpperCase().includes('VACATION')){
+            icon = '🌴';
+        }
+
+        return `
         <li style="
             margin-bottom:12px;
             padding:12px;
-            border-left:5px solid #17a2b8;
-            background:#f4fbff;
+            border-left:5px solid ${color};
+            background:#fff;
             border-radius:8px;
         ">
             <div style="
                 font-weight:bold;
-                color:#17a2b8;
-                margin-bottom:8px;
+                color:${color};
+                margin-bottom:5px;
             ">
-                PTO
+                ${icon} ${reason}
             </div>
 
             <div>
                 ${x.name}
             </div>
-
         </li>
-
-    `).join('');
+        `;
+    }).join('');
 
 document.getElementById('calledOffList').innerHTML =
     calledOff.map(x => {
