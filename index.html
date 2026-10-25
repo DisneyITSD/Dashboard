@@ -3245,6 +3245,20 @@ function buildSupervisorCards(){
         (stats.working / stats.teamSize) * 100
       ).toFixed(1)
     : 0;
+        let cardColor =
+    stats.absenteeism > 0
+        ? '#dc3545'
+        : '#28a745';
+
+let statusIcon =
+    stats.absenteeism > 0
+        ? '🔴'
+        : '🟢';
+
+let bgColor =
+    stats.absenteeism > 0
+        ? '#fff5f5'
+        : '#f6fff8';
 
         html += `
         <div class="card"
@@ -3253,6 +3267,8 @@ function buildSupervisorCards(){
         flex:0 0 260px;
         text-align:left;
         cursor:pointer;
+        border-top:6px solid ${cardColor};
+        background:${bgColor};
      ">
 
 
@@ -3260,7 +3276,7 @@ function buildSupervisorCards(){
                 margin-bottom:10px;
                 font-size:16px;
             ">
-                👔 ${name}
+                ${statusIcon} 👔 ${name}
             </h3>
 
             <div style="
