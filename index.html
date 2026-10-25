@@ -2016,36 +2016,55 @@ function getStatus(r, d, i) {
     return 'Working';
 }
 
-function isAgentOnPTO(record){
+function isAgentOnPTO(ptoRecord, rosterRecord){
 
     const ptoDate =
-    normalizeDate(record['EST Date']);
+        normalizeDate(ptoRecord['EST Date']);
 
-const ptoShift =
-    record['EST SHIFT'];
-    
-    if(!ptoDate || !ptoShift){
+    if(!ptoDate){
         return false;
     }
 
-    let parts = ptoShift.split('-');
+    const ptoDateObj =
+        new Date(ptoDate);
+
+    const days = [
+        'Sunday',
+        'Monday',
+        'Tuesday',
+        'Wednesday',
+        'Thursday',
+        'Friday',
+        'Saturday'
+    ];
+
+    const dayName =
+        days[ptoDateObj.getDay()];
+
+    const shift =
+        rosterRecord[dayName];
+
+    if(
+        !shift ||
+        shift.toUpperCase() === 'OFF'
+    ){
+        return false;
+    }
+
+    let parts = shift.split('-');
 
     if(parts.length !== 2){
         return false;
     }
 
-    let startTime = parts[0].trim();
-    let endTime = parts[1].trim();
-
     let start = new Date(
-        `${ptoDate}T${startTime}:00`
+        `${ptoDate}T${parts[0].trim()}:00`
     );
 
     let end = new Date(
-        `${ptoDate}T${endTime}:00`
+        `${ptoDate}T${parts[1].trim()}:00`
     );
 
-    // overnight shift
     if(end <= start){
         end.setDate(end.getDate() + 1);
     }
@@ -2054,27 +2073,27 @@ const ptoShift =
 
     if(realtimeMode){
 
-    now = new Date(
-        new Date().toLocaleString(
-            "en-US",
-            {
-                timeZone: "America/New_York"
-            }
-        )
-    );
+        now = new Date(
+            new Date().toLocaleString(
+                "en-US",
+                {
+                    timeZone: "America/New_York"
+                }
+            )
+        );
 
-}else{
+    }else{
 
-    let lookupDate =
-        document.getElementById('selectedDate').value;
+        let lookupDate =
+            document.getElementById('selectedDate').value;
 
-    let lookupTime =
-        document.getElementById('interval').value;
+        let lookupTime =
+            document.getElementById('interval').value;
 
-    now = new Date(
-        `${lookupDate}T${lookupTime}:00`
-    );
-}
+        now = new Date(
+            `${lookupDate}T${lookupTime}:00`
+        );
+    }
 
     return now >= start && now < end;
 }
@@ -2256,24 +2275,20 @@ console.log(
     "Selected Date:",
     selectedDate
 );
-let ptoRecord = ptoList.find(x => {
+let ptoRecord = ptoList.find(x =>
 
-    const sameAgent =
+    (x.Name || '')
+        .trim()
+        .toUpperCase() ===
+    (r.Name || '')
+        .trim()
+        .toUpperCase()
 
-        (x.Name || '')
-            .trim()
-            .toUpperCase() ===
-        (r.Name || '')
-            .trim()
-            .toUpperCase();
+    &&
 
-    const sameDate =
+    isAgentOnPTO(x, r)
 
-        getPTODate(x) === selectedDate;
-
-    return sameAgent && sameDate;
-
-});
+);
         console.log(
     "Checking PTO:",
     r.Name,
