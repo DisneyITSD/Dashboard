@@ -2635,13 +2635,15 @@ let supervisor =
 if(!supervisorStats[supervisor]){
 
     supervisorStats[supervisor] = {
-        working:0,
-        leave:0,
-        absenteeism:0,
-        off:0
-    };
-
+    working:0,
+    leave:0,
+    absenteeism:0,
+    off:0,
+    teamSize:0
+};
 }
+    supervisorStats[supervisor].teamSize++;
+
 
 let agentName =
     (r.Name || '')
@@ -3164,6 +3166,13 @@ function buildSupervisorCards(){
     .sort((a,b)=>a[0].localeCompare(b[0]))
     .forEach(([name,stats])=>{
 
+        let staffingPct =
+    stats.teamSize > 0
+    ? (
+        (stats.working / stats.teamSize) * 100
+      ).toFixed(1)
+    : 0;
+
         html += `
         <div class="card"
      onclick="openSupervisorDailyView('${name}')"
@@ -3185,7 +3194,10 @@ function buildSupervisorCards(){
                 font-size:14px;
                 line-height:1.8;
             ">
-
+                <div>
+                    👥 Team Size:
+                    <strong>${stats.teamSize}</strong>
+                </div>
                 <div>
                     ✅ Working:
                     <strong>${stats.working}</strong>
@@ -3204,6 +3216,15 @@ function buildSupervisorCards(){
                 <div>
                     ⚫ OFF:
                     <strong>${stats.off}</strong>
+                </div>
+                <div style="
+                margin-top:10px;
+                padding-top:10px;
+                border-top:1px solid #ddd;
+                font-weight:bold;
+                ">
+                    📊 Staffing:
+                    <strong>${staffingPct}%</strong>
                 </div>
 
             </div>
