@@ -2531,7 +2531,15 @@ function isAgentOnPTO(ptoRecord, rosterRecord){
         );
     }
 
-    return now >= start && now < end;
+    console.log(
+    'PTO TEST',
+    ptoRecord?.Name,
+    now,
+    start,
+    end
+);
+
+return now >= start && now < end;
 }
     function normalizeDate(value) {
 
@@ -2746,7 +2754,7 @@ let ptoRecord = ptoList.find(x =>
 
     &&
 
-    isAgentOnPTO(x, r)
+    getPTODate(x) === selectedDate
 
 );
         console.log(
@@ -3284,7 +3292,7 @@ let bgColor =
 
         html += `
         <div class="card"
-     onclick="openSupervisorDailyView('${name}')"
+     onclick="toggleSupervisorDetails('${name}')"
      style="
         flex:0 0 260px;
         text-align:left;
@@ -3329,19 +3337,30 @@ let bgColor =
                     <strong>${stats.off}</strong>
                 </div>
                 <div style="
-                margin-top:10px;
-                padding-top:10px;
-                border-top:1px solid #ddd;
-                font-weight:bold;
-                ">
-                    📊 Staffing:
-                    <strong>${staffingPct}%</strong>
-                </div>
+    margin-top:10px;
+    padding-top:10px;
+    border-top:1px solid #ddd;
+    font-weight:bold;
+">
+    📊 Staffing:
+    <strong>${staffingPct}%</strong>
+</div>
 
-            </div>
+<div
+    id="details-${name.replaceAll(' ','-')}"
+    style="
+        display:none;
+        margin-top:10px;
+        padding-top:10px;
+        border-top:1px solid #ddd;
+        font-size:12px;
+    ">
+</div>
 
-        </div>
-        `;
+</div>
+
+</div>
+`;
 
     });
 
