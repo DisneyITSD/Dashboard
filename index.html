@@ -736,6 +736,13 @@ button:disabled{
 </div>
 
 <div class='controls'>
+
+    <select id="scheduleTimezone"
+        onchange="buildScheduleView()">
+        <option value="EST">EST</option>
+        <option value="PH">PH</option>
+    </select>
+
     <input type="date" id="scheduleDate">
 
     <select id='scheduleSupervisor'>
@@ -787,7 +794,13 @@ button:disabled{
 
 <div class="controls">
 
-        <select id="rosterSupervisor"
+    <select id="rosterTimezone"
+        onchange="buildRosterView()">
+        <option value="EST">EST</option>
+        <option value="PH">PH</option>
+    </select>
+
+    <select id="rosterSupervisor"
                 onchange="buildRosterView()">
             <option>All Supervisors</option>
         </select>
@@ -1085,7 +1098,12 @@ let search =
     ?.value
     .toUpperCase() || '';
 
-let rows = data.filter(r => {
+let sourceData =
+    document.getElementById('rosterTimezone')?.value === 'PH'
+    ? phData
+    : estData;
+
+let rows = sourceData.filter(r => {
 
     let supervisorMatch =
         supervisor === 'All Supervisors' ||
@@ -2991,7 +3009,12 @@ let search =
     ? document.getElementById('agentSearch').value.trim().toUpperCase()
     : '';
 
-let rows = [...data].filter(r => {
+let sourceData =
+    document.getElementById('scheduleTimezone')?.value === 'PH'
+    ? phData
+    : estData;
+
+let rows = [...sourceData].filter(r => {
 
     let supervisorMatch =
         s === 'All Supervisors' ||
