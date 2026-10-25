@@ -508,7 +508,7 @@ button:disabled{
 <div class='card'
      onclick="goToTab('ptoTab')">
 
-<h3>🏖️ PTO</h3>
+<h3>🗓️ Leave</h3>
 
 <div class='value' id='ptoCount'>0</div>
 
@@ -2461,20 +2461,29 @@ document.getElementById('ptoList').innerHTML =
 
         let reason = x.reason || 'Leave';
 
-        let icon = '🏖️';
+        let icon = '🧾';
         let color = '#17a2b8';
 
-        if(reason.toUpperCase().includes('LOA')){
-            icon = '👶';
-            color = '#9c27b0';
-        }
-        else if(reason.toUpperCase().includes('BEREAVEMENT')){
-            icon = '🕊️';
-            color = '#6c757d';
-        }
-        else if(reason.toUpperCase().includes('VACATION')){
-            icon = '🌴';
-        }
+        if(reason.toUpperCase().includes('MATERNITY')){
+    icon = '🤱';
+    color = '#9c27b0';
+}
+else if(reason.toUpperCase().includes('BEREAVEMENT')){
+    icon = '🕊️';
+    color = '#6c757d';
+}
+else if(reason.toUpperCase().includes('VACATION')){
+    icon = '🌴';
+    color = '#17a2b8';
+}
+else if(reason.toUpperCase().includes('SICK')){
+    icon = '🤒';
+    color = '#e53935';
+}
+else{
+    icon = '🧾';
+    color = '#17a2b8';
+}
 
         return `
         <li style="
