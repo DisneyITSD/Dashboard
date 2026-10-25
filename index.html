@@ -2103,13 +2103,29 @@ const ptoShift =
     return d.toISOString().split('T')[0];
 }
 
-  function isAgentCalledOff(record){
+  function isAgentCalledOff(callOffRecord, rosterRecord){
 
     const callOffDate =
-    normalizeDate(record['EST Date']);
+    normalizeDate(callOffRecord['EST Date']);
+
+const callOffDateObj =
+    new Date(callOffDate);
+
+const days = [
+    'Sunday',
+    'Monday',
+    'Tuesday',
+    'Wednesday',
+    'Thursday',
+    'Friday',
+    'Saturday'
+];
+
+const dayName =
+    days[callOffDateObj.getDay()];
 
 const callOffShift =
-    record['EST SHIFT'];
+    rosterRecord[dayName];
 
     if(!callOffDate || !callOffShift){
         return false;
@@ -2162,13 +2178,22 @@ const callOffShift =
     );
 
 }
-      console.log(
-    record.Name,
+    console.log(
+    callOffRecord.Name,
     callOffShift,
     start,
     end
 );
-
+console.log({
+    Agent: callOffRecord.Name,
+    CallOffDate: callOffDate,
+    DayUsed: dayName,
+    Shift: callOffShift,
+    Now: now,
+    Start: start,
+    End: end,
+    Result: now >= start && now < end
+});
     return now >= start && now < end;
 }
     
@@ -2277,7 +2302,7 @@ let coRecord = calledOffList.find(x =>
 
     &&
 
-normalizeDate(x['EST Date']) === selectedDate
+    isAgentCalledOff(x, r)
 
 );
 
