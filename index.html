@@ -813,6 +813,21 @@ button:disabled{
         📈 Supervisor staffing breakdown.
     </div>
 
+<div class="controls">
+
+    <input
+        type="date"
+        id="supervisorDate">
+
+    <select id="supervisorTime">
+    </select>
+
+    <button onclick="refreshSupervisorSummary()">
+        Show Summary
+    </button>
+
+</div>
+
     <div class="cards" id="supervisorSummaryCards">
 
     </div>
@@ -1879,11 +1894,23 @@ document.getElementById('calledOffDate').value =
 
 document.getElementById('scheduleDate').value =
     `${yyyy}-${mm}-${dd}`;
+    
+document.getElementById('supervisorDate').value =
+    `${yyyy}-${mm}-${dd}`;
 
     document.getElementById('interval').value =
     String(now.getHours()).padStart(2,'0')
     + ':'
     + String(now.getMinutes()).padStart(2,'0');
+
+    const roundedMinutes =
+    now.getMinutes() >= 30 ? '30' : '00';
+
+    document.getElementById('supervisorTime').value =
+        String(now.getHours()).padStart(2,'0')
+        + ':'
+        + roundedMinutes;
+
 
 runLookup();
 
@@ -2060,12 +2087,12 @@ document.getElementById('calledOffTab').style.display = 'none';
 document.getElementById('missingTab').style.display = 'none';
 
     if(id === 'ptoTab'){
-    buildPTOTable();
-}
+        buildPTOTable();
+    }
 
-if(id === 'calledOffTab'){
-    buildCalledOffTable();
-}
+    if(id === 'calledOffTab'){
+        buildCalledOffTable();
+    }
 
     document.getElementById(id).style.display = 'block';
 
@@ -2076,13 +2103,43 @@ if(id === 'calledOffTab'){
     b.classList.add('active');
 
     if(id === 'rosterTab'){
-    buildRosterView();
+        buildRosterView();
+    }
+
+    if(id === 'supervisorTab'){
+    refreshSupervisorSummary();
+}
 }
 
-if(id === 'supervisorTab'){
+/* ADD HERE */
+function refreshSupervisorSummary(){
+
+    const selectedDate =
+        document.getElementById('supervisorDate').value;
+
+    const selectedTime =
+        document.getElementById('supervisorTime').value;
+
+    if(selectedDate){
+
+        document.getElementById('selectedDate').value =
+            selectedDate;
+
+    }
+
+    if(selectedTime){
+
+        document.getElementById('interval').value =
+            selectedTime;
+
+    }
+
+    runLookup();
+
     buildSupervisorCards();
+
 }
-}
+
 window.addEventListener('load', async () => {
     
     document.getElementById(
@@ -2091,6 +2148,10 @@ window.addEventListener('load', async () => {
 
     const interval =
     document.getElementById('interval');
+
+    const supervisorInterval =
+    document.getElementById('supervisorTime');
+
 
 for (let h = 0; h < 24; h++) {
 
@@ -2115,16 +2176,25 @@ for (let h = 0; h < 24; h++) {
             + suffix;
 
         interval.innerHTML +=
+        `<option value="${valueTime}">
+            ${displayTime}
+        </option>`;
+
+        supervisorInterval.innerHTML +=
             `<option value="${valueTime}">
                 ${displayTime}
             </option>`;
-    }
+            }
 }
 
 interval.value = '09:00';
 
+    document.getElementById('supervisorTime').value =
+    interval.value;
+    
     document.getElementById('selectedDate').value =
         new Date().toISOString().split('T')[0];
+    
     document.getElementById('ptoDate').value =
     new Date().toISOString().split('T')[0];
 
@@ -2133,6 +2203,9 @@ document.getElementById('calledOffDate').value =
 
     document.getElementById('scheduleDate').value =
         new Date().toISOString().split('T')[0];
+    
+    document.getElementById('supervisorDate').value =
+    new Date().toISOString().split('T')[0];
 
     const response = await fetch('./RawData.xlsx');
     
@@ -3241,6 +3314,12 @@ function buildSupervisorCards(){
 
 function openSupervisorDailyView(supervisorName){
 
+    const summaryDate =
+        document.getElementById('supervisorDate').value;
+
+    const summaryTime =
+        document.getElementById('supervisorTime').value;
+
     showTab(
         'scheduleTab',
         document.querySelectorAll('.tab-btn')[2]
@@ -3249,6 +3328,30 @@ function openSupervisorDailyView(supervisorName){
     document.getElementById(
         'scheduleSupervisor'
     ).value = supervisorName;
+
+    if(summaryDate){
+
+        document.getElementById(
+            'scheduleDate'
+        ).value = summaryDate;
+
+    }
+
+    if(summaryDate){
+
+        document.getElementById(
+            'selectedDate'
+        ).value = summaryDate;
+
+    }
+
+    if(summaryTime){
+
+        document.getElementById(
+            'interval'
+        ).value = summaryTime;
+
+    }
 
     buildScheduleView();
 
