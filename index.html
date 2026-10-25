@@ -2458,38 +2458,46 @@ document.getElementById('workingList').innerHTML =
         </li>`
     ).join('');
 
+const groupedPTO = {};
+
+pto.forEach(x => {
+
+    const reason = x.reason || 'Leave';
+
+    if (!groupedPTO[reason]) {
+        groupedPTO[reason] = [];
+    }
+
+    groupedPTO[reason].push(x.name);
+
+});
+
 document.getElementById('ptoList').innerHTML =
 
-    pto.map(x => {
+Object.entries(groupedPTO).map(([reason, names]) => {
 
-        let reason = x.reason || 'Leave';
+    let icon = '🧾';
+    let color = '#17a2b8';
 
-        let icon = '🧾';
-        let color = '#17a2b8';
+    if(reason.toUpperCase().includes('VACATION')){
+        icon = '🌴';
+        color = '#17a2b8';
+    }
+    else if(reason.toUpperCase().includes('MATERNITY')){
+        icon = '🤱';
+        color = '#9c27b0';
+    }
+    else if(reason.toUpperCase().includes('SICK')){
+        icon = '🤒';
+        color = '#e53935';
+    }
+    else if(reason.toUpperCase().includes('BEREAVEMENT')){
+        icon = '🕊️';
+        color = '#6c757d';
+    }
 
-        if(reason.toUpperCase().includes('MATERNITY')){
-    icon = '🤱';
-    color = '#9c27b0';
-}
-else if(reason.toUpperCase().includes('BEREAVEMENT')){
-    icon = '🕊️';
-    color = '#6c757d';
-}
-else if(reason.toUpperCase().includes('VACATION')){
-    icon = '🌴';
-    color = '#17a2b8';
-}
-else if(reason.toUpperCase().includes('SICK')){
-    icon = '🤒';
-    color = '#e53935';
-}
-else{
-    icon = '🧾';
-    color = '#17a2b8';
-}
-
-        return `
-        <li style="
+    return `
+        <div style="
             margin-bottom:12px;
             padding:12px;
             border-left:5px solid ${color};
@@ -2499,17 +2507,19 @@ else{
             <div style="
                 font-weight:bold;
                 color:${color};
-                margin-bottom:5px;
+                margin-bottom:8px;
             ">
                 ${icon} ${reason}
             </div>
 
-            <div>
-                ${x.name}
-            </div>
-        </li>
-        `;
-    }).join('');
+            ${names.map(name => `
+                <div>• ${name}</div>
+            `).join('')}
+
+        </div>
+    `;
+
+}).join('');
 
 document.getElementById('calledOffList').innerHTML =
     calledOff.map(x => {
