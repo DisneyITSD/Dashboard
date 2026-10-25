@@ -417,6 +417,24 @@ button:disabled{
     opacity:.5;
     cursor:not-allowed;
 }
+    .view-hint{
+    margin:10px 0;
+
+    padding:12px 15px;
+
+    background:#eef6ff;
+
+    border-left:5px solid #1e88e5;
+
+    color:#003366;
+
+    font-size:14px;
+    font-weight:500;
+
+    border-radius:8px;
+
+    box-shadow:0 2px 5px rgba(0,0,0,.05);
+}
     .subtitle{
     font-size:14px;
     color:#d8e6f5;
@@ -489,6 +507,10 @@ button:disabled{
 </div>
 
 <div id='lookupTab'>
+
+<div class="view-hint">
+    🔍 Real-time staffing overview including Working, Break, Lunch, Leave, and Attendance Alerts.
+</div>
 
 <!-- Agent Lookup Controls -->
 <div class='controls'>
@@ -603,6 +625,11 @@ button:disabled{
 </div>
 
 <div id='scheduleTab' style='display:none'>
+
+<div class="view-hint">
+    📅 Review agent shifts, breaks, lunches, and supervisor assignments for the selected date.
+</div>
+
 <div class='controls'>
     <input type="date" id="scheduleDate">
 
@@ -620,7 +647,7 @@ button:disabled{
         placeholder="🔍 Search Agent..."
         onkeyup="buildScheduleView()">
 </div>
-
+    
 <div class='panel'>
 
     <div class="schedule-container">
@@ -649,7 +676,11 @@ button:disabled{
 
 <div id="rosterTab" style="display:none">
 
-    <div class="controls">
+<div class="view-hint">
+    📊 Displays weekly schedules, shift patterns, break times, and days off for all agents.
+</div>
+
+<div class="controls">
 
         <select id="rosterSupervisor"
                 onchange="buildRosterView()">
@@ -699,7 +730,11 @@ button:disabled{
 </div>
 <div id="ptoTab" style="display:none">
 
-    <div class="controls">
+<div class="view-hint">
+    🏖️ Displays approved leave requests, dates, reasons, and supervisor assignments.
+</div>
+
+<div class="controls">
 
     <input type="date"
        id="ptoDate"
@@ -745,9 +780,13 @@ button:disabled{
 
 </div>
 
-    <div id="calledOffTab" style="display:none">
+<div id="calledOffTab" style="display:none">
 
-   <div class="controls">
+<div class="view-hint">
+    🚦 Displays attendance exceptions including call-outs, NCNS, late arrivals, and early departures.
+</div>
+
+<div class="controls">
 
     <input type="date"
        id="calledOffDate"
@@ -794,8 +833,12 @@ button:disabled{
 
 <div id="missingTab" style="display:none">
 
-    <!-- Note -->
-    <div style="
+<div class="view-hint">
+    🔎 Compare CXone activity against your Dashboard Working list to identify missing or unexpected agents.
+</div>
+
+<!-- Note -->
+<div style="
     width:100%;
     flex-basis:100%;
     background:#fdeaea;
