@@ -487,7 +487,7 @@ button:disabled{
     background:#fde2f3;
 }
 
-.row-an{
+.row-anmecha{
     background:#fce7f3;
 }
 
@@ -812,11 +812,6 @@ button:disabled{
 <th onclick="sortRoster('Friday')">📆 Fri</th>
 <th onclick="sortRoster('Saturday')">📆 Sat</th>
 <th onclick="sortRoster('Sunday')">📆 Sun</th>
-<th onclick="sortRoster('Break 1')">☕ B1</th>
-<th onclick="sortRoster('Break 2')">☕ B2</th>
-<th onclick="sortRoster('Lunch')">🍽️ Lunch</th>
-<th onclick="sortRoster('Break 3')">☕ B3</th>
-
 <th onclick="sortRoster('Supervisor')">🧑‍💼 Supervisor</th>
 </tr>
 </thead>
@@ -1192,11 +1187,6 @@ html += `
     <td class="${(r['Sunday'] || 'OFF') === 'OFF' ? 'roster-off' : ''}">
         ${r['Sunday'] || 'OFF'}
     </td>
-
-    <td>${formatTimeRange(r['Break 1'],15)}</td>
-    <td>${formatTimeRange(r['Break 2'],15)}</td>
-    <td>${formatTimeRange(r['Lunch'],60)}</td>
-    <td>${formatTimeRange(r['Break 3'],15)}</td>
 
     <td>${r.Supervisor || ''}</td>
 </tr>`;
@@ -3047,8 +3037,8 @@ let rows = [...data].filter(r => {
     if(r.Supervisor === 'Manilyn Abellar')
         supervisorClass = 'row-manilyn';
 
-    else if(r.Supervisor === 'An Valencia')
-        supervisorClass = 'row-an';
+    else if(r.Supervisor === 'Anmheca Valencia')
+        supervisorClass = 'row-anmecha';
 
     else if(r.Supervisor === 'Remmo Panaligan')
         supervisorClass = 'row-remmo';
@@ -3060,16 +3050,21 @@ let rows = [...data].filter(r => {
         supervisorClass = 'row-michael';
 
     html += `
-    <tr class="${supervisorClass}">
-        <td>${r.Name || ''}</td>
-        
-            <td>${shift}</td>
-            <td>${formatTimeRange(r['Break 1'], 15)}</td>
-<td>${formatTimeRange(r['Lunch'], 60)}</td>
-<td>${formatTimeRange(r['Break 2'], 15)}</td>
-<td>${formatTimeRange(r['Break 3'], 15)}</td>
-            <td>${r.Supervisor || ''}</td>
-        </tr>`;
+<tr class="${supervisorClass}">
+    <td>${r.Name || ''}</td>
+
+    <td>${shift}</td>
+
+    <td>${formatTimeRange(r['Break 1'],15)}</td>
+
+    <td>${formatTimeRange(r['Lunch'],60)}</td>
+
+    <td>${formatTimeRange(r['Break 2'],15)}</td>
+
+    <td>${formatTimeRange(r['Break 3'],15)}</td>
+
+    <td>${r.Supervisor || ''}</td>
+</tr>`;
     });
 
     document.querySelector(
