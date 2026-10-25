@@ -820,15 +820,25 @@ button:disabled{
         <option value="PH">PH</option>
     </select>
 
-    <input type="date" id="scheduleDate">
+    <input
+    type="date"
+    id="scheduleDate"
+    onchange="buildScheduleView()">
 
-    <select id='scheduleSupervisor'>
+
+    <select
+    id='scheduleSupervisor'
+    onchange="buildScheduleView()">
         <option>All Supervisors</option>
     </select>
 
-    <button onclick='buildScheduleView()'>
-        Show Schedule
-    </button>
+    <button onclick="
+document.getElementById('scheduleSupervisor').value='All Supervisors';
+document.getElementById('agentSearch').value='';
+buildScheduleView();
+">
+    👥 Show All Agents
+</button>
 
     <input
         type="text"
@@ -3262,10 +3272,73 @@ let rows = [...sourceData].filter(r => {
     let ptoCount = 0;
     let attendanceCount = 0;
     let offCount = 0;
-    
+
     let html = '';
 
-    rows.forEach(r => {
+rows.sort((a,b) => {
+
+    function getCategory(record){
+
+        let shift = record[day] || 'OFF';
+
+        let ptoRecord = ptoList.find(x =>
+
+            (x.Name || '').trim().toUpperCase() ===
+            (record.Name || '').trim().toUpperCase()
+
+            &&
+
+            getPTODate(x) === selectedDate
+
+        );
+
+        if(ptoRecord){
+            return 1; // Leaves
+        }
+
+        let calledOffRecord = calledOffList.find(x =>
+
+            (x.Name || '').trim().toUpperCase() ===
+            (record.Name || '').trim().toUpperCase()
+
+            &&
+
+            normalizeDate(
+                x['EST Date']
+            ) === selectedDate
+
+        );
+
+        if(calledOffRecord){
+            return 2; // Attendance Alerts
+        }
+
+        if(
+            shift.toString()
+                 .trim()
+                 .toUpperCase() === 'OFF'
+        ){
+            return 4; // OFF
+        }
+
+        return 3; // Working
+    }
+
+    let av = getCategory(a);
+    let bv = getCategory(b);
+
+    if(av !== bv){
+        return av - bv;
+    }
+
+    return (a.Name || '')
+        .localeCompare(
+            b.Name || ''
+        );
+
+});
+
+rows.forEach(r => {
 
 let category = 'WORKING';
 
