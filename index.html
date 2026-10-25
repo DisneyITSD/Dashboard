@@ -70,7 +70,7 @@ body{
     box-sizing:border-box;
 }
 .roster-shift{
-    background:#ffd966; /* yellow */
+    background:transparent;
 }
 
 .roster-off{
@@ -487,7 +487,7 @@ button:disabled{
     background:#fde2f3;
 }
 
-.row-anmecha{
+.row-an{
     background:#fce7f3;
 }
 
@@ -501,6 +501,30 @@ button:disabled{
 
 .row-michael{
     background:#dcfce7;
+}
+#rosterTable .row-manilyn td{
+    background:#fde2f3;
+}
+
+#rosterTable .row-anmecha td{
+    background:#fce7f3;
+}
+
+#rosterTable .row-remmo td{
+    background:#f3e8ff;
+}
+
+#rosterTable .row-christopher td{
+    background:#dbeafe;
+}
+
+#rosterTable .row-michael td{
+    background:#dcfce7;
+}
+
+#rosterTable td.roster-off{
+    background:#d9d9d9 !important;
+    font-weight:bold;
 }
 
 #scheduleTable tbody tr:hover{
@@ -1115,44 +1139,66 @@ let rows = data.filter(r => {
 console.log(rows[0]);
 rows.forEach(r=>{
 
+let supervisorClass = '';
+
+let supervisorName =
+    (r.Supervisor || '')
+    .trim()
+    .toUpperCase();
+
+if(supervisorName.includes('MANILYN'))
+    supervisorClass = 'row-manilyn';
+
+else if(supervisorName.includes('ANMECHA'))
+    supervisorClass = 'row-anmecha';
+
+else if(supervisorName.includes('REMMO'))
+    supervisorClass = 'row-remmo';
+
+else if(supervisorName.includes('CHRISTOPHER'))
+    supervisorClass = 'row-christopher';
+
+else if(supervisorName.includes('MICHAEL'))
+    supervisorClass = 'row-michael';
+
 html += `
-<tr>
+<tr class="${supervisorClass}">
     <td>${r.Name || ''}</td>
 
-        <td class="${(r['Monday'] || 'OFF') === 'OFF' ? 'roster-off' : 'roster-shift'}">
-    ${r['Monday'] || 'OFF'}
-</td>
+    <td class="${(r['Monday'] || 'OFF') === 'OFF' ? 'roster-off' : ''}">
+        ${r['Monday'] || 'OFF'}
+    </td>
 
-<td class="${(r['Tuesday'] || 'OFF') === 'OFF' ? 'roster-off' : 'roster-shift'}">
-    ${r['Tuesday'] || 'OFF'}
-</td>
+    <td class="${(r['Tuesday'] || 'OFF') === 'OFF' ? 'roster-off' : ''}">
+        ${r['Tuesday'] || 'OFF'}
+    </td>
 
-<td class="${(r['Wednesday'] || 'OFF') === 'OFF' ? 'roster-off' : 'roster-shift'}">
-    ${r['Wednesday'] || 'OFF'}
-</td>
+    <td class="${(r['Wednesday'] || 'OFF') === 'OFF' ? 'roster-off' : ''}">
+        ${r['Wednesday'] || 'OFF'}
+    </td>
 
-<td class="${(r['Thursday'] || 'OFF') === 'OFF' ? 'roster-off' : 'roster-shift'}">
-    ${r['Thursday'] || 'OFF'}
-</td>
+    <td class="${(r['Thursday'] || 'OFF') === 'OFF' ? 'roster-off' : ''}">
+        ${r['Thursday'] || 'OFF'}
+    </td>
 
-<td class="${(r['Friday'] || 'OFF') === 'OFF' ? 'roster-off' : 'roster-shift'}">
-    ${r['Friday'] || 'OFF'}
-</td>
+    <td class="${(r['Friday'] || 'OFF') === 'OFF' ? 'roster-off' : ''}">
+        ${r['Friday'] || 'OFF'}
+    </td>
 
-<td class="${(r['Saturday'] || 'OFF') === 'OFF' ? 'roster-off' : 'roster-shift'}">
-    ${r['Saturday'] || 'OFF'}
-</td>
+    <td class="${(r['Saturday'] || 'OFF') === 'OFF' ? 'roster-off' : ''}">
+        ${r['Saturday'] || 'OFF'}
+    </td>
 
-<td class="${(r['Sunday'] || 'OFF') === 'OFF' ? 'roster-off' : 'roster-shift'}">
-    ${r['Sunday'] || 'OFF'}
-</td>
+    <td class="${(r['Sunday'] || 'OFF') === 'OFF' ? 'roster-off' : ''}">
+        ${r['Sunday'] || 'OFF'}
+    </td>
 
-<td>${formatTimeRange(r['Break 1'], 15)}</td>
-<td>${formatTimeRange(r['Break 2'], 15)}</td>
-<td>${formatTimeRange(r['Lunch'], 60)}</td>
-<td>${formatTimeRange(r['Break 3'], 15)}</td>
-<td>${r.Supervisor || ''}</td>
+    <td>${formatTimeRange(r['Break 1'],15)}</td>
+    <td>${formatTimeRange(r['Break 2'],15)}</td>
+    <td>${formatTimeRange(r['Lunch'],60)}</td>
+    <td>${formatTimeRange(r['Break 3'],15)}</td>
 
+    <td>${r.Supervisor || ''}</td>
 </tr>`;
 
     });
@@ -3001,8 +3047,8 @@ let rows = [...data].filter(r => {
     if(r.Supervisor === 'Manilyn Abellar')
         supervisorClass = 'row-manilyn';
 
-    else if(r.Supervisor === 'Anmecha Valencia')
-        supervisorClass = 'row-anmecha';
+    else if(r.Supervisor === 'An Valencia')
+        supervisorClass = 'row-an';
 
     else if(r.Supervisor === 'Remmo Panaligan')
         supervisorClass = 'row-remmo';
