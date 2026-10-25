@@ -12,7 +12,9 @@ href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 10
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 
 <style>
-
+#scheduleTable td:nth-child(2){
+    font-weight:700;
+}
 #liveClock{
     font-size:16px;
     font-weight:700;
@@ -586,7 +588,7 @@ button:disabled{
 <button class='tab-btn active' onclick="showTab('lookupTab',this)">🔍 Dashboard</button>
 <button class='tab-btn' onclick="showTab('scheduleTab',this)">📅 Daily View</button>
 <button class='tab-btn' onclick="showTab('rosterTab',this)">📊 Weekly View</button>
-<button class='tab-btn' onclick="showTab('ptoTab',this)">🏖️PTO</button>
+<button class='tab-btn' onclick="showTab('ptoTab',this)">🏖️Leaves</button>
 <button class='tab-btn' onclick="showTab('calledOffTab',this)">🚦 Attendance Alerts</button>
 <button class='tab-btn' onclick="showTab('missingTab',this)">🔎 Missing Agent Checker</button>
 </div>
@@ -768,6 +770,7 @@ button:disabled{
            <thead>
     <tr>
         <th onclick="sortSchedule('Name')">👤 Agent</th>
+        <th onclick="sortSchedule('STATUS')">🚦 Status</th>
         <th onclick="sortSchedule('SHIFT')">🕒 Shift</th>
         <th onclick="sortSchedule('Break 1')">☕ B1</th>
         <th onclick="sortSchedule('Lunch')">🍽️ Lunch</th>
@@ -2873,53 +2876,69 @@ Object.entries(groupedPTO).map(([reason, names]) => {
 
 }).join('');
 
+const groupedAttendance = {};
+
+calledOff.forEach(x => {
+
+    let reason = x.reason || 'Called Off';
+
+    if(!groupedAttendance[reason]){
+        groupedAttendance[reason] = [];
+    }
+
+    groupedAttendance[reason].push(x.name);
+
+});
+
 document.getElementById('calledOffList').innerHTML =
-    calledOff.map(x => {
 
-        let reason = x.reason || '';
+Object.entries(groupedAttendance).map(([reason,names]) => {
 
-        let icon = '🚫';
-        let color = '#dc3545';
-        let header = 'Called Off';
+    let icon = '🚫';
+    let color = '#dc3545';
+    let header = reason;
 
-        if(reason.toUpperCase().includes('RUNNING LATE')){
-            icon = '⏰';
-            color = '#ff9800';
-            header = reason;
-        }
-        else if(reason.toUpperCase().includes('LEFT EARLY')){
-            icon = '↘️';
-            color = '#9c27b0';
-            header = 'Left Early';
-        }
-        else if(reason.toUpperCase().includes('NCNS')){
-            icon = '❌';
-            color = '#000';
-            header = 'NCNS';
-        }
+    if(reason.toUpperCase().includes('NCNS')){
+        icon = '❌';
+        color = '#000';
+    }
+    else if(
+        reason.toUpperCase().includes('RUNNING LATE') ||
+        reason.toUpperCase().includes('LATE')
+    ){
+        icon = '⏰';
+        color = '#ff9800';
+    }
+    else if(reason.toUpperCase().includes('LEFT EARLY')){
+        icon = '↘️';
+        color = '#9c27b0';
+    }
 
-        return `
-        <li style="
+    return `
+        <div style="
             margin-bottom:12px;
             padding:12px;
             border-left:5px solid ${color};
             background:#fff;
             border-radius:8px;
         ">
+
             <div style="
                 font-weight:bold;
                 color:${color};
-                margin-bottom:5px;
+                margin-bottom:8px;
             ">
                 ${icon} ${header}
             </div>
 
-            <div>
-                ${x.name}
-            </div>
-        </li>
-        `;
-    }).join('');
+            ${names.map(name => `
+                <div>• ${name}</div>
+            `).join('')}
+
+        </div>
+    `;
+
+}).join('');
     
 document.getElementById("upcomingBreakList").innerHTML =
 
@@ -3034,32 +3053,241 @@ let rows = [...sourceData].filter(r => {
 });
 
     if (sortColumn) {
-        rows.sort((a, b) => {
-            let av =
-                sortColumn === 'SHIFT'
-                    ? (a[day] || '')
-                    : (a[sortColumn] || '');
 
-            let bv =
-                sortColumn === 'SHIFT'
-                    ? (b[day] || '')
-                    : (b[sortColumn] || '');
+    rows.sort((a,b) => {
+
+        // STATUS SORT
+        if(sortColumn === 'STATUS'){
+
+            let getStatusOrder = (r) => {
+
+                let shift = r[day] || 'OFF';
+
+                if(
+                    shift.toString().trim().toUpperCase() === 'OFF'
+                ){
+                    return 99;
+                }
+
+                let ptoRecord = ptoList.find(x =>
+
+                    (x.Name || '').trim().toUpperCase() ===
+                    (r.Name || '').trim().toUpperCase()
+
+                    &&
+
+                    getPTODate(x) === selectedDate
+                );
+
+                if(ptoRecord){
+
+                    let reason =
+                        (ptoRecord.Reason || '')
+                        .toUpperCase();
+
+                    if(reason.includes('VACATION'))
+                        return 1;
+
+                    if(
+                        reason.includes('MATERNITY') ||
+                        reason.includes('MAT LEAVE') ||
+                        reason.includes('LOA')
+                    )
+                        return 2;
+
+                    if(reason.includes('SICK'))
+                        return 3;
+
+                    return 4;
+                }
+
+                let coRecord = calledOffList.find(x =>
+
+                    (x.Name || '').trim().toUpperCase() ===
+                    (r.Name || '').trim().toUpperCase()
+
+                    &&
+
+                    normalizeDate(
+                        x['EST Date']
+                    ) === selectedDate
+                );
+
+                if(coRecord){
+
+                    let reason =
+                        (coRecord.Reason || '')
+                        .toUpperCase();
+
+                    if(reason.includes('NCNS'))
+                        return 5;
+
+                    if(reason.includes('LATE'))
+                        return 6;
+
+                    if(reason.includes('LEFT EARLY'))
+                        return 7;
+
+                    return 8;
+                }
+
+                return 9; // Working
+            };
+
+            let av = getStatusOrder(a);
+            let bv = getStatusOrder(b);
 
             return sortAsc
-                ? String(av).localeCompare(String(bv))
-                : String(bv).localeCompare(String(av));
-        });
-    }
+                ? av - bv
+                : bv - av;
+        }
+
+        let av =
+            sortColumn === 'SHIFT'
+            ? (a[day] || '')
+            : (a[sortColumn] || '');
+
+        let bv =
+            sortColumn === 'SHIFT'
+            ? (b[day] || '')
+            : (b[sortColumn] || '');
+
+        return sortAsc
+            ? String(av).localeCompare(String(bv))
+            : String(bv).localeCompare(String(av));
+
+    });
+
+}
 
     let html = '';
 
     rows.forEach(r => {
 
-    let shift = r[day] || 'OFF';
+let shift = r[day] || 'OFF';
 
-    shift = shift || 'OFF';
+shift = shift || 'OFF';
 
-    let rowClass =
+let status = '✅ Working';
+
+if(
+    shift.toString().trim().toUpperCase() === 'OFF'
+){
+    status = '⚫ OFF';
+}
+
+let ptoRecord = ptoList.find(x =>
+
+    (x.Name || '')
+        .trim()
+        .toUpperCase() ===
+    (r.Name || '')
+        .trim()
+        .toUpperCase()
+
+    &&
+
+    getPTODate(x) === selectedDate
+
+);
+
+if(ptoRecord){
+
+    let reason =
+        (ptoRecord.Reason || '')
+        .toUpperCase();
+
+    if(reason.includes('VACATION')){
+
+        status =
+            '<span style="color:#17a2b8;font-weight:bold;">🌴 Vacation Leave</span>';
+
+    }
+    else if(
+        reason.includes('MATERNITY') ||
+        reason.includes('MAT LEAVE') ||
+        reason.includes('LOA')
+    ){
+
+        status =
+            '<span style="color:#9c27b0;font-weight:bold;">🤱 Maternity Leave</span>';
+
+    }
+    else if(reason.includes('SICK')){
+
+        status =
+            '<span style="color:#e53935;font-weight:bold;">🤒 Sick Leave</span>';
+
+    }
+    else if(reason.includes('BEREAVEMENT')){
+
+        status =
+            '<span style="color:#6c757d;font-weight:bold;">🕊️ Bereavement</span>';
+
+    }
+    else{
+
+        status =
+            `<span style="color:#17a2b8;font-weight:bold;">
+                🏖️ ${ptoRecord.Reason || 'PTO'}
+            </span>`;
+
+    }
+
+}
+
+let calledOffRecord = calledOffList.find(x =>
+
+    (x.Name || '')
+        .trim()
+        .toUpperCase() ===
+    (r.Name || '')
+        .trim()
+        .toUpperCase()
+
+    &&
+
+    normalizeDate(x['EST Date']) === selectedDate
+
+);
+
+if(calledOffRecord){
+
+    let reason =
+        (calledOffRecord.Reason || '')
+        .toUpperCase();
+
+    if(reason.includes('NCNS')){
+
+        status =
+            '<span style="color:black;font-weight:bold;">❌ NCNS</span>';
+
+    }
+    else if(
+    reason.includes('RUNNING LATE') ||
+    reason.includes('LATE')
+){
+
+        status =
+            '<span style="color:#ff9800;font-weight:bold;">⏰ Running Late</span>';
+
+    }
+    else if(reason.includes('LEFT EARLY')){
+
+        status =
+            '<span style="color:#9c27b0;font-weight:bold;">↘️ Left Early</span>';
+
+    }
+    else{
+
+        status =
+            '<span style="color:#dc3545;font-weight:bold;">🚦 Called Off</span>';
+
+    }
+
+}
+
+let rowClass =
     shift.toString().trim().toUpperCase() === 'OFF'
     ? 'roster-off'
     : '';
@@ -3085,6 +3313,8 @@ let rows = [...sourceData].filter(r => {
 <tr class="${supervisorClass} ${rowClass}">
     <td>${r.Name || ''}</td>
 
+    <td>${status}</td>
+
     <td>${shift}</td>
 
     <td>${formatTimeRange(r['Break 1'],15)}</td>
@@ -3096,7 +3326,7 @@ let rows = [...sourceData].filter(r => {
     <td>${formatTimeRange(r['Break 3'],15)}</td>
 
     <td>${r.Supervisor || ''}</td>
-</tr>`;
+</tr> `;
     });
 
     document.querySelector(
