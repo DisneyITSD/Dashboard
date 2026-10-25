@@ -482,6 +482,32 @@ button:disabled{
     border-radius:8px;
     padding:8px;
 }
+
+.row-manilyn{
+    background:#fde2f3;
+}
+
+.row-anmecha{
+    background:#fce7f3;
+}
+
+.row-remmo{
+    background:#f3e8ff;
+}
+
+.row-christopher{
+    background:#dbeafe;
+}
+
+.row-michael{
+    background:#dcfce7;
+}
+
+#scheduleTable tbody tr:hover{
+    filter:brightness(0.96);
+    transition:.2s;
+}
+    
 </style>
 </head>
 
@@ -2965,13 +2991,32 @@ let rows = [...data].filter(r => {
     let html = '';
 
     rows.forEach(r => {
-        let shift = r[day] || 'OFF';
 
-shift = shift || 'OFF';
+    let shift = r[day] || 'OFF';
 
-        html += `
-        <tr class="${shift === 'OFF' ? 'off' : ''}">
-            <td>${r.Name || ''}</td>
+    shift = shift || 'OFF';
+
+    let supervisorClass = '';
+
+    if(r.Supervisor === 'Manilyn Abellar')
+        supervisorClass = 'row-manilyn';
+
+    else if(r.Supervisor === 'Anmecha Valencia')
+        supervisorClass = 'row-anmecha';
+
+    else if(r.Supervisor === 'Remmo Panaligan')
+        supervisorClass = 'row-remmo';
+
+    else if(r.Supervisor === 'Christopher Rodas')
+        supervisorClass = 'row-christopher';
+
+    else if(r.Supervisor === 'Michael Dominguez')
+        supervisorClass = 'row-michael';
+
+    html += `
+    <tr class="${supervisorClass}">
+        <td>${r.Name || ''}</td>
+        
             <td>${shift}</td>
             <td>${formatTimeRange(r['Break 1'], 15)}</td>
 <td>${formatTimeRange(r['Lunch'], 60)}</td>
