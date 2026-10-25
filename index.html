@@ -645,10 +645,11 @@ button:disabled{
 
 <div class='tabs'>
 <button class='tab-btn active' onclick="showTab('lookupTab',this)">🔍 Dashboard</button>
+<button class='tab-btn' onclick="showTab('supervisorTab',this)">📈 Supervisor Summary</button>
 <button class='tab-btn' onclick="showTab('scheduleTab',this)">📅 Daily View</button>
 <button class='tab-btn' onclick="showTab('rosterTab',this)">📊 Weekly View</button>
 <button class='tab-btn' onclick="showTab('ptoTab',this)">📋 Leaves</button>
-<button class='tab-btn' onclick="showTab('calledOffTab',this)">🚦 Attendance Alerts</button>
+<button class='tab-btn' onclick="showTab('calledOffTab',this)">🚫 Absenteeism</button>
 <button class='tab-btn' onclick="showTab('missingTab',this)">🔎 Missing Agent Checker</button>
 </div>
 
@@ -735,7 +736,7 @@ button:disabled{
 <div class='card'
      onclick="goToTab('calledOffTab')">
 
-<h3>🚦 Attendance Alerts</h3>
+<h3>🚫 Absenteeism</h3>
 
 <div class='value' id='calledOffCount'>0</div>
 
@@ -796,7 +797,7 @@ button:disabled{
 
 <div class='panel'>
 
-    <h3>🚦 Attendance Alerts</h3>
+    <h3>🚫 Absenteeism</h3>
 
     <ul id='calledOffList'></ul>
 
@@ -806,6 +807,20 @@ button:disabled{
 
 </div>
 
+<div id="supervisorTab" style="display:none">
+
+    <div class="view-hint">
+        📈 Supervisor staffing breakdown.
+    </div>
+
+    <div class="cards" id="supervisorSummaryCards">
+
+    </div>
+
+</div>
+
+</div>
+    
 <div id='scheduleTab' style='display:none'>
 
 <div class="view-hint">
@@ -833,10 +848,10 @@ button:disabled{
     </select>
 
     <button onclick="
-document.getElementById('scheduleSupervisor').value='All Supervisors';
-document.getElementById('agentSearch').value='';
-buildScheduleView();
-">
+    document.getElementById('scheduleSupervisor').value='All Supervisors';
+    document.getElementById('agentSearch').value='';
+    buildScheduleView();
+        ">
     👥 Show All Agents
 </button>
 
@@ -859,7 +874,7 @@ buildScheduleView();
     </div>
 
     <div class="summary-box">
-        🚦 Attendance:
+        🚫 Absenteeism:
         <span id="dvAttendance">0</span>
     </div>
 
@@ -1168,6 +1183,7 @@ let data = [];
 let ptoList = [];
 let calledOffList = [];
 let currentWorkingAgents = [];
+let supervisorStatsData = {};
 
 let sortColumn = '';
 let sortAsc = true;
@@ -1203,6 +1219,7 @@ function buildRosterView(){
     let supervisor =
     document.getElementById('rosterSupervisor')
     ?.value || 'All Supervisors';
+
 
 let search =
     document.getElementById('rosterSearch')
@@ -1868,7 +1885,9 @@ document.getElementById('scheduleDate').value =
     + ':'
     + String(now.getMinutes()).padStart(2,'0');
 
-    runLookup();
+runLookup();
+
+buildSupervisorCards();
 
 buildScheduleView();
 
@@ -2005,20 +2024,20 @@ function formatExcelTime(v) {
             btn.classList.remove('active')
         );
 
-    document.getElementById('lookupTab').style.display = 'none';
-    document.getElementById('scheduleTab').style.display = 'none';
-    document.getElementById('rosterTab').style.display = 'none';
-    document.getElementById('ptoTab').style.display = 'none';
-    document.getElementById('calledOffTab').style.display = 'none';
-    document.getElementById('missingTab').style.display = 'none';
+document.getElementById('lookupTab').style.display = 'none';
+document.getElementById('supervisorTab').style.display = 'none';
+document.getElementById('scheduleTab').style.display = 'none';
+document.getElementById('rosterTab').style.display = 'none';
+document.getElementById('ptoTab').style.display = 'none';
+document.getElementById('calledOffTab').style.display = 'none';
+document.getElementById('missingTab').style.display = 'none';
 
     document.getElementById(tabId).style.display = 'block';
 
     if(tabId === 'scheduleTab'){
-        document.querySelectorAll('.tab-btn')[1]
-            .classList.add('active');
-    }
-
+    document.querySelectorAll('.tab-btn')[2]
+        .classList.add('active');
+}
     if(tabId === 'ptoTab'){
         document.querySelectorAll('.tab-btn')[3]
             .classList.add('active');
@@ -2033,6 +2052,7 @@ function formatExcelTime(v) {
 function showTab(id, b) {
 
 document.getElementById('lookupTab').style.display = 'none';
+document.getElementById('supervisorTab').style.display = 'none';
 document.getElementById('scheduleTab').style.display = 'none';
 document.getElementById('rosterTab').style.display = 'none';
 document.getElementById('ptoTab').style.display = 'none';
@@ -2056,8 +2076,12 @@ if(id === 'calledOffTab'){
     b.classList.add('active');
 
     if(id === 'rosterTab'){
-        buildRosterView();
-    }
+    buildRosterView();
+}
+
+if(id === 'supervisorTab'){
+    buildSupervisorCards();
+}
 }
 window.addEventListener('load', async () => {
     
@@ -2164,7 +2188,7 @@ if(calledOffSheet){
     console.log("CALLED OFF COUNT:", calledOffList.length);
     console.log("FIRST CALLED OFF:", calledOffList[0]);
 
-    loadTimezoneData();
+loadTimezoneData();
 
 loadSup();
 
@@ -2173,6 +2197,8 @@ buildRosterView();
 buildScheduleView();
 
 runLookup();
+
+buildSupervisorCards();
 
 updateClock();
 
@@ -2600,8 +2626,22 @@ let calledOff = [];
 
 let upcomingBreaks = [];
 let upcomingLunches = [];
+let supervisorStats = {};
 
     data.forEach(r => {
+let supervisor =
+    r.Supervisor || 'Unassigned';
+
+if(!supervisorStats[supervisor]){
+
+    supervisorStats[supervisor] = {
+        working:0,
+        leave:0,
+        absenteeism:0,
+        off:0
+    };
+
+}
 
 let agentName =
     (r.Name || '')
@@ -2637,6 +2677,8 @@ let ptoRecord = ptoList.find(x =>
 
 if (ptoRecord) {
 
+    supervisorStats[supervisor].leave++;
+
     pto.push({
         name: ptoRecord.Name,
         reason: ptoRecord.Reason || ''
@@ -2662,6 +2704,8 @@ let coRecord = calledOffList.find(x =>
 
 if (coRecord) {
 
+    supervisorStats[supervisor].absenteeism++;
+    
     calledOff.push({
         name: r.Name,
         reason: coRecord.Reason || 'No Reason Provided'
@@ -2675,6 +2719,9 @@ if(
     !todayShift ||
     todayShift.toString().trim().toUpperCase() === 'OFF'
 ){
+
+    supervisorStats[supervisor].off++;
+
     return;
 }
         
@@ -2729,6 +2776,9 @@ if(
             return;
 
 if (st === 'Working') {
+    
+    supervisorStats[supervisor].working++;
+    
     w.push({
         name: r.Name,
         type: 'working'
@@ -2736,6 +2786,8 @@ if (st === 'Working') {
 }
 
 if (st === 'Break') {
+
+    supervisorStats[supervisor].working++;
 
     let breakTime = '';
 
@@ -2770,6 +2822,8 @@ if (st === 'Break') {
 }
 
 if (st === 'Lunch') {
+
+    supervisorStats[supervisor].working++;
 
     w.push({
         name: r.Name,
@@ -3098,8 +3152,100 @@ upcomingLunches.length
 </li>
 `;
 
+    supervisorStatsData = supervisorStats;
+    
 } // closes runLookup
 
+function buildSupervisorCards(){
+
+    let html = '';
+
+    Object.entries(supervisorStatsData)
+    .sort((a,b)=>a[0].localeCompare(b[0]))
+    .forEach(([name,stats])=>{
+
+        html += `
+        <div class="card"
+     onclick="openSupervisorDailyView('${name}')"
+     style="
+        flex:0 0 260px;
+        text-align:left;
+        cursor:pointer;
+     ">
+
+
+            <h3 style="
+                margin-bottom:10px;
+                font-size:16px;
+            ">
+                👔 ${name}
+            </h3>
+
+            <div style="
+                font-size:14px;
+                line-height:1.8;
+            ">
+
+                <div>
+                    ✅ Working:
+                    <strong>${stats.working}</strong>
+                </div>
+
+                <div>
+                    📋 Leave:
+                    <strong>${stats.leave}</strong>
+                </div>
+
+                <div>
+                    🚫 Absenteeism:
+                    <strong>${stats.absenteeism}</strong>
+                </div>
+
+                <div>
+                    ⚫ OFF:
+                    <strong>${stats.off}</strong>
+                </div>
+
+            </div>
+
+        </div>
+        `;
+
+    });
+
+    document.getElementById(
+        'supervisorSummaryCards'
+    ).innerHTML = html;
+}
+
+function openSupervisorDailyView(supervisorName){
+
+    showTab(
+        'scheduleTab',
+        document.querySelectorAll('.tab-btn')[2]
+    );
+
+    document.getElementById(
+        'scheduleSupervisor'
+    ).value = supervisorName;
+
+    buildScheduleView();
+
+    document.getElementById(
+        'scheduleSupervisor'
+    ).style.border =
+        '2px solid #1e88e5';
+
+    setTimeout(() => {
+
+        document.getElementById(
+            'scheduleSupervisor'
+        ).style.border = '';
+
+    }, 2000);
+
+}
+    
 function sortSchedule(col) {
     if (sortColumn === col) {
         sortAsc = !sortAsc;
