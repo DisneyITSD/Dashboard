@@ -832,9 +832,14 @@ button:disabled{
             </div>
 
             <div class="panel" style="flex:1;">
-                <h2>❌ Missing</h2>
+                <h2>❌ Missing Agents</h2>
                 <ul id="missingAgents"></ul>
             </div>
+
+            <div class="panel" style="flex:1;">
+                <h2>⚠️ Unexpected Agents</h2>
+                <ul id="unexpectedAgents"></ul>
+                </div>
 
         </div>
 
@@ -2694,8 +2699,9 @@ shift = shift || 'OFF';
         .map(x => x.trim().toUpperCase())
         .filter(Boolean);
 
-    let found = [];
-    let missing = [];
+let found = [];
+let missing = [];
+let unexpected = [];
 
     currentWorkingAgents.forEach(agent => {
 
@@ -2706,19 +2712,38 @@ shift = shift || 'OFF';
         }
 
     });
+        pasted.forEach(agent => {
+
+    if(!currentWorkingAgents.includes(agent)){
+        unexpected.push(agent);
+    }
+
+});
 
     document.getElementById('foundAgents').innerHTML =
         found.map(x =>
             `<li class="working">${x}</li>`
         ).join('');
 
-    document.getElementById('missingAgents').innerHTML =
-        missing.map(x =>
-            `<li style="color:red;font-weight:bold">
-                ${x}
-             </li>`
-        ).join('');
+document.getElementById('missingAgents').innerHTML =
+    missing.map(x =>
+        `<li style="color:red;font-weight:bold">
+            ${x}
+         </li>`
+    ).join('');
+
+document.getElementById('unexpectedAgents').innerHTML =
+    unexpected.map(x =>
+        `<li style="
+            color:#ff9800;
+            font-weight:bold;
+        ">
+            ${x}
+        </li>`
+    ).join('');
+
 }
+
 </script>
 </body>
 </html>
