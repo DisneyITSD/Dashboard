@@ -30,7 +30,19 @@ href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 10
 
     display:flex;
     align-items:center;
-    gap:20px;
+
+    position:relative;
+}
+    .header-content{
+    flex:1;
+    display:flex;
+    align-items:center;
+    width:100%;
+}
+
+.title-section{
+    display:flex;
+    flex-direction:column;
 }
 
 .logo{
@@ -405,21 +417,56 @@ button:disabled{
     opacity:.5;
     cursor:not-allowed;
 }
+    .subtitle{
+    font-size:14px;
+    color:#d8e6f5;
+}
+    .magic-line{
+    position:absolute;
+    right:30px;
+
+    font-size:40px;
+    font-weight:700;
+    color:#ffd966;
+
+    white-space:nowrap;
+
+    text-shadow:0 1px 3px rgba(0,0,0,.35);
+}
 </style>
 </head>
 
 <body>
+
 <div class="header">
+
     <img src="logo.png" class="logo">
 
     <div>
-        <div class="title">DITSC L1 English - Phone</div>
+        <div class="header-content">
 
-        <div class="subtitle">Staffing Dashboard</div>
+    <div class="title-section">
+
+        <div class="title">
+            DITSC L1 English - Phone
+        </div>
+
+        <div class="subtitle">
+            Staffing Dashboard
+        </div>
+
     </div>
+
+    <div class="magic-line">
+        🏰 One Team. One Goal. Endless Magic.
+    </div>
+
+</div>
+    </div>
+
 </div>
 
-    <div class="live-bar">
+<div class="live-bar">
 
     <button id="realtimeBtn"
             onclick="toggleRealtime()">
