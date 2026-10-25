@@ -2536,6 +2536,15 @@ if (coRecord) {
 
     return;
 }
+        let todayShift = r[d];
+
+if(
+    !todayShift ||
+    todayShift.toString().trim().toUpperCase() === 'OFF'
+){
+    return;
+}
+        
         for(let br of [
     r['Break 1'],
     r['Break 2'],
