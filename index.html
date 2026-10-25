@@ -475,11 +475,7 @@ button:disabled{
 
     text-shadow:0 1px 3px rgba(0,0,0,.35);
 }
-    .break-panel,
-.lunch-panel{
-    display:flex;
-    flex-direction:column;
-}
+
     #upcomingBreakList,
 #upcomingLunchList{
     background:#f8fafc;
@@ -641,29 +637,31 @@ button:disabled{
     <ul id='workingList'></ul>
 </div>
 
-<div class='panel break-panel'>
+<div class='panel'>
 
     <ul id='breakList'></ul>
 
-    <div style="margin-top:auto;">
-        <hr style="margin:15px 0;">
-        <h4>⏭️ Upcoming Breaks</h4>
-        <ul id="upcomingBreakList"></ul>
-    </div>
+    <hr style="margin:15px 0;">
+
+    <h4>⏭️ Upcoming Breaks</h4>
+
+    <ul id="upcomingBreakList"></ul>
 
 </div>
 
-<div class='panel lunch-panel'>
+
+<div class='panel'>
 
     <ul id='lunchList'></ul>
 
-    <div style="margin-top:auto;">
-        <hr style="margin:15px 0;">
-        <h4>⏭️ Upcoming Lunches</h4>
-        <ul id="upcomingLunchList"></ul>
-    </div>
+    <hr style="margin:15px 0;">
+
+    <h4>⏭️ Upcoming Lunches</h4>
+
+    <ul id="upcomingLunchList"></ul>
 
 </div>
+
 
 <div class='panel'>
     <ul id='ptoList'></ul>
@@ -2672,20 +2670,52 @@ document.getElementById('workingList').innerHTML =
     ).join('');
 
      document.getElementById('breakList').innerHTML =
-    b.map(x =>
-        `<li class="break">
-            <strong>${x.name}</strong><br>
-            <small>${x.time}</small>
-        </li>`
-    ).join('');
 
-    document.getElementById('lunchList').innerHTML =
-    l.map(x =>
-        `<li class="lunch">
-            <strong>${x.name}</strong><br>
-            <small>${x.time}</small>
-        </li>`
-    ).join('');
+b.length
+
+? b.map(x => `
+<li class="break">
+    <strong>${x.name}</strong><br>
+    <small>${x.time}</small>
+</li>
+`).join('')
+
+: `
+<li style="
+    padding:12px;
+    background:#f8f9fa;
+    border-left:4px solid #ff9800;
+    color:#6c757d;
+    font-style:italic;
+    border-radius:6px;
+">
+    ☕ No ongoing breaks
+</li>
+`;
+
+   document.getElementById('lunchList').innerHTML =
+
+l.length
+
+? l.map(x => `
+<li class="lunch">
+    <strong>${x.name}</strong><br>
+    <small>${x.time}</small>
+</li>
+`).join('')
+
+: `
+<li style="
+    padding:12px;
+    background:#f8f9fa;
+    border-left:4px solid #dc3545;
+    color:#6c757d;
+    font-style:italic;
+    border-radius:6px;
+">
+    🍽️ No ongoing lunches
+</li>
+`;
 
 const groupedPTO = {};
 
@@ -2809,7 +2839,18 @@ upcomingBreaks.length
 </li>
 `).join('')
 
-: '<li>No upcoming breaks</li>';
+: `
+<li style="
+    padding:12px;
+    background:#f8f9fa;
+    border-left:4px solid #ff9800;
+    color:#6c757d;
+    font-style:italic;
+    border-radius:6px;
+">
+    ☕ No upcoming breaks
+</li>
+`;
 
     
 
@@ -2824,7 +2865,18 @@ upcomingLunches.length
 </li>
 `).join('')
 
-: '<li>No upcoming lunches</li>';
+: `
+<li style="
+    padding:12px;
+    background:#f8f9fa;
+    border-left:4px solid #dc3545;
+    color:#6c757d;
+    font-style:italic;
+    border-radius:6px;
+">
+    🍽️ No upcoming lunches
+</li>
+`;
 
 } // closes runLookup
 
