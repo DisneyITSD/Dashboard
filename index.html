@@ -537,6 +537,7 @@ button:disabled{
 .row-michael{
     background:#dcfce7;
 }
+
 #rosterTable .row-manilyn td{
     background:#fde2f3;
 }
@@ -604,6 +605,13 @@ input:disabled{
     color:#6c757d;
     cursor:not-allowed;
     opacity:.75;
+}
+    .roster-est td{
+    background:#eff6ff !important;
+}
+
+.roster-ph td{
+    background:#f0fdf4 !important;
 }
     
 </style>
@@ -946,12 +954,6 @@ input:disabled{
 </div>
 
 <div class="controls">
-
-    <select id="rosterTimezone"
-        onchange="buildRosterView()">
-        <option value="EST">EST</option>
-        <option value="PH">PH</option>
-    </select>
 
     <select id="rosterSupervisor"
                 onchange="buildRosterView()">
@@ -1386,12 +1388,9 @@ let search =
     ?.value
     .toUpperCase() || '';
 
-let sourceData =
-    document.getElementById('rosterTimezone')?.value === 'PH'
-    ? phData
-    : estData;
-
-let rows = sourceData.filter(r => {
+let rows = [...estData];
+    
+    rows = rows.filter(r => {
 
     let supervisorMatch =
         supervisor === 'All Supervisors' ||
@@ -1443,6 +1442,19 @@ let rows = sourceData.filter(r => {
 }
 console.log(rows[0]);
 rows.forEach(r=>{
+    let phRow = phData.find(x =>
+
+    (x.Name || '')
+        .trim()
+        .toUpperCase()
+
+    ===
+
+    (r.Name || '')
+        .trim()
+        .toUpperCase()
+
+);
 
 let supervisorClass = '';
 
@@ -1468,34 +1480,77 @@ else if(supervisorName.includes('MICHAEL'))
 
 html += `
 <tr class="${supervisorClass}">
+
     <td>${r.Name || ''}</td>
 
-    <td class="${(r['Monday'] || 'OFF') === 'OFF' ? 'roster-off' : ''}">
-        ${r['Monday'] || 'OFF'}
+
+    <td>
+    <div style="color:#003366;font-weight:bold;">
+        🇺🇸 ${r['Monday'] || 'OFF'}
+    </div>
+
+    <div style="color:#14532d;">
+        🇵🇭 ${phRow?.['Monday'] || 'OFF'}
+    </div>
+    </td>
+    <td>
+    <div style="color:#003366;font-weight:bold;">
+        🇺🇸 ${r['Tuesday'] || 'OFF'}
+    </div>
+
+    <div style="color:#14532d;">
+        🇵🇭 ${phRow?.['Tuesday'] || 'OFF'}
+    </div>
     </td>
 
-    <td class="${(r['Tuesday'] || 'OFF') === 'OFF' ? 'roster-off' : ''}">
-        ${r['Tuesday'] || 'OFF'}
+        <td>
+    <div style="color:#003366;font-weight:bold;">
+        🇺🇸 ${r['Wednesday'] || 'OFF'}
+    </div>
+
+    <div style="color:#14532d;">
+        🇵🇭 ${phRow?.['Wednesday'] || 'OFF'}
+    </div>
     </td>
 
-    <td class="${(r['Wednesday'] || 'OFF') === 'OFF' ? 'roster-off' : ''}">
-        ${r['Wednesday'] || 'OFF'}
+        <td>
+    <div style="color:#003366;font-weight:bold;">
+        🇺🇸 ${r['Thursday'] || 'OFF'}
+    </div>
+
+    <div style="color:#14532d;">
+        🇵🇭 ${phRow?.['Thursday'] || 'OFF'}
+    </div>
     </td>
 
-    <td class="${(r['Thursday'] || 'OFF') === 'OFF' ? 'roster-off' : ''}">
-        ${r['Thursday'] || 'OFF'}
+        <td>
+    <div style="color:#003366;font-weight:bold;">
+        🇺🇸 ${r['Friday'] || 'OFF'}
+    </div>
+
+    <div style="color:#14532d;">
+        🇵🇭 ${phRow?.['Friday'] || 'OFF'}
+    </div>
     </td>
 
-    <td class="${(r['Friday'] || 'OFF') === 'OFF' ? 'roster-off' : ''}">
-        ${r['Friday'] || 'OFF'}
+        <td>
+    <div style="color:#003366;font-weight:bold;">
+        🇺🇸 ${r['Saturday'] || 'OFF'}
+    </div>
+
+    <div style="color:#14532d;">
+        🇵🇭 ${phRow?.['Saturday'] || 'OFF'}
+    </div>
     </td>
 
-    <td class="${(r['Saturday'] || 'OFF') === 'OFF' ? 'roster-off' : ''}">
-        ${r['Saturday'] || 'OFF'}
-    </td>
+        <td>
+    <div style="color:#003366;font-weight:bold;">
+        🇺🇸 ${r['Sunday'] || 'OFF'}
+    </div>
 
-    <td class="${(r['Sunday'] || 'OFF') === 'OFF' ? 'roster-off' : ''}">
-        ${r['Sunday'] || 'OFF'}
+    <div style="color:#14532d;">
+        🇵🇭 ${phRow?.['Sunday'] || 'OFF'}
+    </div>
     </td>
 
     <td>${r.Supervisor || ''}</td>
