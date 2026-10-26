@@ -873,7 +873,7 @@ input:disabled{
          class="cards"
          style="margin-top:15px;margin-bottom:15px;">
     </div>
-
+    
     <div id="coverageTimelinePanel"
          class="panel">
     </div>
@@ -3588,29 +3588,92 @@ function buildDailyOverview(){
 
     let html = `
 
-
     <div class="card"
-         style="border-top:5px solid #0d6efd;">
+         onclick="showForecastAgents('scheduled')"
+         style="
+            border-top:5px solid #0d6efd;
+            cursor:pointer;
+         ">
         <h3>👥 Scheduled</h3>
         <div class="value">${scheduled}</div>
+
+        <div
+            id="forecast-scheduled"
+            style="
+                display:none;
+                margin-top:10px;
+                padding-top:10px;
+                border-top:1px solid #ddd;
+                font-size:12px;
+                text-align:left;
+            ">
+        </div>
     </div>
 
-        <div class="card"
-         style="border-top:5px solid #28a745;">
+    <div class="card"
+         onclick="showForecastAgents('present')"
+         style="
+            border-top:5px solid #28a745;
+            cursor:pointer;
+         ">
         <h3>✅ Present</h3>
         <div class="value">${expected}</div>
+
+        <div
+            id="forecast-present"
+            style="
+                display:none;
+                margin-top:10px;
+                padding-top:10px;
+                border-top:1px solid #ddd;
+                font-size:12px;
+                text-align:left;
+            ">
+        </div>
     </div>
 
     <div class="card"
-         style="border-top:5px solid #17a2b8;">
+         onclick="showForecastAgents('leave')"
+         style="
+            border-top:5px solid #17a2b8;
+            cursor:pointer;
+         ">
         <h3>📋 Leave</h3>
         <div class="value">${leave}</div>
+
+        <div
+            id="forecast-leave"
+            style="
+                display:none;
+                margin-top:10px;
+                padding-top:10px;
+                border-top:1px solid #ddd;
+                font-size:12px;
+                text-align:left;
+            ">
+        </div>
     </div>
 
     <div class="card"
-         style="border-top:5px solid #dc3545;">
+         onclick="showForecastAgents('absenteeism')"
+         style="
+            border-top:5px solid #dc3545;
+            cursor:pointer;
+         ">
         <h3>🚫 Absenteeism</h3>
         <div class="value">${absenteeism}</div>
+
+        <div
+            id="forecast-absenteeism"
+            style="
+                display:none;
+                margin-top:10px;
+                padding-top:10px;
+                border-top:1px solid #ddd;
+                font-size:12px;
+                text-align:left;
+            ">
+        </div>
     </div>
 
     <div class="card"
@@ -3624,7 +3687,6 @@ function buildDailyOverview(){
         <h3>📈 Highest Coverage</h3>
         <div id="highestCoverageCard">--</div>
     </div>
-
     `;
 
     document.getElementById(
@@ -3633,6 +3695,157 @@ function buildDailyOverview(){
 
     buildCoverageForecast();
 }
+
+    function showForecastAgents(type){
+
+    const section =
+        document.getElementById(
+            'forecast-' + type
+        );
+
+    if(section.style.display === 'block'){
+
+        section.style.display = 'none';
+        return;
+
+    }
+
+    const selectedDate =
+        document.getElementById(
+            'supervisorDate'
+        ).value;
+
+    const days = [
+        'Sunday',
+        'Monday',
+        'Tuesday',
+        'Wednesday',
+        'Thursday',
+        'Friday',
+        'Saturday'
+    ];
+
+    let day =
+        days[new Date(selectedDate).getDay()];
+
+    let grouped = {};
+
+    data.forEach(r => {
+
+        let supervisor =
+            r.Supervisor || 'Unassigned';
+
+        if(!grouped[supervisor]){
+            grouped[supervisor] = [];
+        }
+
+        let shift = r[day] || 'OFF';
+
+        let isLeave =
+            ptoList.some(x =>
+
+                (x.Name || '')
+                .trim()
+                .toUpperCase()
+
+                ===
+
+                (r.Name || '')
+                .trim()
+                .toUpperCase()
+
+                &&
+
+                getPTODate(x) === selectedDate
+
+            );
+
+        let isAbsent =
+            calledOffList.some(x =>
+
+                (x.Name || '')
+                .trim()
+                .toUpperCase()
+
+                ===
+
+                (r.Name || '')
+                .trim()
+                .toUpperCase()
+
+                &&
+
+                normalizeDate(
+                    x['EST Date']
+                ) === selectedDate
+
+            );
+
+        if(
+            type === 'scheduled' &&
+            shift.toUpperCase() !== 'OFF'
+        ){
+            grouped[supervisor].push(r.Name);
+        }
+
+        if(
+            type === 'present' &&
+            shift.toUpperCase() !== 'OFF' &&
+            !isLeave &&
+            !isAbsent
+        ){
+            grouped[supervisor].push(r.Name);
+        }
+
+        if(
+            type === 'leave' &&
+            isLeave
+        ){
+            grouped[supervisor].push(r.Name);
+        }
+
+        if(
+            type === 'absenteeism' &&
+            isAbsent
+        ){
+            grouped[supervisor].push(r.Name);
+        }
+
+    });
+
+    let html = '';
+
+    Object.entries(grouped)
+
+    .filter(([_,agents]) =>
+        agents.length > 0
+    )
+
+    .forEach(([supervisor,agents]) => {
+
+        html += `
+            <div style="margin-bottom:10px;">
+
+                <strong>
+                    👔 ${supervisor}
+                </strong>
+
+                <br><br>
+
+                ${agents.join('<br>')}
+
+                <hr>
+
+            </div>
+        `;
+
+    });
+
+    section.innerHTML = html;
+
+    section.style.display = 'block';
+}
+    
     function buildCoverageForecast(){
 
     let selectedDate =
