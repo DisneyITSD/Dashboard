@@ -9,7 +9,7 @@
 <link rel="icon"
 href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🖥️</text></svg>">
 
-<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>-
 
 <style>
 #scheduleTable td:nth-child(2){
@@ -445,8 +445,10 @@ th:hover::after{
 }
 
 button:disabled{
-    opacity:.5;
+    opacity:.6;
     cursor:not-allowed;
+    background:#b0b0b0 !important;
+    color:white;
 }
     .view-hint{
     margin:10px 0;
@@ -596,6 +598,13 @@ button:disabled{
     }
 
 }
+select:disabled,
+input:disabled{
+    background:#f1f3f5;
+    color:#6c757d;
+    cursor:not-allowed;
+    opacity:.75;
+}
     
 </style>
 </head>
@@ -651,6 +660,7 @@ button:disabled{
 <button class='tab-btn' onclick="showTab('ptoTab',this)">📋 Leaves</button>
 <button class='tab-btn' onclick="showTab('calledOffTab',this)">🚫 Absenteeism</button>
 <button class='tab-btn' onclick="showTab('missingTab',this)">🔎 Missing Agent Checker</button>
+<button class='tab-btn' onclick="showTab('scheduleComparisonTab',this)">📝 Schedule Comparison</button>
 </div>
 
 <div id='lookupTab'>
@@ -670,9 +680,11 @@ button:disabled{
         <option>All Supervisors</option>
     </select>
 
-    <button onclick="runLookup()">
-        Show Staffing
-    </button>
+    <button
+    id="showStaffingBtn"
+    onclick="runLookup()">
+    Show Staffing
+</button>
 
 </div>
 
@@ -1190,10 +1202,119 @@ button:disabled{
     </div>
 
 </div>
+    <div id="scheduleComparisonTab" style="display:none">
+
+    <div class="view-hint">
+        📝 Compare OLD versus NEW schedules.
+    </div>
+
+<div class="controls">
+
+    <select id="compareTimezone"
+        onchange="
+            loadCompareAgents();
+            buildScheduleComparison();
+        ">
+
+    <option value="EST">EST</option>
+    <option value="PH">PH</option>
+
+</select>
+
+    <select id="compareSupervisor"
+        onchange="
+            loadCompareAgents();
+            buildScheduleComparison();
+        ">
+
+    <option>All Supervisors</option>
+
+</select>
+
+<div class="agent-filter">
+
+    <button type="button"
+            id="agentDropdownBtn"
+            onclick="toggleAgentDropdown()">
+
+        👤 Select Agents (0)
+
+    </button>
+
+    <div id="agentDropdown"
+         style="
+            display:none;
+            max-height:300px;
+            overflow-y:auto;
+            border:1px solid #ddd;
+            background:white;
+            padding:10px;
+            border-radius:8px;
+            min-width:300px;
+         ">
+    </div>
+
+</div>
+
+    <label style="
+        display:flex;
+        align-items:center;
+        gap:6px;
+        font-weight:600;
+    ">
+        <input type="checkbox"
+               id="showUnchanged"
+               onchange="buildScheduleComparison()">
+        Show All Agents
+    </label>
+
+</div>
+
+<div style="
+    font-size:12px;
+    color:#666;
+    margin-top:5px;
+">
+    ☑ Select one or more agents from the dropdown.
+</div>
+
+    <div class="panel">
+
+        <div class="schedule-container">
+
+            <table id="scheduleComparisonTable">
+
+                <thead>
+                    <tr>
+                        <th>Agent</th>
+                        <th>Version</th>
+                        <th>Mon</th>
+                        <th>Tue</th>
+                        <th>Wed</th>
+                        <th>Thu</th>
+                        <th>Fri</th>
+                        <th>Sat</th>
+                        <th>Sun</th>
+                    </tr>
+                </thead>
+
+                <tbody></tbody>
+
+            </table>
+
+        </div>
+
+    </div>
+
+</div>
     
 <script>
 let estData = [];
 let phData = [];
+
+let estOldData = [];
+let phOldData = [];
+
 let data = [];
 let ptoList = [];
 let calledOffList = [];
@@ -1226,6 +1347,29 @@ function sortRoster(col){
     }
 
     buildRosterView();
+}
+
+function toggleAgentDropdown(){
+
+    let dropdown =
+        document.getElementById('agentDropdown');
+
+    dropdown.style.display =
+        dropdown.style.display === 'block'
+        ? 'none'
+        : 'block';
+}
+function updateAgentCount(){
+
+    let count =
+        document.querySelectorAll(
+            '.compareAgentCheck:checked'
+        ).length;
+
+    document.getElementById(
+        'agentDropdownBtn'
+    ).innerHTML =
+        `👤 Select Agents (${count})`;
 }
     
 function buildRosterView(){
@@ -1825,6 +1969,11 @@ function convertShiftRange(shift){
     'missingCheckBtn'
 ).disabled = false;
 
+        document.getElementById('selectedDate').disabled = true;
+        document.getElementById('interval').disabled = true;
+        document.getElementById('supervisor').disabled = true;
+        document.getElementById('showStaffingBtn').disabled = true;
+
         updateRealtime();
 
         realtimeTimer =
@@ -1849,6 +1998,11 @@ function convertShiftRange(shift){
         document.getElementById(
     'missingCheckBtn'
 ).disabled = true;
+
+        document.getElementById('selectedDate').disabled = false;
+        document.getElementById('interval').disabled = false;
+        document.getElementById('supervisor').disabled = false;
+        document.getElementById('showStaffingBtn').disabled = false;
 
         clearInterval(realtimeTimer);
         clearInterval(clockTimer);
@@ -2059,6 +2213,7 @@ document.getElementById('rosterTab').style.display = 'none';
 document.getElementById('ptoTab').style.display = 'none';
 document.getElementById('calledOffTab').style.display = 'none';
 document.getElementById('missingTab').style.display = 'none';
+document.getElementById('scheduleComparisonTab').style.display = 'none';
 
     document.getElementById(tabId).style.display = 'block';
 
@@ -2067,14 +2222,14 @@ document.getElementById('missingTab').style.display = 'none';
         .classList.add('active');
 }
     if(tabId === 'ptoTab'){
-        document.querySelectorAll('.tab-btn')[3]
-            .classList.add('active');
-    }
+    document.querySelectorAll('.tab-btn')[4]
+        .classList.add('active');
+}
 
-    if(tabId === 'calledOffTab'){
-        document.querySelectorAll('.tab-btn')[4]
-            .classList.add('active');
-    }
+if(tabId === 'calledOffTab'){
+    document.querySelectorAll('.tab-btn')[5]
+        .classList.add('active');
+}
 }
 
 function showTab(id, b) {
@@ -2086,6 +2241,7 @@ document.getElementById('rosterTab').style.display = 'none';
 document.getElementById('ptoTab').style.display = 'none';
 document.getElementById('calledOffTab').style.display = 'none';
 document.getElementById('missingTab').style.display = 'none';
+document.getElementById('scheduleComparisonTab').style.display = 'none';
 
     if(id === 'ptoTab'){
         buildPTOTable();
@@ -2109,6 +2265,12 @@ document.getElementById('missingTab').style.display = 'none';
 
     if(id === 'supervisorTab'){
     refreshSupervisorSummary();
+    }
+    if(id === 'scheduleComparisonTab'){
+
+    loadCompareAgents();
+
+    buildScheduleComparison();
 }
 }
 
@@ -2227,6 +2389,23 @@ phData = XLSX.utils.sheet_to_json(
     wb.Sheets['PH'],
     { defval:'' }
 );
+    if(wb.Sheets['EST_OLD']){
+
+    estOldData = XLSX.utils.sheet_to_json(
+        wb.Sheets['EST_OLD'],
+        { defval:'' }
+    );
+
+}
+
+if(wb.Sheets['PH_OLD']){
+
+    phOldData = XLSX.utils.sheet_to_json(
+        wb.Sheets['PH_OLD'],
+        { defval:'' }
+    );
+
+}
 
 data = estData; // default timezone
 
@@ -2285,6 +2464,7 @@ clockTimer =
 });
 
 function loadSup() {
+
     let su = [
         ...new Set(
             data.map(x => x.Supervisor).filter(Boolean)
@@ -2295,22 +2475,31 @@ function loadSup() {
         '<option>All Supervisors</option>' +
         su.map(x => `<option>${x}</option>`).join('');
 
-document.getElementById('supervisor').innerHTML = h;
+    document.getElementById('supervisor').innerHTML = h;
 
-document.getElementById('scheduleSupervisor').innerHTML = h;
+    document.getElementById('scheduleSupervisor').innerHTML = h;
 
-if(document.getElementById('ptoSupervisor')){
-    document.getElementById('ptoSupervisor').innerHTML = h;
+    if(document.getElementById('ptoSupervisor')){
+        document.getElementById('ptoSupervisor').innerHTML = h;
+    }
+
+    if(document.getElementById('calledOffSupervisor')){
+        document.getElementById('calledOffSupervisor').innerHTML = h;
+    }
+
+    if(document.getElementById('rosterSupervisor')){
+        document.getElementById('rosterSupervisor').innerHTML = h;
+    }
+
+    if(document.getElementById('compareSupervisor')){
+        document.getElementById('compareSupervisor').innerHTML = h;
+    }
+
+    if(document.getElementById('agentDropdown')){
+        loadCompareAgents();
+    }
+
 }
-
-if(document.getElementById('calledOffSupervisor')){
-    document.getElementById('calledOffSupervisor').innerHTML = h;
-}
-
-if(document.getElementById('rosterSupervisor')){
-    document.getElementById('rosterSupervisor').innerHTML = h;
-}
-    } //
 
 function tm(v) {
     if (v === '' || v == null) return null;
@@ -2779,7 +2968,6 @@ if (ptoRecord && isAgentOnPTO(ptoRecord, r)) {
 
     return;
 }
-
         
 let coRecord = calledOffList.find(x =>
 
@@ -3989,6 +4177,189 @@ document.getElementById('unexpectedAgents').innerHTML =
         </li>`
     ).join('');
 
+}
+function loadCompareAgents(){
+
+    let timezone =
+        document.getElementById('compareTimezone').value;
+
+    let supervisor =
+        document.getElementById('compareSupervisor').value;
+
+    let sourceData =
+        timezone === 'PH'
+        ? phData
+        : estData;
+
+    let rows = [...sourceData];
+
+    if(supervisor !== 'All Supervisors'){
+
+        rows = rows.filter(r =>
+            r.Supervisor === supervisor
+        );
+
+    }
+
+    let agents = [
+        ...new Set(
+            rows
+                .map(x => x.Name)
+                .filter(Boolean)
+        )
+    ].sort();
+
+    document.getElementById('agentDropdown').innerHTML =
+        agents.map(agent => `
+            <label style="
+                display:block;
+                padding:4px 0;
+            ">
+                <input
+                    type="checkbox"
+                    class="compareAgentCheck"
+                    value="${agent}"
+                    onchange="
+                        updateAgentCount();
+                        buildScheduleComparison();
+                    ">
+                ${agent}
+            </label>
+        `).join('');
+
+    updateAgentCount();
+}
+    
+    function buildScheduleComparison(){
+
+    let timezone =
+        document.getElementById('compareTimezone').value;
+
+    let newData =
+        timezone === 'PH'
+        ? phData
+        : estData;
+
+    let oldData =
+        timezone === 'PH'
+        ? phOldData
+        : estOldData;
+
+    let selectedSupervisor =
+        document.getElementById('compareSupervisor')
+        ?.value || 'All Supervisors';
+
+    let selectedAgents =
+    Array.from(
+        document.querySelectorAll(
+            '.compareAgentCheck:checked'
+        )
+    ).map(x => x.value);
+
+    let html = '';
+
+    newData.forEach(newRow => {
+
+        if(
+            selectedSupervisor !== 'All Supervisors' &&
+            newRow.Supervisor !== selectedSupervisor
+        ){
+            return;
+        }
+
+        if(
+            selectedAgents.length > 0 &&
+            !selectedAgents.includes(newRow.Name)
+        ){
+            return;
+        }
+
+        let oldRow = oldData.find(x =>
+            (x.Name || '').trim().toUpperCase() ===
+            (newRow.Name || '').trim().toUpperCase()
+        );
+
+        if(!oldRow){
+            return;
+        }
+
+        let days = [
+            'Monday',
+            'Tuesday',
+            'Wednesday',
+            'Thursday',
+            'Friday',
+            'Saturday',
+            'Sunday'
+        ];
+
+        let hasChanges = days.some(day =>
+    (oldRow[day] || '') !==
+    (newRow[day] || '')
+);
+
+let showAll =
+    document.getElementById('showUnchanged')?.checked;
+
+// If agents are selected, always show them
+if(selectedAgents.length > 0){
+    // continue
+}
+else if(!showAll && !hasChanges){
+    return;
+}
+
+        html += `
+        <tr style="background:#ffffff;">
+            <td rowspan="2">
+                <strong>${newRow.Name}</strong>
+            </td>
+
+            <td>OLD</td>
+
+            ${days.map(day => `
+                <td>${oldRow[day] || ''}</td>
+            `).join('')}
+        </tr>
+
+        <tr style="background:#d4edda;">
+
+            <td>NEW</td>
+
+            ${days.map(day => {
+
+                let changed =
+                    (oldRow[day] || '') !==
+                    (newRow[day] || '');
+
+                return `
+                    <td style="
+                        ${changed
+                            ? 'background:#ffcdd2;font-weight:bold;'
+                            : ''}
+                    ">
+                        ${newRow[day] || ''}
+                    </td>
+                `;
+
+            }).join('')}
+
+        </tr>
+        `;
+
+    });
+
+    document.querySelector(
+        '#scheduleComparisonTable tbody'
+    ).innerHTML =
+        html ||
+        `
+        <tr>
+            <td colspan="9">
+                No schedule differences found
+            </td>
+        </tr>
+        `;
 }
 
 </script>
