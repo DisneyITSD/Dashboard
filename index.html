@@ -831,7 +831,7 @@ input:disabled{
 <div id="supervisorTab" style="display:none">
 
     <div class="view-hint">
-        📈 Supervisor staffing breakdown.
+        📈 Full-day supervisor staffing summary including Scheduled, Leave, Absenteeism, OFF and Coverage.
     </div>
 
 <div class="controls">
@@ -839,9 +839,6 @@ input:disabled{
     <input
         type="date"
         id="supervisorDate">
-
-    <select id="supervisorTime">
-    </select>
 
     <button onclick="refreshSupervisorSummary()">
         Show Summary
@@ -2075,7 +2072,7 @@ function convertShiftRange(shift){
     }else{
 
         btn.innerHTML =
-            '🟢 LIVE MODE (EST)';
+            '🟢 Live Mode (EST)';
 
         document.getElementById(
     'missingCheckBtn'
@@ -2143,15 +2140,10 @@ document.getElementById('supervisorDate').value =
     const roundedMinutes =
     now.getMinutes() >= 30 ? '30' : '00';
 
-    document.getElementById('supervisorTime').value =
-        String(now.getHours()).padStart(2,'0')
-        + ':'
-        + roundedMinutes;
-
 
 runLookup();
 
-buildSupervisorCards();
+buildSupervisorAllDaySummary();
 
 buildScheduleView();
 
@@ -2364,8 +2356,8 @@ function refreshSupervisorSummary(){
     const selectedDate =
         document.getElementById('supervisorDate').value;
 
-    const selectedTime =
-        document.getElementById('supervisorTime').value;
+const selectedTime =
+    document.getElementById('interval').value;
 
     if(selectedDate){
 
@@ -2381,9 +2373,7 @@ function refreshSupervisorSummary(){
 
     }
 
-runLookup();
-
-buildSupervisorCards();
+buildSupervisorAllDaySummary();
 
 }
 
@@ -2394,10 +2384,7 @@ window.addEventListener('load', async () => {
 ).disabled = true;
 
     const interval =
-    document.getElementById('interval');
-
-    const supervisorInterval =
-    document.getElementById('supervisorTime');
+    document.getElementById('interval')
 
 
 for (let h = 0; h < 24; h++) {
@@ -2426,18 +2413,11 @@ for (let h = 0; h < 24; h++) {
         `<option value="${valueTime}">
             ${displayTime}
         </option>`;
-
-        supervisorInterval.innerHTML +=
-            `<option value="${valueTime}">
-                ${displayTime}
-            </option>`;
             }
 }
 
 interval.value = '09:00';
 
-    document.getElementById('supervisorTime').value =
-    interval.value;
     
     document.getElementById('selectedDate').value =
         new Date().toISOString().split('T')[0];
@@ -2537,7 +2517,7 @@ buildRosterView();
 buildScheduleView();
 
 runLookup();
-buildSupervisorCards();
+buildSupervisorAllDaySummary();
 refreshForecast();
 
 updateClock();
@@ -4159,7 +4139,7 @@ function openSupervisorDailyView(supervisorName){
         document.getElementById('supervisorDate').value;
 
     const summaryTime =
-        document.getElementById('supervisorTime').value;
+    document.getElementById('interval').value;
 
     showTab(
         'scheduleTab',
@@ -4908,7 +4888,250 @@ else if(!showAll && !hasChanges){
         </tr>
         `;
 }
+function buildSupervisorAllDaySummary(){
 
+    const selectedDate =
+        document.getElementById('supervisorDate').value;
+
+    const days = [
+        'Sunday',
+        'Monday',
+        'Tuesday',
+        'Wednesday',
+        'Thursday',
+        'Friday',
+        'Saturday'
+    ];
+
+    let day =
+        days[new Date(selectedDate).getDay()];
+
+    let supervisorData = {};
+
+    data.forEach(r=>{
+
+        let sup =
+            r.Supervisor || 'Unassigned';
+
+        if(!supervisorData[sup]){
+
+            supervisorData[sup] = {
+    teamSize:0,
+    scheduled:0,
+    leave:0,
+    absenteeism:0,
+    off:0,
+
+    scheduledAgents:[],
+    leaveAgents:[],
+    absenteeismAgents:[],
+    offAgents:[]
+};
+
+        }
+
+        supervisorData[sup].teamSize++;
+
+        let shift =
+            r[day] || 'OFF';
+
+        if(
+            shift.toUpperCase() === 'OFF'
+        ){
+            supervisorData[sup].off++;
+            supervisorData[sup].offAgents.push(r.Name);
+            return;
+        }
+
+        supervisorData[sup].scheduled++;
+        supervisorData[sup].scheduledAgents.push(r.Name);
+
+        let pto =
+            ptoList.find(x=>
+
+                (x.Name || '').trim().toUpperCase()
+
+                ===
+
+                (r.Name || '').trim().toUpperCase()
+
+                &&
+
+                getPTODate(x) === selectedDate
+            );
+
+        if(pto){
+
+            supervisorData[sup].leave++;
+            supervisorData[sup].leaveAgents.push(r.Name);
+            return;
+        }
+
+        let attendance =
+            calledOffList.find(x=>
+
+                (x.Name || '').trim().toUpperCase()
+
+                ===
+
+                (r.Name || '').trim().toUpperCase()
+
+                &&
+
+                normalizeDate(
+                    x['EST Date']
+                ) === selectedDate
+            );
+
+        if(attendance){
+
+            supervisorData[sup].absenteeism++;
+            supervisorData[sup].absenteeismAgents.push(r.Name);
+        }
+
+    });
+
+    let html = '';
+
+    Object.entries(supervisorData)
+
+.sort((a,b)=>{
+
+    let aIssue =
+        a[1].absenteeism > 0 ? 1 : 0;
+
+    let bIssue =
+        b[1].absenteeism > 0 ? 1 : 0;
+
+    if(aIssue !== bIssue){
+        return bIssue - aIssue;
+    }
+
+    return a[0].localeCompare(b[0]);
+
+})
+
+.forEach(([name,stats])=>{
+
+        let coverage =
+            stats.scheduled > 0
+            ? (
+                (
+                    (
+                        stats.scheduled
+                        -
+                        stats.leave
+                        -
+                        stats.absenteeism
+                    )
+                    /
+                    stats.scheduled
+                ) * 100
+              ).toFixed(1)
+            : 0;
+let cardColor =
+    stats.absenteeism > 0
+        ? '#dc3545'
+        : '#28a745';
+
+let backgroundColor =
+    stats.absenteeism > 0
+        ? '#fff5f5'
+        : '#ffffff';
+
+let statusIcon =
+    stats.absenteeism > 0
+        ? '🔴'
+        : '🟢';
+html += `
+<div class="card"
+     onclick="toggleSupervisorSummaryDetails('${name}')"
+     style="
+        border-top:6px solid ${cardColor};
+        background:${backgroundColor};
+     ">
+
+    <h3>${statusIcon} 👔 ${name}</h3>
+
+    <div>👥 Team Size: ${stats.teamSize}</div>
+
+    <div>📅 Scheduled: ${stats.scheduled}</div>
+
+    <div>📋 Leave: ${stats.leave}</div>
+
+    <div>🚫 Absenteeism: ${stats.absenteeism}</div>
+
+    <div>⚫ OFF: ${stats.off}</div>
+
+    <hr>
+
+    <div>
+        📊 Coverage:
+        <strong>${coverage}%</strong>
+    </div>
+
+    <!-- ADD THIS -->
+    <div
+        id="details-${name.replaceAll(' ','-')}"
+        style="
+            display:none;
+            margin-top:10px;
+            padding-top:10px;
+            border-top:1px solid #ddd;
+            font-size:12px;
+            text-align:left;
+        ">
+    </div>
+
+</div>
+`;
+    });
+
+    document.getElementById(
+        'supervisorSummaryCards'
+    ).innerHTML = html;
+    window.supervisorSummaryData =
+    supervisorData;
+}
+    function toggleSupervisorSummaryDetails(name){
+
+    const section =
+        document.getElementById(
+            'details-' +
+            name.replaceAll(' ','-')
+        );
+
+    if(section.style.display === 'block'){
+        section.style.display = 'none';
+        return;
+    }
+
+    const stats =
+        supervisorSummaryData[name];
+
+    section.innerHTML = `
+
+        <strong>📅 Scheduled (${stats.scheduledAgents.length})</strong><br>
+        ${stats.scheduledAgents.join('<br>')}
+
+        <hr>
+
+        <strong>📋 Leave (${stats.leaveAgents.length})</strong><br>
+        ${stats.leaveAgents.join('<br>')}
+
+        <hr>
+
+        <strong>🚫 Absenteeism (${stats.absenteeismAgents.length})</strong><br>
+        ${stats.absenteeismAgents.join('<br>')}
+
+        <hr>
+
+        <strong>⚫ OFF (${stats.offAgents.length})</strong><br>
+        ${stats.offAgents.join('<br>')}
+    `;
+
+    section.style.display = 'block';
+}
 </script>
 </body>
 </html>
