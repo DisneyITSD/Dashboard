@@ -4,12 +4,13 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 
-<title>DITSC L1 English - Phone Dashboard</title>
+<title> DITSC L1 English - Phone Dashboard </title>
 
 <link rel="icon"
 href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🖥️</text></svg>">
 
-<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>-
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
 
 <style>
 #scheduleTable td:nth-child(2){
@@ -621,19 +622,17 @@ input:disabled{
 
 <div class="header">
 
-    <img src="logo.png" class="logo">
+    <img src="logo.jpg" class="logo">
 
     <div>
         <div class="header-content">
 
     <div class="title-section">
 
-        <div class="title">
-            DITSC L1 English - Phone
+        <div class="title"> DITSC L1 English - Phone
         </div>
 
-        <div class="subtitle">
-            Staffing Dashboard
+        <div class="subtitle"> Staffing Dashboard
         </div>
 
     </div>
@@ -668,6 +667,7 @@ input:disabled{
 <button class='tab-btn' onclick="showTab('rosterTab',this)">📊 Weekly View</button>
 <button class='tab-btn' onclick="showTab('ptoTab',this)">📋 Leaves</button>
 <button class='tab-btn' onclick="showTab('calledOffTab',this)">🚫 Absenteeism</button>
+<button class='tab-btn' onclick="showTab('attendanceFormTab',this)">📝 Attendance Form</button>
 <button class='tab-btn' onclick="showTab('missingTab',this)">🔎 Missing Agent Checker</button>
 <button class='tab-btn' onclick="showTab('scheduleComparisonTab',this)">📝 Schedule Comparison</button>
 </div>
@@ -693,6 +693,14 @@ input:disabled{
     id="showStaffingBtn"
     onclick="runLookup()">
     Show Staffing
+</button>
+
+    <button
+onclick="refreshAttendanceData()"
+style="background:#0d6efd;">
+
+🔄 Refresh Attendance
+
 </button>
 
 </div>
@@ -1333,7 +1341,27 @@ input:disabled{
     </div>
 
 </div>
-    
+    <div id="attendanceFormTab" style="display:none">
+
+    <div class="view-hint">
+        📝 Submit attendance records directly from the dashboard.
+    </div>
+
+    <div class="panel">
+
+        <iframe
+            src="https://docs.google.com/forms/d/e/1FAIpQLSd1COw1EwPNhL-ggu5YNd49Cpvx5lDIBxqHkZnD8chrVAVKDA/viewform?embedded=true"
+            width="100%"
+            height="900"
+            frameborder="0"
+            marginheight="0"
+            marginwidth="0">
+
+        </iframe>
+
+    </div>
+
+</div>
 <script>
 let estData = [];
 let phData = [];
@@ -1359,6 +1387,28 @@ let ptoSortAsc = true;
 let attendanceSortColumn = '';
 let attendanceSortAsc = true;
 let realtimeMode = false;
+    const SHEET_ID = '13whMJorFWHuylEfFDwbB30yobPtQ_G3EfAZtv040kQE';
+
+const URLS = {
+
+    est:
+    `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv&gid=1744579532`,
+
+    ph:
+    `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv&gid=574343014`,
+
+    estOld:
+    `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv&gid=1905554286`,
+
+    phOld:
+    `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv&gid=2104243158`,
+
+    pto:
+    `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv&gid=1297010746`,
+
+    calledOff:
+    `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv&gid=2139820898`
+};
 let realtimeTimer = null;
 let clockTimer = null;
 
@@ -2230,7 +2280,28 @@ function refreshAllViews(){
     buildCalledOffTable();
 }
   
-    
+    async function refreshAttendanceData(){
+
+    calledOffList =
+        await loadSheet(URLS.calledOff);
+
+    runLookup();
+
+    buildCalledOffTable();
+
+    buildScheduleView();
+
+    buildSupervisorAllDaySummary();
+
+    buildDailyOverview();
+
+    buildCoverageTimeline();
+
+    alert(
+        "✅ Attendance data refreshed"
+    );
+
+}
 function formatExcelTime(v) {
     if (v === '' || v == null) return '';
 
@@ -2289,6 +2360,7 @@ document.getElementById('ptoTab').style.display = 'none';
 document.getElementById('calledOffTab').style.display = 'none';
 document.getElementById('missingTab').style.display = 'none';
 document.getElementById('scheduleComparisonTab').style.display = 'none';
+document.getElementById('attendanceFormTab').style.display = 'none';
 
     document.getElementById(tabId).style.display = 'block';
 
@@ -2318,6 +2390,7 @@ document.getElementById('ptoTab').style.display = 'none';
 document.getElementById('calledOffTab').style.display = 'none';
 document.getElementById('missingTab').style.display = 'none';
 document.getElementById('scheduleComparisonTab').style.display = 'none';
+document.getElementById('attendanceFormTab').style.display = 'none';
 
     if(id === 'ptoTab'){
         buildPTOTable();
@@ -2376,8 +2449,40 @@ const selectedTime =
 buildSupervisorAllDaySummary();
 
 }
+    
+async function loadSheet(url){
 
+    const response = await fetch(url);
+
+    const csv = await response.text();
+
+    const parsed = Papa.parse(csv,{
+        header:true,
+        skipEmptyLines:'greedy'
+    }).data;
+
+    return parsed.filter(row => {
+
+        const name =
+            (row.Name || '').toString().trim();
+
+        return (
+            name !== '' &&
+            name !== "'" &&
+            name !== '""'
+        );
+
+    });
+
+}
+    
+    
 window.addEventListener('load', async () => {
+
+    calledOffList = await loadSheet(URLS.calledOff);
+
+console.log("CALLED OFF", calledOffList);
+
     
     document.getElementById(
     'missingCheckBtn'
@@ -2489,20 +2594,15 @@ if (wb.Sheets['PTO']) {
     console.log("PTO COUNT:", ptoList.length);
     console.log("FIRST PTO:", ptoList[0]);
     
-// Called OFF Sheet
-let calledOffSheet =
-    wb.SheetNames.find(
-        x => x.toUpperCase().includes('CALLED')
-    );
+calledOffList =
+    await loadSheet(URLS.calledOff);
 
-if(calledOffSheet){
-    console.log("CALLED OFF SHEET FOUND");
+console.table(calledOffList);
 
-    calledOffList = XLSX.utils.sheet_to_json(
-        wb.Sheets[calledOffSheet],
-        { defval:'' }
-    );
-}
+console.log(
+    "CALLED OFF COUNT:",
+    calledOffList.length
+);
     console.log("CALLED OFF DATA", calledOffList);
     console.log("CALLED OFF ROWS", calledOffList.length);
     console.log("CALLED OFF COUNT:", calledOffList.length);
@@ -2527,6 +2627,30 @@ clockTimer =
         updateClock,
         1000
     );
+
+/* AUTO REFRESH ATTENDANCE */
+setInterval(async () => {
+
+    calledOffList =
+        await loadSheet(URLS.calledOff);
+
+    runLookup();
+
+    buildCalledOffTable();
+
+    buildScheduleView();
+
+    buildSupervisorAllDaySummary();
+
+    buildDailyOverview();
+
+    buildCoverageTimeline();
+
+    console.log(
+        "Attendance auto-refreshed"
+    );
+
+}, 60000);
 
 });
 
