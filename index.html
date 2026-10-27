@@ -2444,10 +2444,17 @@ function refreshAllViews(){
   
     async function refreshAttendanceData(){
 
+    ptoList =
+        await loadSheet(
+            'https://docs.google.com/spreadsheets/d/13whMJorFWHuylEfFDwbB30yobPtQ_G3EfAZtv040kQE/gviz/tq?tqx=out:csv&gid=1297010746'
+        );
+
     calledOffList =
         await loadSheet(URLS.calledOff);
 
     runLookup();
+
+    buildPTOTable();
 
     buildCalledOffTable();
 
@@ -2460,9 +2467,8 @@ function refreshAllViews(){
     buildCoverageTimeline();
 
     alert(
-        "✅ Attendance data refreshed"
+        "✅ PTO and Attendance refreshed"
     );
-
 }
 function formatExcelTime(v) {
     if (v === '' || v == null) return '';
@@ -2743,15 +2749,26 @@ if(wb.Sheets['PH_OLD']){
 
 data = estData; // default timezone
 
-// PTO Sheet
-if (wb.Sheets['PTO']) {
-    console.log("PTO SHEET FOUND");
+// PTO FROM GOOGLE SHEETS
 
-    ptoList = XLSX.utils.sheet_to_json(
-        wb.Sheets['PTO'],
-        { defval:'' }
-    );
-}
+const ptoResponse =
+await fetch(
+'https://docs.google.com/spreadsheets/d/13whMJorFWHuylEfFDwbB30yobPtQ_G3EfAZtv040kQE/gviz/tq?tqx=out:csv&gid=1297010746'
+);
+
+const ptoCsv =
+await ptoResponse.text();
+
+ptoList =
+Papa.parse(ptoCsv,{
+    header:true,
+    skipEmptyLines:true
+}).data;
+
+console.log(
+    "PTO LOADED",
+    ptoList
+);
     console.log("PTO DATA", ptoList);
     console.log("PTO COUNT:", ptoList.length);
     console.log("FIRST PTO:", ptoList[0]);
@@ -2793,10 +2810,17 @@ clockTimer =
 /* AUTO REFRESH ATTENDANCE */
 setInterval(async () => {
 
+    ptoList =
+        await loadSheet(
+            'https://docs.google.com/spreadsheets/d/13whMJorFWHuylEfFDwbB30yobPtQ_G3EfAZtv040kQE/gviz/tq?tqx=out:csv&gid=1297010746'
+        );
+
     calledOffList =
         await loadSheet(URLS.calledOff);
 
     runLookup();
+
+    buildPTOTable();
 
     buildCalledOffTable();
 
@@ -2809,7 +2833,7 @@ setInterval(async () => {
     buildCoverageTimeline();
 
     console.log(
-        "Attendance auto-refreshed"
+        "PTO + Attendance refreshed"
     );
 
 }, 60000);
