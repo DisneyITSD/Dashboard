@@ -1722,70 +1722,70 @@ html += `
 
     <td>
     <div style="color:#003366;font-weight:bold;">
-        🇺🇸 ${r['Monday'] || 'OFF'}
+        🇺🇸 ${convertShiftRange(r['Monday']) || 'OFF'}
     </div>
 
     <div style="color:#14532d;font-weight:bold;">
-        🇵🇭 ${phRow?.['Monday'] || 'OFF'}
+        🇵🇭 ${convertShiftRange(phRow?.['Monday']) || 'OFF'}
     </div>
     </td>
     <td>
     <div style="color:#003366;font-weight:bold;">
-        🇺🇸 ${r['Tuesday'] || 'OFF'}
+        🇺🇸 ${convertShiftRange(r['Tuesday']) || 'OFF'}
     </div>
 
     <div style="color:#14532d;font-weight:bold;">
-        🇵🇭 ${phRow?.['Tuesday'] || 'OFF'}
+        🇵🇭 ${convertShiftRange(phRow?.['Tuesday']) || 'OFF'}
     </div>
     </td>
 
         <td>
     <div style="color:#003366;font-weight:bold;">
-        🇺🇸 ${r['Wednesday'] || 'OFF'}
+        🇺🇸 ${convertShiftRange(r['Wednesday']) || 'OFF'}
     </div>
 
     <div style="color:#14532d;font-weight:bold;">
-        🇵🇭 ${phRow?.['Wednesday'] || 'OFF'}
+        🇵🇭 ${convertShiftRange(phRow?.['Wednesday']) || 'OFF'}
     </div>
     </td>
 
         <td>
     <div style="color:#003366;font-weight:bold;">
-        🇺🇸 ${r['Thursday'] || 'OFF'}
+        🇺🇸 ${convertShiftRange(r['Thursday']) || 'OFF'}
     </div>
 
     <div style="color:#14532d;font-weight:bold;">
-        🇵🇭 ${phRow?.['Thursday'] || 'OFF'}
+        🇵🇭 ${convertShiftRange(phRow?.['Thursday']) || 'OFF'}
     </div>
     </td>
 
         <td>
     <div style="color:#003366;font-weight:bold;">
-        🇺🇸 ${r['Friday'] || 'OFF'}
+        🇺🇸 ${convertShiftRange(r['Friday']) || 'OFF'}
     </div>
 
     <div style="color:#14532d;font-weight:bold;">
-        🇵🇭 ${phRow?.['Friday'] || 'OFF'}
+        🇵🇭 ${convertShiftRange(phRow?.['Friday']) || 'OFF'}
     </div>
     </td>
 
         <td>
     <div style="color:#003366;font-weight:bold;">
-        🇺🇸 ${r['Saturday'] || 'OFF'}
+        🇺🇸 ${convertShiftRange(r['Saturday']) || 'OFF'}
     </div>
 
     <div style="color:#14532d;font-weight:bold;">
-        🇵🇭 ${phRow?.['Saturday'] || 'OFF'}
+        🇵🇭 ${convertShiftRange(phRow?.['Saturday']) || 'OFF'}
     </div>
     </td>
 
         <td>
     <div style="color:#003366;font-weight:bold;">
-        🇺🇸 ${r['Sunday'] || 'OFF'}
+        🇺🇸 ${convertShiftRange(r['Sunday']) || 'OFF'}
     </div>
 
     <div style="color:#14532d;font-weight:bold;">
-        🇵🇭 ${phRow?.['Sunday'] || 'OFF'}
+        🇵🇭 ${convertShiftRange(phRow?.['Sunday']) || 'OFF'}
     </div>
     </td>
 
@@ -2224,24 +2224,21 @@ function convertShiftRange(shift){
 
     if(
         !shift ||
-        shift === 'OFF' ||
-        !shift.includes('-')
+        shift.toString().trim().toUpperCase() === 'OFF'
     ){
-        return shift;
+        return 'OFF';
     }
 
     let parts = shift.split('-');
 
-    let start =
-        convertTime(parts[0].trim());
-
-    let end =
-        convertTime(parts[1].trim());
+    if(parts.length !== 2){
+        return shift;
+    }
 
     return (
-        formatAMPM(start)
-        + ' - ' +
-        formatAMPM(end)
+        formatAMPM(parts[0].trim()) +
+        ' - ' +
+        formatAMPM(parts[1].trim())
     );
 }
     function toggleRealtime(){
@@ -5126,7 +5123,7 @@ let rowClass =
 
     <td>${status}</td>
 
-    <td>${shift}</td>
+    <td>${convertShiftRange(shift)}</td>
 
     <td>${formatTimeRange(r['Break 1'],15)}</td>
 
@@ -5368,8 +5365,8 @@ else if(!showAll && !hasChanges){
             <td>OLD</td>
 
             ${days.map(day => `
-                <td>${oldRow[day] || ''}</td>
-            `).join('')}
+    <td>${convertShiftRange(oldRow[day])}</td>
+`).join('')}
         </tr>
 
         <tr style="background:#d4edda;">
@@ -5388,7 +5385,7 @@ else if(!showAll && !hasChanges){
                             ? 'background:#ffcdd2;font-weight:bold;'
                             : ''}
                     ">
-                        ${newRow[day] || ''}
+                        ${convertShiftRange(newRow[day])}
                     </td>
                 `;
 
