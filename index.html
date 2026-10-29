@@ -1028,7 +1028,17 @@ style="background:#0d6efd;">
     </button>
 
 </div>
-
+<div id="summaryDateRange"
+     style="
+        margin-bottom:10px;
+        padding:10px 15px;
+        background:#eef6ff;
+        border-left:5px solid #1e88e5;
+        border-radius:8px;
+        font-weight:600;
+        color:#003366;
+     ">
+</div>
     <div class="cards" id="supervisorSummaryCards">
 </div>
 
@@ -5842,12 +5852,34 @@ function buildSupervisorAllDaySummary(){
 
     const selectedDate =
         document.getElementById('supervisorDate').value;
+
+    document.getElementById(
+    'summaryDateRange'
+).innerHTML =
+
+    `📅 Daily Summary:
+     ${new Date(selectedDate)
+        .toLocaleDateString(
+            'en-US',
+            {
+                month:'long',
+                day:'numeric',
+                year:'numeric'
+            }
+        )}`;
+    
     const summaryView =
     document.getElementById('summaryView').value;
 
     if(summaryView === 'mtd'){
 
     buildSupervisorMTDSummary();
+
+    return;
+}
+    if(summaryView === 'weekly'){
+
+    buildSupervisorWeeklySummary();
 
     return;
 }
@@ -6113,6 +6145,22 @@ html += `
             selectedDateObj.getMonth(),
             1
         );
+    document.getElementById(
+    'summaryDateRange'
+).innerHTML =
+
+    `📅 Month To Date:
+     ${monthStart.toLocaleDateString('en-US',{
+        month:'short',
+        day:'numeric',
+        year:'numeric'
+     })}
+     -
+     ${selectedDateObj.toLocaleDateString('en-US',{
+        month:'short',
+        day:'numeric',
+        year:'numeric'
+     })}`;
 
     let supervisorData = {};
 
@@ -6296,6 +6344,256 @@ ptoList.forEach(record => {
 
             <div>
                 🌴 Vacation Leave Days:
+                ${stats.leave}
+            </div>
+
+            <div>
+                🚫 Attendance Incidents:
+                ${stats.attendance}
+            </div>
+
+            <hr>
+
+            <div>
+                📊 Reliability Rate:
+                <strong>
+                    ${reliability}%
+                </strong>
+            </div>
+
+        </div>
+
+        `;
+
+    });
+                
+    document.getElementById(
+        'supervisorSummaryCards'
+    ).innerHTML = html;
+
+}
+
+function buildSupervisorWeeklySummary(){
+
+    const selectedDate =
+        document.getElementById(
+            'supervisorDate'
+        ).value;
+
+    const endDate =
+        new Date(selectedDate);
+
+    const startDate =
+        new Date(selectedDate);
+
+    startDate.setDate(
+        startDate.getDate() - 6
+    );
+
+    document.getElementById(
+    'summaryDateRange'
+).innerHTML =
+
+    `📅 Weekly Summary:
+     ${startDate.toLocaleDateString('en-US',{
+        month:'short',
+        day:'numeric',
+        year:'numeric'
+     })}
+     -
+     ${endDate.toLocaleDateString('en-US',{
+        month:'short',
+        day:'numeric',
+        year:'numeric'
+     })}`;
+
+    let supervisorData = {};
+
+    data.forEach(agent => {
+
+        let supervisor =
+            agent.Supervisor ||
+            'Unassigned';
+
+        if(!supervisorData[supervisor]){
+
+            supervisorData[supervisor] = {
+                teamSize:0,
+                leave:0,
+                attendance:0
+            };
+
+        }
+
+        supervisorData[supervisor].teamSize++;
+
+    });
+
+    /* VACATION DAYS */
+
+    ptoList.forEach(record => {
+
+        let ptoDate =
+            new Date(
+                getPTODate(record)
+            );
+
+        if(
+            ptoDate < startDate ||
+            ptoDate > endDate
+        ){
+            return;
+        }
+
+        let reason =
+            (record.Reason || '')
+            .toUpperCase();
+
+        if(
+            !reason.includes('VACATION')
+        ){
+            return;
+        }
+
+        let rosterAgent =
+            data.find(a =>
+
+                (a.Name || '')
+                .trim()
+                .toUpperCase()
+
+                ===
+
+                (record.Name || '')
+                .trim()
+                .toUpperCase()
+
+            );
+
+        if(!rosterAgent){
+            return;
+        }
+
+        let supervisor =
+            rosterAgent.Supervisor ||
+            'Unassigned';
+
+        supervisorData[supervisor].leave++;
+
+    });
+
+    /* ATTENDANCE INCIDENTS */
+
+    calledOffList.forEach(record => {
+
+        let attendanceDate =
+            new Date(
+                normalizeDate(
+                    record['EST Date']
+                )
+            );
+
+        if(
+            attendanceDate < startDate ||
+            attendanceDate > endDate
+        ){
+            return;
+        }
+
+        let rosterAgent =
+            data.find(a =>
+
+                (a.Name || '')
+                .trim()
+                .toUpperCase()
+
+                ===
+
+                (record.Name || '')
+                .trim()
+                .toUpperCase()
+
+            );
+
+        if(!rosterAgent){
+            return;
+        }
+
+        let supervisor =
+            rosterAgent.Supervisor ||
+            'Unassigned';
+
+        supervisorData[supervisor]
+            .attendance++;
+
+    });
+
+    let html = '';
+
+    Object.entries(supervisorData)
+
+    .sort((a,b) =>
+        a[0].localeCompare(b[0])
+    )
+
+    .forEach(([name,stats]) => {
+
+        let reliability =
+
+            stats.teamSize > 0
+
+            ?
+
+            (
+                (
+                    stats.teamSize
+                    -
+                    stats.attendance
+                )
+
+                /
+
+                stats.teamSize
+
+                *
+
+                100
+
+            ).toFixed(1)
+
+            :
+
+            100;
+
+        let cardColor =
+            stats.attendance > 0
+            ? '#dc3545'
+            : '#28a745';
+
+        let statusIcon =
+            stats.attendance > 0
+            ? '🔴'
+            : '🟢';
+
+        html += `
+
+        <div class="card"
+             style="
+                border-top:6px solid ${cardColor};
+             ">
+
+            <h3>
+                ${statusIcon}
+                👔 ${name}
+            </h3>
+
+            <div>
+                👥 Team Size:
+                ${stats.teamSize}
+            </div>
+
+            <div>
+                🌴 Vacation Days:
                 ${stats.leave}
             </div>
 
