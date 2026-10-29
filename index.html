@@ -1,6629 +1,1407 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-
-<title> DITSC L1 English - Phone Dashboard </title>
-
-<link rel="icon"
-href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🖥️</text></svg>">
-
+<title>DITSC L1 English - Phone Dashboard</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🖥️</text></svg>">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
 
 <style>
-#scheduleTable td:nth-child(2){
-    font-weight:700;
+:root{
+  --navy:#003366; --blue:#1e88e5; --green:#28a745; --orange:#ff9800;
+  --red:#dc3545; --teal:#17a2b8; --gray:#6c757d; --border:#ddd;
+  --shadow:0 2px 8px rgba(0,0,0,.08);
 }
-#liveClock{
-    font-size:16px;
-    font-weight:700;
-    color:#003366;
-    letter-spacing:0.5px;
-    background:#f8fafc;
-    border:1px solid #d0d7de;
-    border-radius:10px;
-    padding:10px 15px;
-}
-    .header{
-    background:#003366;
-    color:white;
-    padding:15px 25px;
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+body{font-family:"Segoe UI",Arial,sans-serif;background:#f4f6f9;margin:0;padding:15px}
 
-    display:flex;
-    align-items:center;
+/* ---------- Header ---------- */
+.header{background:var(--navy);color:#fff;padding:15px 25px;display:flex;align-items:center;gap:15px;position:relative}
+.logo{height:70px;width:auto;background:#fff;border-radius:8px;padding:4px}
+.title{font-size:32px;font-weight:bold}
+.subtitle{font-size:14px;color:#d8e6f5}
+.magic-line{position:absolute;right:30px;font-size:40px;font-weight:700;color:#ffd966;white-space:nowrap;text-shadow:0 1px 3px rgba(0,0,0,.35)}
 
-    position:relative;
-}
-    .header-content{
-    flex:1;
-    display:flex;
-    align-items:center;
-    width:100%;
-}
+/* ---------- Live bar / tabs ---------- */
+.live-bar{display:flex;align-items:center;gap:15px;margin:12px 0;padding:10px 15px;background:#fff;border-radius:12px;box-shadow:var(--shadow)}
+#realtimeBtn{background:var(--green);color:#fff;font-weight:700;border-radius:10px;padding:10px 18px}
+#realtimeBtn:hover{background:#218838}
+#liveClock{font-size:16px;font-weight:700;color:var(--navy);letter-spacing:.5px;background:#f8fafc;border:1px solid #d0d7de;border-radius:10px;padding:10px 15px}
 
-.title-section{
-    display:flex;
-    flex-direction:column;
-}
+.tabs{margin:15px 0;display:flex;flex-wrap:wrap;gap:6px}
+.tab-btn{background:#0a4a8a;color:#fff;font-weight:600;transition:all .2s ease}
+.tab-btn:hover{background:#1675d1;transform:translateY(-2px)}
+.tab-btn.active{background:var(--blue);box-shadow:0 3px 8px rgba(30,136,229,.35)}
+.dropdown{position:relative;display:inline-block}
+.dropdown-content{display:none;position:absolute;background:#fff;min-width:220px;box-shadow:0 6px 15px rgba(0,0,0,.15);border-radius:10px;z-index:999;overflow:hidden}
+.dropdown-content a{display:block;padding:12px 15px;text-decoration:none;color:var(--navy);font-weight:600}
+.dropdown-content a:hover{background:#eef6ff}
+.dropdown:hover .dropdown-content{display:block}
 
-.logo{
-    height:70px;
-    width:auto;
-    background:white;
-    border-radius:8px;
-    padding:4px;
-}
+/* ---------- Form controls ---------- */
+select,input,button{padding:9px 18px;border:none;border-radius:8px;cursor:pointer;transition:.2s;font:inherit}
+select,input:not([type=checkbox]){border:1px solid #d0d7de}
+select{min-width:140px}
+select:focus{outline:none;border-color:var(--blue)}
+#agentSearch{width:250px}
+button:disabled{opacity:.6;cursor:not-allowed;background:#b0b0b0!important;color:#fff}
+select:disabled,input:disabled{background:#f1f3f5;color:var(--gray);cursor:not-allowed;opacity:.75}
+.controls{display:flex;align-items:center;gap:10px;flex-wrap:wrap;padding:10px 15px;background:#fff;border-radius:12px;box-shadow:var(--shadow)}
+.controls button{background:var(--green);color:#fff;font-weight:600}
+.controls button:hover{background:#218838;transform:translateY(-2px)}
+.controls button.blue{background:#0d6efd}
 
-.title{
-    font-size:32px;
-    font-weight:bold;
-}
+/* ---------- Cards / panels ---------- */
+.view-hint{margin:10px 0;padding:12px 15px;background:#eef6ff;border-left:5px solid var(--blue);color:var(--navy);font-size:14px;font-weight:500;border-radius:8px}
+.note{padding:12px;border-radius:8px;margin-bottom:12px;line-height:1.5;border-left:5px solid}
+.note.red{background:#fdeaea;border-color:var(--red);color:#7a1c24}
+.note.amber{background:#fff8e1;border-color:var(--orange);color:#663c00}
+.note.green{background:#eefbf3;border-color:var(--green);color:#14532d}
+.note h3{margin:0 0 8px}
+.cards,.panels{display:flex;flex-wrap:wrap;gap:10px;margin-top:10px;align-items:stretch}
+.card,.panel{background:#fff;border-radius:10px;box-shadow:0 2px 5px rgba(0,0,0,.1)}
+.card{flex:1 1 180px;padding:10px;min-height:95px;text-align:center;cursor:pointer;border-radius:14px;border-top:5px solid var(--c,#0d6efd);transition:all .2s ease}
+.card h3{margin:4px 0;font-size:22px;font-weight:700}
+.card:hover{transform:translateY(-6px) scale(1.02);box-shadow:0 10px 22px rgba(0,0,0,.18)}
+.card:active{transform:scale(.98)}
+.card .details{margin-top:10px;padding-top:10px;border-top:1px solid var(--border);font-size:12px;text-align:left}
+.value{font-size:40px;font-weight:700;color:var(--navy)}
+.stat .value{color:var(--c)}
+.pct{font-size:14px;font-weight:700;color:var(--c);margin-top:-5px}
+.panel{padding:8px;flex:1 1 300px;min-height:350px}
+.panel.compact{min-height:unset;padding:12px}
+.panel h3{margin:0 0 12px;padding-bottom:8px;border-bottom:1px solid #dcdcdc;color:var(--navy);font-size:18px;font-weight:700}
+.panel ul{list-style:none;padding:0;margin:0}
+.panel li{padding:4px 0}
+.panel hr{margin:15px 0}
+.two-col{display:flex;gap:10px;margin-bottom:15px}
+.two-col .panel{flex:1}
+.upcoming{background:#f8fafc;border-radius:8px;padding:8px}
+.empty{padding:12px;background:#f8f9fa;border-left:4px solid var(--c);color:var(--gray);font-style:italic;border-radius:6px}
+.group{margin-bottom:12px;padding:12px;border-left:5px solid var(--c);background:#fff;border-radius:8px}
+.group .group-title{font-weight:bold;color:var(--c);margin-bottom:8px}
+.range-banner{margin-bottom:10px;padding:10px 15px;background:#eef6ff;border-left:5px solid var(--blue);border-radius:8px;font-weight:600;color:var(--navy)}
+.daily-summary{display:flex;flex-wrap:wrap;gap:10px;margin:12px 0}
+.summary-box{background:#fff;border-radius:10px;padding:10px 16px;box-shadow:0 2px 6px rgba(0,0,0,.08);font-weight:700;color:var(--navy)}
+.summary-box span{font-size:20px;margin-left:5px}
 
-.subtitle{
-    font-size:14px;
-    color:#d8e6f5;
-}
-body{
-    font-family:Segoe UI,Arial;
-    background:#f4f6f9;
-    margin:0;
-    padding:15px;
-    box-sizing:border-box;
-}
-.roster-shift{
-    background:transparent;
-}
+.quick-actions{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px;padding-top:12px;border-top:1px solid #eee}
+.quick-actions button{background:#0a4a8a;color:#fff;font-weight:600;font-size:13px;padding:8px 14px}
+.quick-actions button:hover{background:#1675d1;transform:translateY(-2px)}
 
-.roster-off{
-    background:#d9d9d9; /* gray */
-    font-weight:bold;
-}
-*{
-    box-sizing:border-box;
-}
+/* ---------- Status styles ---------- */
+.working{border-left:4px solid var(--green);padding-left:8px}
+.break{border-left:4px solid var(--orange);padding-left:8px;background:#fff3cd;color:#b26a00}
+.lunch{border-left:4px solid var(--red);padding-left:8px;background:#f8d7da;color:#a71d2a}
 
-    #agentSearch{
-    width:250px;
-    margin-left:0;
-}
-.schedule-container{
-    height:calc(100vh - 220px);
-    overflow-y:auto;
-    overflow-x:auto;
-    border:1px solid #ddd;
-    border-radius:8px;
-}
-
-.schedule-container thead th{
-    position: sticky;
-    top: 0;
-    z-index: 10;
-    background: #003366;
-    color: white;
-}
-
-    .controls{
-    position: sticky;
-    top: 0;
-    z-index: 20;
-    background: white;
-}
-
-.tabs{margin:15px 0}
-
-.tab-btn{
-    background:#0a4a8a;
-    color:white;
-    border:none;
-    padding:10px 18px;
-    border-radius:8px;
-    cursor:pointer;
-    margin-right:6px;
-    transition:all .2s ease;
-    font-weight:600;
-}
-
-.tab-btn:hover{
-    background:#1675d1;
-    transform:translateY(-2px);
-}
-
-.active{
-    background:#1e88e5;
-    box-shadow:0 3px 8px rgba(30,136,229,.35);
-}
-
-.active
-{background:#0b74de}
-
-.controls,
-
-.panel,
-
-.card
-{background:#fff;
-border-radius:10px;
-box-shadow:0 2px 5px rgba(0,0,0,.1)}
-
-.controls
-{padding:15px}
-
-.cards,
-.panels{
-    display:flex;
-    flex-wrap:wrap;
-    gap:10px;
-    margin-top:10px;
-    align-items:stretch;
-}
-
-
-.card{
-    flex:1 1 180px;
-    padding:10px;
-    min-height:95px;
-    text-align:center;
-    transition:all .2s ease;
-    cursor:pointer;
-    border-radius:14px;
-}
-
-.card h3{
-    margin:4px 0;
-    font-size:22px;
-    font-weight:700;
-}
-
-.card:hover{
-    transform:translateY(-6px) scale(1.02);
-    box-shadow:0 10px 22px rgba(0,0,0,.18);
-}
-
-.card:active{
-    transform:scale(.98);
-}
-
-.card:nth-child(1){
-    border-top:5px solid #28a745;
-}
-
-.card:nth-child(2){
-    border-top:5px solid #ff9800;
-}
-
-.card:nth-child(3){
-    border-top:5px solid #dc3545;
-}
-
-.card:nth-child(4){
-    border-top:5px solid #17a2b8;
-}
-
-.card:nth-child(5){
-    border-top:5px solid #6c757d;
-}
-
-.value{
-    font-size:40px;
-    font-weight:700;
-    color:#003366;
-}
-    #workingCount{
-    color:#28a745;
-}
-
-#breakCount{
-    color:#ff9800;
-}
-
-#lunchCount{
-    color:#dc3545;
-}
-
-#ptoCount{
-    color:#17a2b8;
-}
-
-#calledOffCount{
-    color:#dc3545;
-}
-
-.controls{
-    padding:10px 15px;
-    background:white;
-    border-radius:12px;
-    box-shadow:0 2px 8px rgba(0,0,0,.08);
-}
-.panel{
-    padding:8px;
-    flex:1 1 300px;
-    min-height:350px;
-}
-
-.panel ul{
-    list-style:none;
-    padding-left:0;
-    margin:0;
-}
-
-.panel li{
-    padding:4px 0;
-}
-    .panel h3{
-    margin:0 0 12px 0;
-    padding-bottom:8px;
-
-    border-bottom:1px solid #dcdcdc;
-
-    color:#003366;
-
-    font-size:18px;
-    font-weight:700;
-}
-
-select{
-    border:1px solid #d0d7de;
-    border-radius:8px;
-    min-width:140px;
-}
-
-select:focus{
-    outline:none;
-    border-color:#1e88e5;
-}
-
-input[type="date"]{
-    border:1px solid #d0d7de;
-    border-radius:8px;
-}
-
-    
-select,
-input,
-button{
-    padding:9px 18px;
-    border:none;
-    border-radius:8px;
-    cursor:pointer;
-    transition:.2s;
-}
-.controls button{
-    background:#28a745;
-    color:white;
-    font-weight:600;
-}
-
-.controls button:hover{
-    background:#218838;
-    transform:translateY(-2px);
-}
-table{width:100%;
-border-collapse:collapse}
-
-#upcomingBreakTable,
-#upcomingLunchTable{
-    width:100%;
-    border-collapse:collapse;
-}
-
-#upcomingBreakTable th,
-#upcomingLunchTable th{
-    background:#003366;
-    color:white;
-}
-
-#upcomingBreakTable td,
-#upcomingLunchTable td{
-    padding:10px;
-    border:1px solid #ddd;
-}    
-    
-th,
-td{border:1px solid #ddd;
-padding:8px}
-
-th{background:#003366;
-color:#fff;
-cursor:pointer}
-
+/* ---------- Tables ---------- */
+table{width:100%;border-collapse:collapse}
+th,td{border:1px solid var(--border);padding:8px}
+th{background:var(--navy);color:#fff;cursor:pointer;transition:.2s}
 th:hover{background:#0b4a86}
+th::after{content:' ↕';opacity:0;font-size:11px;transition:.2s}
+th:hover::after{opacity:1}
+.schedule-container{height:calc(100vh - 220px);overflow:auto;border:1px solid var(--border);border-radius:8px}
+.schedule-container thead th{position:sticky;top:0;z-index:10}
+tbody tr:hover{filter:brightness(.96);transition:.2s}
+tr.row-manilyn td{background:#fde2f3}
+tr.row-anmheca td{background:#fce7f3}
+tr.row-remmo td{background:#f3e8ff}
+tr.row-christopher td{background:#dbeafe}
+tr.row-michael td{background:#dcfce7}
+tr.roster-off td{background:#e0e0e0;color:#666;font-style:italic}
+.us{color:var(--navy);font-weight:bold}
+.ph{color:#14532d;font-weight:bold}
+#scheduleTable td:nth-child(2){font-weight:700}
 
-.off{background:#ffe5e5}
-
-.working{
-    border-left:4px solid #28a745;
-    padding-left:8px;
-}
-
-.break{
-    border-left:4px solid #ff9800;
-    padding-left:8px;
-    background:#fff3cd;
-    color:#b26a00;
-}
-
-.lunch{
-    border-left:4px solid #dc3545;
-    padding-left:8px;
-    background:#f8d7da;
-    color:#a71d2a;
-}
-    .controls{
-    display:flex;
-    align-items:center;
-    gap:10px;
-    flex-wrap:wrap;
-}
-    .roster-off{
-    background:#d9d9d9;
-}
-.title{
-    font-size:32px;
-    font-weight:bold;
-}
-
-.subtitle{
-    font-size:14px;
-    color:#d8e6f5;
-}
-.logo{
-    height:70px;
-    width:auto;
-    background:white;
-    border-radius:8px;
-    padding:4px;
-}
-    .live-bar{
-    display:flex;
-    align-items:center;
-    gap:15px;
-    margin-bottom:12px;
-    padding:10px 15px;
-    background:white;
-    border-radius:12px;
-    box-shadow:0 2px 8px rgba(0,0,0,.08);
-}
-
-#realtimeBtn{
-    background:#28a745;
-    color:white;
-    font-weight:700;
-    border:none;
-    border-radius:10px;
-    padding:10px 18px;
-    cursor:pointer;
-}
-
-#realtimeBtn:hover{
-    background:#218838;
-}
-
-.timezone-row{
-    display:flex;
-    align-items:center;
-    gap:10px;
-    margin-bottom:15px;
-    padding:10px 15px;
-    background:white;
-    border-radius:12px;
-    box-shadow:0 2px 8px rgba(0,0,0,.08);
-}
-    th{
-    background:#003366;
-    color:white;
-    cursor:pointer;
-    position:relative;
-    transition:.2s;
-}
-
-th::after{
-    content:' ↕';
-    opacity:0;
-    font-size:11px;
-    transition:.2s;
-}
-
-th:hover::after{
-    opacity:1;
-}
-
-#staffingPercent,
-#breakPercent,
-#lunchPercent,
-#ptoPercent,
-#attendancePercent{
-    font-size:14px;
-    font-weight:700;
-    margin-top:-5px;
-}
-
-#timezoneHint{
-    font-size:13px;
-    color:#6c757d;
-    font-style:italic;
-}
-
-button:disabled{
-    opacity:.6;
-    cursor:not-allowed;
-    background:#b0b0b0 !important;
-    color:white;
-}
-    .view-hint{
-    margin:10px 0;
-
-    padding:12px 15px;
-
-    background:#eef6ff;
-
-    border-left:5px solid #1e88e5;
-
-    color:#003366;
-
-    font-size:14px;
-    font-weight:500;
-
-    border-radius:8px;
-
-    box-shadow:0 2px 5px rgba(0,0,0,.05);
-}
-    .subtitle{
-    font-size:14px;
-    color:#d8e6f5;
-}
-    .magic-line{
-    position:absolute;
-    right:30px;
-
-    font-size:40px;
-    font-weight:700;
-    color:#ffd966;
-
-    white-space:nowrap;
-
-    text-shadow:0 1px 3px rgba(0,0,0,.35);
-}
-    @media (max-width: 768px){
-
-    .header{
-        flex-direction:column;
-        align-items:flex-start;
-    }
-
-    .header-content{
-        flex-direction:column;
-        align-items:flex-start;
-    }
-
-    .magic-line{
-
-        position:static;
-
-        margin-top:8px;
-
-        font-size:18px;
-
-        white-space:normal;
-
-        text-align:left;
-    }
-
-}
-
-    #upcomingBreakList,
-#upcomingLunchList{
-    background:#f8fafc;
-    border-radius:8px;
-    padding:8px;
-}
-
-.row-manilyn{
-    background:#fde2f3;
-}
-
-.row-anmheca{
-    background:#fce7f3;
-}
-
-.row-remmo{
-    background:#f3e8ff;
-}
-
-.row-christopher{
-    background:#dbeafe;
-}
-
-.row-michael{
-    background:#dcfce7;
-}
-
-#rosterTable .row-manilyn td{
-    background:#fde2f3;
-}
-
-#rosterTable .row-anmheca td{
-    background:#fce7f3;
-}
-
-#rosterTable .row-remmo td{
-    background:#f3e8ff;
-}
-
-#rosterTable .row-christopher td{
-    background:#dbeafe;
-}
-
-#rosterTable .row-michael td{
-    background:#dcfce7;
-}
-
-#rosterTable td.roster-off{
-    background:#d9d9d9 !important;
-    font-weight:bold;
-}
-#scheduleTable tr.roster-off td{
-    background:#e0e0e0 !important;
-    color:#666;
-    font-style:italic;
-}
-#scheduleTable tbody tr:hover{
-    filter:brightness(0.96);
-    transition:.2s;
-}
-    .daily-summary{
-    display:flex;
-    flex-wrap:wrap;
-    gap:10px;
-    margin-bottom:12px;
-}
-
-.summary-box{
-    background:white;
-    border-radius:10px;
-    padding:10px 16px;
-    box-shadow:0 2px 6px rgba(0,0,0,.08);
-    font-weight:700;
-    color:#003366;
-}
-
-.summary-box span{
-    font-size:20px;
-    margin-left:5px;
-}
+/* ---------- Misc ---------- */
+.missing-layout{align-items:flex-start;gap:20px}
+.missing-input{display:flex;flex-direction:column;width:500px}
+.missing-results{display:flex;gap:20px;flex:1}
+.missing-results .panel{flex:1}
+#agentPaste{width:100%;height:180px;resize:vertical;border:1px solid var(--border);border-radius:8px;padding:10px}
+#agentDropdown{max-height:300px;overflow-y:auto;border:1px solid var(--border);background:#fff;padding:10px;border-radius:8px;min-width:300px}
+iframe{border:none;border-radius:10px}
 
 @media(max-width:768px){
-
-    .daily-summary{
-        flex-direction:column;
-    }
-
+  .header{flex-direction:column;align-items:flex-start}
+  .magic-line{position:static;font-size:18px;white-space:normal}
+  .daily-summary{flex-direction:column}
 }
-select:disabled,
-input:disabled{
-    background:#f1f3f5;
-    color:#6c757d;
-    cursor:not-allowed;
-    opacity:.75;
-}
-    .roster-est td{
-    background:#eff6ff !important;
-}
-
-.roster-ph td{
-    background:#f0fdf4 !important;
-}
-.dropdown{
-    position:relative;
-    display:inline-block;
-}
-
-.dropdown-content{
-    display:none;
-    position:absolute;
-    background:white;
-    min-width:220px;
-    box-shadow:0 6px 15px rgba(0,0,0,.15);
-    border-radius:10px;
-    z-index:999;
-    overflow:hidden;
-}
-
-.dropdown-content a{
-    display:block;
-    padding:12px 15px;
-    text-decoration:none;
-    color:#003366;
-    font-weight:600;
-}
-
-.dropdown-content a:hover{
-    background:#eef6ff;
-}
-
-.dropdown:hover .dropdown-content{
-    display:block;
-}
-    
 </style>
 </head>
 
 <body>
 
 <div class="header">
-
-    <img src="logo.png" class="logo">
-
-    <div>
-        <div class="header-content">
-
-    <div class="title-section">
-
-        <div class="title"> DITSC L1 English - Phone
-        </div>
-
-        <div class="subtitle"> Staffing Dashboard
-        </div>
-
-    </div>
-
-    <div class="magic-line">
-        🏰 One Team. One Goal. Endless Magic.
-    </div>
-
-</div>
-    </div>
-
+  <img src="logo.png" class="logo" alt="Logo">
+  <div>
+    <div class="title">DITSC L1 English - Phone</div>
+    <div class="subtitle">Staffing Dashboard</div>
+  </div>
+  <div class="magic-line">🏰 One Team. One Goal. Endless Magic.</div>
 </div>
 
 <div class="live-bar">
-
-    <button id="realtimeBtn"
-            onclick="toggleRealtime()">
-        🟢 Live Mode (EST)
-    </button>
-
-    <span id="liveClock">
-        --:--:--
-    </span>
-
+  <button id="realtimeBtn" onclick="toggleRealtime()">🟢 Live Mode (EST)</button>
+  <span id="liveClock">--:--:--</span>
+  <span id="lastUpdated" style="font-size:12px;color:#6c757d"></span>
 </div>
+<div id="statusBanner" class="note red" hidden></div>
 
-<div class="tabs">
+<nav class="tabs">
+  <div class="dropdown">
+    <button class="tab-btn active" data-tab="lookupTab">🔍 Dashboard</button>
+  </div>
 
-    <div class="dropdown">
-        <button class="tab-btn active"
-                onclick="showTab('lookupTab',this)">
-            🔍 Dashboard
-        </button>
-    </div>
-
-    <div class="dropdown">
-
-    <button class="tab-btn">
-        📊 Reports ▼
-    </button>
-
+  <div class="dropdown">
+    <button class="tab-btn">📊 Reports ▼</button>
     <div class="dropdown-content">
-
-        <a href="#"
-           onclick="showTab('supervisorTab',this)">
-           👔 Supervisor Summary
-        </a>
-
-        <a href="#"
-           onclick="showTab('forecastTab',this)">
-           📈 Coverage Forecast
-        </a>
-
+      <a href="#" data-tab="supervisorTab">👔 Supervisor Summary</a>
+      <a href="#" data-tab="forecastTab">📈 Coverage Forecast</a>
     </div>
+  </div>
 
-</div>
-
-    <div class="dropdown">
-
-        <button class="tab-btn">
-            📅 Schedule ▼
-        </button>
-
-        <div class="dropdown-content">
-
-            <a href="#"
-               onclick="showTab('scheduleTab',this)">
-               📅 Daily View
-            </a>
-
-            <a href="#"
-               onclick="showTab('rosterTab',this)">
-               📊 Weekly View
-            </a>
-
-            <a href="#"
-               onclick="showTab('scheduleComparisonTab',this)">
-               📝 Schedule Comparison
-            </a>
-
-        </div>
-
+  <div class="dropdown">
+    <button class="tab-btn">📅 Schedule ▼</button>
+    <div class="dropdown-content">
+      <a href="#" data-tab="scheduleTab">📅 Daily View</a>
+      <a href="#" data-tab="rosterTab">📊 Weekly View</a>
+      <a href="#" data-tab="scheduleComparisonTab">📝 Schedule Comparison</a>
     </div>
+  </div>
 
-    <div class="dropdown">
-
-        <button class="tab-btn">
-            👥 Attendance ▼
-        </button>
-
-        <div class="dropdown-content">
-
-            <a href="#"
-               onclick="showTab('ptoTab',this)">
-               📋 Leaves
-            </a>
-
-            <a href="#"
-               onclick="showTab('calledOffTab',this)">
-               🚫 Absenteeism
-            </a>
-
-            <a href="#"
-               onclick="showTab('attendanceFormTab',this)">
-               📝 Attendance Form
-            </a>
-
-            <a href="#"
-               onclick="showTab('ptoFormTab',this)">
-               🏖️ PTO Update Form
-            </a>
-
-        </div>
-
+  <div class="dropdown">
+    <button class="tab-btn">👥 Attendance ▼</button>
+    <div class="dropdown-content">
+      <a href="#" data-tab="ptoTab">📋 Leaves</a>
+      <a href="#" data-tab="calledOffTab">🚫 Absenteeism</a>
+      <a href="#" data-tab="attendanceFormTab">📝 Attendance Form</a>
+      <a href="#" data-tab="ptoFormTab">🏖️ PTO Update Form</a>
     </div>
+  </div>
 
-    <div class="dropdown">
-
-        <button class="tab-btn">
-            🛠 Tools ▼
-        </button>
-
-        <div class="dropdown-content">
-
-            <a href="#"
-               onclick="showTab('missingTab',this)">
-               🔎 Missing Agent Checker
-            </a>
-
-        </div>
-
+  <div class="dropdown">
+    <button class="tab-btn">🛠 Tools ▼</button>
+    <div class="dropdown-content">
+      <a href="#" data-tab="missingTab">🔎 Missing Agent Checker</a>
     </div>
+  </div>
+</nav>
 
-</div>
+<!-- ============ DASHBOARD ============ -->
+<section class="tab-panel" id="lookupTab">
+  <div class="view-hint">🔍 Real-time staffing overview including Working, Break, Lunch, Leave, and Attendance Alerts.</div>
 
-<div id='lookupTab'>
+  <div class="two-col">
+    <div class="panel compact"><h3>🚨 Action Center</h3><div id="actionCenterContent"></div>
+      <div class="quick-actions">
+        <button onclick="showTab('attendanceFormTab')">📝 Attendance Form</button>
+        <button onclick="showTab('ptoFormTab')">🏖️ PTO Update Form</button>
+        <button onclick="showTab('missingTab')">🔎 Missing Agent Checker</button>
+      </div></div>
+    <div class="panel compact"><h3>📊 Attendance Trends</h3><div id="attendanceTrendContent"></div></div>
+  </div>
 
-<div class="view-hint">
-    🔍 Real-time staffing overview including Working, Break, Lunch, Leave, and Attendance Alerts.
-</div>
-
-<div style="
-    display:flex;
-    gap:10px;
-    margin-bottom:15px;
-">
-
-    <div class="panel" style="
-        flex:1;
-        min-height:unset;
-        padding:12px;
-    ">
-        <h3>🚨 Action Center</h3>
-        <div id="actionCenterContent"></div>
-    </div>
-
-    <div class="panel" style="
-        flex:1;
-        min-height:unset;
-        padding:12px;
-    ">
-        <h3>📊 Attendance Trends</h3>
-        <div id="attendanceTrendContent"></div>
-    </div>
-
-</div>
-
-<!-- Agent Lookup Controls -->
-<div class='controls'>
-
+  <div class="controls">
     <input type="date" id="selectedDate">
-
     <select id="interval"></select>
+    <select id="supervisor"><option>All Supervisors</option></select>
+    <button id="showStaffingBtn" onclick="runLookup()">Show Staffing</button>
+    <button class="blue" onclick="refreshAttendanceData(true)">🔄 Refresh Attendance</button>
+  </div>
 
-    <select id="supervisor">
-        <option>All Supervisors</option>
-    </select>
+  <div class="cards">
+    <div class="card stat" style="--c:#28a745" data-tab="scheduleTab"><h3>🧑‍💻 Working</h3><div class="value" id="workingCount">0</div><div class="pct" id="staffingPercent">0%</div></div>
+    <div class="card stat" style="--c:#ff9800" data-tab="scheduleTab"><h3>☕ Break</h3><div class="value" id="breakCount">0</div><div class="pct" id="breakPercent">0%</div></div>
+    <div class="card stat" style="--c:#dc3545" data-tab="scheduleTab"><h3>🍽️ Lunch</h3><div class="value" id="lunchCount">0</div><div class="pct" id="lunchPercent">0%</div></div>
+    <div class="card stat" style="--c:#17a2b8" data-tab="ptoTab"><h3>🗓️ Leave</h3><div class="value" id="ptoCount">0</div><div class="pct" id="ptoPercent">0%</div></div>
+    <div class="card stat" style="--c:#dc3545" data-tab="calledOffTab"><h3>🚫 Absenteeism</h3><div class="value" id="calledOffCount">0</div><div class="pct" id="attendancePercent">0%</div></div>
+  </div>
 
-    <button
-    id="showStaffingBtn"
-    onclick="runLookup()">
-    Show Staffing
-</button>
-
-    <button
-onclick="refreshAttendanceData()"
-style="background:#0d6efd;">
-
-🔄 Refresh Attendance
-
-</button>
-
-</div>
-    
-<div class='cards'>
-<div class='card'
-     onclick="goToTab('scheduleTab')">
-
-<h3>🧑‍💻 Working</h3>
-
-<div class='value' id='workingCount'>0</div>
-
-<div id="staffingPercent"
-     style="
-        font-size:14px;
-        font-weight:700;
-        color:#28a745;
-        margin-top:-5px;
-     ">
-    0%
-</div>
-
-</div>
-
-<div class='card'
-     onclick="goToTab('scheduleTab')">
-
-<h3>☕ Break</h3>
-
-<div class='value' id='breakCount'>0</div>
-
-<div id="breakPercent">
-    0%
-</div>
-</div>
-
-<div class='card'
-     onclick="goToTab('scheduleTab')">
-
-<h3>🍽️ Lunch</h3>
-
-<div class='value' id='lunchCount'>0</div>
-
-<div id="lunchPercent">
-    0%
-</div>
-
-</div>
-    
-<div class='card'
-     onclick="goToTab('ptoTab')">
-
-<h3>🗓️ Leave</h3>
-
-<div class='value' id='ptoCount'>0</div>
-
-<div id="ptoPercent">
-    0%
-</div>
-</div>
-
-<div class='card'
-     onclick="goToTab('calledOffTab')">
-
-<h3>🚫 Absenteeism</h3>
-
-<div class='value' id='calledOffCount'>0</div>
-
-<div id="attendancePercent">
-    0%
-</div>
-
-</div>
-</div>
-
-<div class="panels">
-
-<div class='panel'>
-
-    <h3>🧑‍💻 Working</h3>
-
-    <ul id='workingList'></ul>
-
-</div>
-
-<div class='panel'>
-
-    <h3>☕ Break</h3>
-
-    <ul id='breakList'></ul>
-
-    <hr style="margin:15px 0;">
-
-    <h4>⏭️ Upcoming Breaks</h4>
-
-    <ul id="upcomingBreakList"></ul>
-
-</div>
-
-
-<div class='panel'>
-
-    <h3>🍽️ Lunch</h3>
-
-    <ul id='lunchList'></ul>
-
-    <hr style="margin:15px 0;">
-
-    <h4>⏭️ Upcoming Lunches</h4>
-
-    <ul id="upcomingLunchList"></ul>
-
-</div>
-
-
-<div class='panel'>
-
-    <h3>📋 Leave</h3>
-
-    <ul id='ptoList'></ul>
-
-    <hr style="margin:15px 0;">
-
-    <h4>📅 Upcoming PTO (Next 2 Days)</h4>
-
-    <ul id="upcomingPTOList"></ul>
-
-</div>
-
-<div class='panel'>
-
-    <h3>🚫 Absenteeism</h3>
-
-    <ul id='calledOffList'></ul>
-
-</div>
-
-</div>
-
-</div>
-
-<div id="supervisorTab" style="display:none">
-
-    <div class="view-hint">
-        📈 Full-day supervisor staffing summary including Scheduled, Leave, Absenteeism, OFF and Coverage.
+  <div class="panels">
+    <div class="panel"><h3>🧑‍💻 Working</h3><ul id="workingList"></ul></div>
+    <div class="panel">
+      <h3>☕ Break</h3><ul id="breakList"></ul>
+      <hr><h4>⏭️ Upcoming Breaks</h4><ul id="upcomingBreakList" class="upcoming"></ul>
     </div>
+    <div class="panel">
+      <h3>🍽️ Lunch</h3><ul id="lunchList"></ul>
+      <hr><h4>⏭️ Upcoming Lunches</h4><ul id="upcomingLunchList" class="upcoming"></ul>
+    </div>
+    <div class="panel">
+      <h3>📋 Leave</h3><div id="ptoList"></div>
+      </div>
+    <div class="panel"><h3>🚫 Absenteeism</h3><div id="calledOffList"></div></div>
+  </div>
+</section>
 
-<div class="controls">
-
-    <input
-        type="date"
-        id="supervisorDate">
-
+<!-- ============ SUPERVISOR SUMMARY ============ -->
+<section class="tab-panel" id="supervisorTab" hidden>
+  <div class="view-hint">📈 Full-day supervisor staffing summary including Scheduled, Leave, Absenteeism, OFF and Coverage.</div>
+  <div class="controls">
+    <input type="date" id="supervisorDate">
     <select id="summaryView">
-
-        <option value="daily">
-            Daily
-        </option>
-
-        <option value="mtd">
-            Month To Date
-        </option>
-
-        <option value="weekly">
-            Weekly
-        </option>
-
+      <option value="daily">Daily</option>
+      <option value="mtd">Month To Date</option>
+      <option value="weekly">Weekly</option>
     </select>
+    <button onclick="buildSupervisorSummary()">Show Summary</button>
+  </div>
+  <div id="summaryDateRange" class="range-banner" style="margin-top:10px"></div>
+  <div class="cards" id="supervisorSummaryCards"></div>
+</section>
 
-    <button onclick="refreshSupervisorSummary()">
-        Show Summary
-    </button>
+<!-- ============ COVERAGE FORECAST ============ -->
+<section class="tab-panel" id="forecastTab" hidden>
+  <div class="view-hint">📊 Full-day staffing coverage forecast.</div>
+  <div class="controls">
+    <input type="date" id="forecastDate">
+    <button onclick="refreshForecast()">Show Forecast</button>
+  </div>
+  <div id="dailyOverviewCards" class="cards" style="margin:15px 0"></div>
+  <div id="coverageTimelinePanel" class="panel"></div>
+</section>
 
-</div>
-<div id="summaryDateRange"
-     style="
-        margin-bottom:10px;
-        padding:10px 15px;
-        background:#eef6ff;
-        border-left:5px solid #1e88e5;
-        border-radius:8px;
-        font-weight:600;
-        color:#003366;
-     ">
-</div>
-    <div class="cards" id="supervisorSummaryCards">
-</div>
-
-</div>
-
-<div id="forecastTab" style="display:none">
-
-    <div class="view-hint">
-        📊 Full-day staffing coverage forecast.
-    </div>
-
-    <div class="controls">
-
-        <input
-            type="date"
-            id="forecastDate">
-
-        <button onclick="refreshForecast()">
-            Show Forecast
-        </button>
-
-    </div>
-
-    <div id="dailyOverviewCards"
-         class="cards"
-         style="margin-top:15px;margin-bottom:15px;">
-    </div>
-    
-    <div id="coverageTimelinePanel"
-         class="panel">
-    </div>
-
-</div>
-    
-<div id='scheduleTab' style='display:none'>
-
-<div class="view-hint">
-    📅 Review agent shifts, breaks, lunches, and supervisor assignments for the selected date.
-</div>
-
-<div class='controls'>
-
-    <select id="scheduleTimezone"
-        onchange="buildScheduleView()">
-        <option value="EST">EST</option>
-        <option value="PH">PH</option>
+<!-- ============ DAILY SCHEDULE ============ -->
+<section class="tab-panel" id="scheduleTab" hidden>
+  <div class="view-hint">📅 Review agent shifts, breaks, lunches, and supervisor assignments for the selected date.</div>
+  <div class="controls">
+    <select id="scheduleTimezone" onchange="buildScheduleView()">
+      <option value="EST">EST</option>
+      <option value="PH">PH</option>
     </select>
+    <input type="date" id="scheduleDate" onchange="buildScheduleView()">
+    <select id="scheduleSupervisor" onchange="buildScheduleView()"><option>All Supervisors</option></select>
+    <button onclick="showAllAgents()">👥 Show All Agents</button>
+    <input type="text" id="agentSearch" placeholder="🔍 Search Agent..." onkeyup="buildScheduleView()">
+  </div>
 
-    <input
-    type="date"
-    id="scheduleDate"
-    onchange="buildScheduleView()">
+  <div class="daily-summary">
+    <div class="summary-box">✅ Working: <span id="dvWorking">0</span></div>
+    <div class="summary-box">📋 Leaves: <span id="dvPTO">0</span></div>
+    <div class="summary-box">🚫 Absenteeism: <span id="dvAttendance">0</span></div>
+    <div class="summary-box">⚫ OFF: <span id="dvOff">0</span></div>
+  </div>
 
-
-    <select
-    id='scheduleSupervisor'
-    onchange="buildScheduleView()">
-        <option>All Supervisors</option>
-    </select>
-
-    <button onclick="
-    document.getElementById('scheduleSupervisor').value='All Supervisors';
-    document.getElementById('agentSearch').value='';
-    buildScheduleView();
-        ">
-    👥 Show All Agents
-</button>
-
-    <input
-        type="text"
-        id="agentSearch"
-        placeholder="🔍 Search Agent..."
-        onkeyup="buildScheduleView()">
-</div>
-    <div id="dailySummaryBar" class="daily-summary">
-
-    <div class="summary-box">
-        ✅ Working:
-        <span id="dvWorking">0</span>
-    </div>
-
-    <div class="summary-box">
-        📋 Leaves:
-        <span id="dvPTO">0</span>
-    </div>
-
-    <div class="summary-box">
-        🚫 Absenteeism:
-        <span id="dvAttendance">0</span>
-    </div>
-
-    <div class="summary-box">
-        ⚫ OFF:
-        <span id="dvOff">0</span>
-    </div>
-
-</div>
-    
-<div class='panel'>
-
+  <div class="panel">
     <div class="schedule-container">
-
-        <table id='scheduleTable'>
-           <thead>
-    <tr>
-        <th onclick="sortSchedule('Name')">👤 Agent</th>
-        <th onclick="sortSchedule('STATUS')">🚦 Status</th>
-        <th onclick="sortSchedule('SHIFT')">🕒 Shift</th>
-        <th onclick="sortSchedule('Break 1')">☕ B1</th>
-        <th onclick="sortSchedule('Lunch')">🍽️ Lunch</th>
-        <th onclick="sortSchedule('Break 2')">☕ B2</th>
-        <th onclick="sortSchedule('Break 3')">☕ B3</th>
-        <th onclick="sortSchedule('Supervisor')">🧑‍💼 Supervisor</th>
-    </tr>
-</thead>
-
-            <tbody></tbody>
-         </table>
-
+      <table id="scheduleTable">
+        <thead>
+          <tr>
+            <th onclick="sortBy('schedule','Name')">👤 Agent</th>
+            <th onclick="sortBy('schedule','STATUS')">🚦 Status</th>
+            <th onclick="sortBy('schedule','SHIFT')">🕒 Shift</th>
+            <th onclick="sortBy('schedule','Break 1')">☕ B1</th>
+            <th onclick="sortBy('schedule','Lunch')">🍽️ Lunch</th>
+            <th onclick="sortBy('schedule','Break 2')">☕ B2</th>
+            <th onclick="sortBy('schedule','Break 3')">☕ B3</th>
+            <th onclick="sortBy('schedule','Supervisor')">🧑‍💼 Supervisor</th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
     </div>
+  </div>
+</section>
 
-</div>
-
-</div>
-
-<div id="rosterTab" style="display:none">
-
-<div class="view-hint">
-    📊 Displays weekly schedules, shift patterns, break times, and days off for all agents.
-</div>
-
-<div class="controls">
-
-    <select id="rosterSupervisor"
-                onchange="buildRosterView()">
-            <option>All Supervisors</option>
-        </select>
-
-        <input
-            type="text"
-            id="rosterSearch"
-            placeholder="🔍 Search Agent..."
-            onkeyup="buildRosterView()">
-
+<!-- ============ WEEKLY ROSTER ============ -->
+<section class="tab-panel" id="rosterTab" hidden>
+  <div class="view-hint">📊 Displays weekly schedules, shift patterns, break times, and days off for all agents.</div>
+  <div class="controls">
+    <select id="rosterSupervisor" onchange="buildRosterView()"><option>All Supervisors</option></select>
+    <input type="text" id="rosterSearch" placeholder="🔍 Search Agent..." onkeyup="buildRosterView()">
+  </div>
+  <div class="panel">
+    <div class="schedule-container">
+      <table id="rosterTable">
+        <thead>
+          <tr>
+            <th onclick="sortBy('roster','Name')">👤 Agent</th>
+            <th onclick="sortBy('roster','Monday')">📆 Mon</th>
+            <th onclick="sortBy('roster','Tuesday')">📆 Tue</th>
+            <th onclick="sortBy('roster','Wednesday')">📆 Wed</th>
+            <th onclick="sortBy('roster','Thursday')">📆 Thu</th>
+            <th onclick="sortBy('roster','Friday')">📆 Fri</th>
+            <th onclick="sortBy('roster','Saturday')">📆 Sat</th>
+            <th onclick="sortBy('roster','Sunday')">📆 Sun</th>
+            <th onclick="sortBy('roster','Supervisor')">🧑‍💼 Supervisor</th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
     </div>
+  </div>
+</section>
 
-    <div class="panel">
-
-        <div class="schedule-container">
-
-            <table id="rosterTable">
-
-<thead>
-<tr>
-<th onclick="sortRoster('Name')">👤 Agent</th>
-<th onclick="sortRoster('Monday')">📆 Mon</th>
-<th onclick="sortRoster('Tuesday')">📆 Tue</th>
-<th onclick="sortRoster('Wednesday')">📆 Wed</th>
-<th onclick="sortRoster('Thursday')">📆 Thu</th>
-<th onclick="sortRoster('Friday')">📆 Fri</th>
-<th onclick="sortRoster('Saturday')">📆 Sat</th>
-<th onclick="sortRoster('Sunday')">📆 Sun</th>
-<th onclick="sortRoster('Supervisor')">🧑‍💼 Supervisor</th>
-</tr>
-</thead>
-
-<tbody></tbody>
-
-</table>
-
-</div>
-</div>
-</div>
-</div>
-<div id="ptoTab" style="display:none">
-
-<div class="view-hint">
-    🏖️ Displays approved leave requests, dates, reasons, and supervisor assignments.
-</div>
-
-<div class="controls">
-
-    <input type="date"
-       id="ptoDate"
-       onchange="buildPTOTable()">
-
-    <select id="ptoSupervisor">
-        <option>All Supervisors</option>
+<!-- ============ SCHEDULE COMPARISON ============ -->
+<section class="tab-panel" id="scheduleComparisonTab" hidden>
+  <div class="view-hint">📝 Compare OLD versus NEW schedules.</div>
+  <div class="controls">
+    <select id="compareTimezone" onchange="loadCompareAgents();buildScheduleComparison()">
+      <option value="EST">EST</option>
+      <option value="PH">PH</option>
     </select>
+    <select id="compareSupervisor" onchange="loadCompareAgents();buildScheduleComparison()"><option>All Supervisors</option></select>
 
-    <button onclick="buildPTOTable()">
-        Show PTO
-    </button>
-        <button onclick="clearPTODate()">
-        All Dates
-    </button>
-
-    <input
-        type="text"
-        id="ptoSearch"
-        placeholder="🔍 Search Agent..."
-        onkeyup="buildPTOTable()">
-
-</div>
-
-    <div class="panel">
-
-        <h2>PTO List</h2>
-
-        <div class="schedule-container">
-    <table id="ptoTable">
-            <thead>
-                <tr>
-                    <th>Name</th>
-                    <th>Date</th>
-                </tr>
-            </thead>
-
-            <tbody></tbody>
-
-        </table></div>
-
+    <div class="agent-filter">
+      <button type="button" id="agentDropdownBtn" onclick="$('agentDropdown').hidden=!$('agentDropdown').hidden">👤 Select Agents (0)</button>
+      <div id="agentDropdown" hidden></div>
     </div>
 
-</div>
-
-<div id="calledOffTab" style="display:none">
-
-<div class="view-hint">
-    🚦 Displays attendance exceptions including call-outs, NCNS, late arrivals, and early departures.
-</div>
-
-<div class="controls">
-
-    <input type="date"
-       id="calledOffDate"
-       onchange="buildCalledOffTable()">
-
-    <select id="calledOffSupervisor">
-        <option>All Supervisors</option>
-    </select>
-
-    <button onclick="buildCalledOffTable()">
-        Show Called Off
-    </button>
-       <button onclick="clearCalledOffDate()">
-    All Dates
-    </button>
-
-    <input
-        type="text"
-        id="calledOffSearch"
-        placeholder="🔍 Search Agent..."
-        onkeyup="buildCalledOffTable()">
-
-</div>
-
-    <div class="panel">
-
-        <h2>Called Off List</h2>
-
-        <table id="calledOffTable">
-            <thead>
-                <tr>
-                    <th>Name</th>
-                    <th>Date</th>
-                </tr>
-            </thead>
-
-            <tbody></tbody>
-
-        </table>
-
-    </div>
-
-</div>
-
-<div id="missingTab" style="display:none">
-
-<div class="view-hint">
-    🔎 Compare CXone activity against your Dashboard Working list to identify missing or unexpected agents.
-</div>
-
-<!-- Note -->
-<div style="
-    width:100%;
-    flex-basis:100%;
-    background:#fdeaea;
-    border-left:5px solid #dc3545;
-    color:#7a1c24;
-    padding:12px;
-    border-radius:8px;
-    margin-bottom:15px;
-">
-        ⚠️ <strong>Live Mode (EST) is required.</strong>
-        The Missing Agent Checker compares your pasted list against the current Dashboard Working list.
-        Enable Live Mode before running the check.
-    </div>
-
-    <div class="controls" style="
-        display:flex;
-        align-items:flex-start;
-        gap:20px;
-    ">
-
-        <!-- Left Side -->
-        <div style="
-            display:flex;
-            flex-direction:column;
-            width:500px;
-        ">
-            <div style="
-    background:#fff8e1;
-    border-left:5px solid #ff9800;
-    color:#663c00;
-    padding:12px;
-    border-radius:8px;
-    margin-bottom:10px;
-    font-size:13px;
-    line-height:1.5;
-">
-    📋 <strong>Instructions:</strong>
-    Copy the list of Agents in the <strong>Agent Name</strong> column from the
-    <a href="https://na1.nice-incontact.com/apps/#/dashboard/wrapper/dashboards"
-       target="_blank"
-       style="color:#0b74de;font-weight:600;">
-       CXone Dashboard
-    </a>
-    and paste it below.
-</div>
-            <textarea
-                id="agentPaste"
-                placeholder="Paste agents here, one per line..."
-                style="
-                    width:100%;
-                    height:180px;
-                    resize:vertical;
-                    border:1px solid #ddd;
-                    border-radius:8px;
-                    padding:10px;
-                "
-            ></textarea>
-
-            <button
-                id="missingCheckBtn"
-                onclick="checkMissingAgents()"
-                style="
-                    margin-top:10px;
-                    width:220px;
-                ">
-                Check Missing Agents
-            </button>
-
-        </div>
-
-        <!-- Right Side -->
-        <div style="
-            display:flex;
-            gap:20px;
-            flex:1;
-        ">
-
-            <div class="panel" style="flex:1;">
-                <h2>✅ Found Working</h2>
-                <ul id="foundAgents"></ul>
-            </div>
-
-            <div class="panel" style="flex:1;">
-                <h2>❌ Missing Agents</h2>
-                <ul id="missingAgents"></ul>
-            </div>
-
-            <div class="panel" style="flex:1;">
-                <h2>⚠️ Unexpected Agents</h2>
-                <ul id="unexpectedAgents"></ul>
-                </div>
-
-        </div>
-
-    </div>
-
-</div>
-    <div id="scheduleComparisonTab" style="display:none">
-
-    <div class="view-hint">
-        📝 Compare OLD versus NEW schedules.
-    </div>
-
-<div class="controls">
-
-    <select id="compareTimezone"
-        onchange="
-            loadCompareAgents();
-            buildScheduleComparison();
-        ">
-
-    <option value="EST">EST</option>
-    <option value="PH">PH</option>
-
-</select>
-
-    <select id="compareSupervisor"
-        onchange="
-            loadCompareAgents();
-            buildScheduleComparison();
-        ">
-
-    <option>All Supervisors</option>
-
-</select>
-
-<div class="agent-filter">
-
-    <button type="button"
-            id="agentDropdownBtn"
-            onclick="toggleAgentDropdown()">
-
-        👤 Select Agents (0)
-
-    </button>
-
-    <div id="agentDropdown"
-         style="
-            display:none;
-            max-height:300px;
-            overflow-y:auto;
-            border:1px solid #ddd;
-            background:white;
-            padding:10px;
-            border-radius:8px;
-            min-width:300px;
-         ">
-    </div>
-
-</div>
-
-    <label style="
-        display:flex;
-        align-items:center;
-        gap:6px;
-        font-weight:600;
-    ">
-        <input type="checkbox"
-               id="showUnchanged"
-               onchange="buildScheduleComparison()">
-        Show All Agents
+    <label style="display:flex;align-items:center;gap:6px;font-weight:600">
+      <input type="checkbox" id="showUnchanged" onchange="buildScheduleComparison()"> Show All Agents
     </label>
+  </div>
+  <div style="font-size:12px;color:#666;margin-top:5px">☑ Select one or more agents from the dropdown.</div>
 
-</div>
+  <div class="panel">
+    <div class="schedule-container">
+      <table id="scheduleComparisonTable">
+        <thead>
+          <tr><th>Agent</th><th>Version</th><th>Mon</th><th>Tue</th><th>Wed</th><th>Thu</th><th>Fri</th><th>Sat</th><th>Sun</th></tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+    </div>
+  </div>
+</section>
 
-<div style="
-    font-size:12px;
-    color:#666;
-    margin-top:5px;
-">
-    ☑ Select one or more agents from the dropdown.
-</div>
+<!-- ============ LEAVES ============ -->
+<section class="tab-panel" id="ptoTab" hidden>
+  <div class="view-hint">🏖️ Displays approved leave requests, dates, reasons, and supervisor assignments.</div>
+  <div class="controls">
+    <input type="date" id="ptoDate" onchange="buildRecordTable('pto')">
+    <select id="ptoSupervisor" onchange="buildRecordTable('pto')"><option>All Supervisors</option></select>
+    <button onclick="buildRecordTable('pto')">Show PTO</button>
+    <button onclick="clearRecordDate('pto')">All Dates</button>
+    <input type="text" id="ptoSearch" placeholder="🔍 Search Agent..." onkeyup="buildRecordTable('pto')">
+  </div>
+  <div class="panel">
+    <h2>PTO List</h2>
+    <div class="schedule-container">
+      <table id="ptoTable"><thead></thead><tbody></tbody></table>
+    </div>
+  </div>
+</section>
 
-    <div class="panel">
+<!-- ============ ABSENTEEISM ============ -->
+<section class="tab-panel" id="calledOffTab" hidden>
+  <div class="view-hint">🚦 Displays attendance exceptions including call-outs, NCNS, late arrivals, and early departures.</div>
+  <div class="controls">
+    <input type="date" id="calledOffDate" onchange="buildRecordTable('att')">
+    <select id="calledOffSupervisor" onchange="buildRecordTable('att')"><option>All Supervisors</option></select>
+    <button onclick="buildRecordTable('att')">Show Called Off</button>
+    <button onclick="clearRecordDate('att')">All Dates</button>
+    <input type="text" id="calledOffSearch" placeholder="🔍 Search Agent..." onkeyup="buildRecordTable('att')">
+  </div>
+  <div class="panel">
+    <h2>Called Off List</h2>
+    <div class="schedule-container">
+      <table id="calledOffTable"><thead></thead><tbody></tbody></table>
+    </div>
+  </div>
+</section>
 
-        <div class="schedule-container">
+<!-- ============ MISSING AGENT CHECKER ============ -->
+<section class="tab-panel" id="missingTab" hidden>
+  <div class="view-hint">🔎 Compare CXone activity against your Dashboard Working list to identify missing or unexpected agents.</div>
+  <div class="note red">
+    ⚠️ <strong>Live Mode (EST) is required.</strong>
+    The Missing Agent Checker compares your pasted list against the current Dashboard Working list.
+    Enable Live Mode before running the check.
+  </div>
 
-            <table id="scheduleComparisonTable">
-
-                <thead>
-                    <tr>
-                        <th>Agent</th>
-                        <th>Version</th>
-                        <th>Mon</th>
-                        <th>Tue</th>
-                        <th>Wed</th>
-                        <th>Thu</th>
-                        <th>Fri</th>
-                        <th>Sat</th>
-                        <th>Sun</th>
-                    </tr>
-                </thead>
-
-                <tbody></tbody>
-
-            </table>
-
-        </div>
-
+  <div class="controls missing-layout">
+    <div class="missing-input">
+      <div class="note amber" style="font-size:13px">
+        📋 <strong>Instructions:</strong>
+        Copy the list of Agents in the <strong>Agent Name</strong> column from the
+        <a href="https://na1.nice-incontact.com/apps/#/dashboard/wrapper/dashboards" target="_blank" rel="noopener" style="color:#0b74de;font-weight:600">CXone Dashboard</a>
+        and paste it below.
+      </div>
+      <textarea id="agentPaste" placeholder="Paste agents here, one per line..."></textarea>
+      <button id="missingCheckBtn" onclick="checkMissingAgents()" style="margin-top:10px;width:220px" disabled>Check Missing Agents</button>
     </div>
 
-</div>
-   <div id="attendanceFormTab" style="display:none">
-
-    <div class="view-hint">
-        📝 Submit attendance records directly from the dashboard.
+    <div class="missing-results">
+      <div class="panel"><h2>✅ Found Working</h2><ul id="foundAgents"></ul></div>
+      <div class="panel"><h2>❌ Missing Agents</h2><ul id="missingAgents"></ul></div>
+      <div class="panel"><h2>⚠️ Unexpected Agents</h2><ul id="unexpectedAgents"></ul></div>
     </div>
+  </div>
+</section>
 
-    <div style="
-        background:#fff8e1;
-        border-left:5px solid #ff9800;
-        padding:15px;
-        border-radius:10px;
-        box-shadow:0 2px 8px rgba(0,0,0,.08);
-        margin-bottom:15px;
-    ">
+<!-- ============ FORMS ============ -->
+<section class="tab-panel" id="attendanceFormTab" hidden>
+  <div class="view-hint">📝 Submit attendance records directly from the dashboard.</div>
+  <div class="note amber" style="padding:15px;box-shadow:var(--shadow)">
+    <h3 style="color:#b26a00">⚠️ Important Reminder</h3>
+    <p style="margin:0">
+      Please review the <b>Agent Name, Date (EST Shift Date), and Reason</b> carefully before submitting.
+      If you discover an error after submission, notify <b>Manilyn</b> so the attendance record can be corrected
+      and dashboard reporting remains accurate.
+    </p>
+    <p style="margin:10px 0 0">
+      Attendance data is automatically refreshed every 60 seconds. For real-time updates, go to the
+      <b>🔍 Dashboard</b> tab and click the blue 🔄 Refresh Attendance button after submitting the form.
+    </p>
+  </div>
+  <div class="panel">
+    <iframe src="https://docs.google.com/forms/d/e/1FAIpQLSd1COw1EwPNhL-ggu5YNd49Cpvx5lDIBxqHkZnD8chrVAVKDA/viewform?embedded=true" width="100%" height="1200"></iframe>
+  </div>
+</section>
 
-        <h3 style="
-            margin-top:0;
-            margin-bottom:10px;
-            color:#b26a00;
-        ">
-            ⚠️ Important Reminder
-        </h3>
-
-        <p style="
-            margin:0;
-            line-height:1.6;
-            color:#6b4f00;
-        ">
-            Please review the <b>Agent Name, Date(EST Shift Date), and Reason</b> carefully before submitting. If you discover an error after submission, notify <b>Manilyn</b> so the attendance record can be corrected and dashboard reporting
-            remains accurate.
-        </p>
-        <p style="
-    margin-top:10px;
-    font-size:15px;
-    color:#6b4f00;
-">
-    Attendance data is automatically refreshed every 60 seconds. Or for real time updates, go to <b>🔍 Dashboard</b> tab and click the 🔄Refresh Attendance blue button after submitting the form.
-</p>
-
-    </div>
-
-       <div class="panel">
-
-    <iframe
-        src="https://docs.google.com/forms/d/e/1FAIpQLSd1COw1EwPNhL-ggu5YNd49Cpvx5lDIBxqHkZnD8chrVAVKDA/viewform?embedded=true"
-        width="100%"
-        height="1200"
-        frameborder="0"
-        style="
-            border:none;
-            border-radius:10px;
-        ">
-    </iframe>
-
-</div>
-
-
-    </div>
-
-       <div id="ptoFormTab" style="display:none">
-
-    <div class="view-hint">
-        🏖️ Submit PTO updates directly from the dashboard.
-    </div>
-
-    <div style="
-        background:#eefbf3;
-        border-left:5px solid #28a745;
-        padding:15px;
-        border-radius:10px;
-        box-shadow:0 2px 8px rgba(0,0,0,.08);
-        margin-bottom:15px;
-    ">
-
-        <h3 style="
-            margin-top:0;
-            margin-bottom:10px;
-            color:#1b7f3b;
-        ">
-            📋 PTO Reminder
-        </h3>
-
-        <p style="
-            margin:0;
-            line-height:1.6;
-            color:#14532d;
-        ">
-            Please verify the <b>Agent Name, PTO Date (EST) and Reason</b>
-            before submitting. If corrections are needed after submission,
-            notify <b>Manilyn</b> so the dashboard remains accurate.
-        </p>
-
-    </div>
-
-    <div class="panel">
-
-        <iframe
-    src="https://docs.google.com/forms/d/e/1FAIpQLSfuk7R2oLp9f3dazMwiQkHEX2n4eF09Zrei2W2O1dP8-xlCKQ/viewform?embedded=true"
-    width="100%"
-    height="1200"
-    frameborder="0"
-    style="
-        border:none;
-        border-radius:10px;
-    ">
-</iframe>
-
-    </div>
-
-</div>
-
-</div>
-
-</div>
+<section class="tab-panel" id="ptoFormTab" hidden>
+  <div class="view-hint">🏖️ Submit PTO updates directly from the dashboard.</div>
+  <div class="note green" style="padding:15px;box-shadow:var(--shadow)">
+    <h3 style="color:#1b7f3b">📋 PTO Reminder</h3>
+    <p style="margin:0">
+      Please verify the <b>Agent Name, PTO Date (EST) and Reason</b> before submitting.
+      If corrections are needed after submission, notify <b>Manilyn</b> so the dashboard remains accurate.
+    </p>
+  </div>
+  <div class="panel">
+    <iframe src="https://docs.google.com/forms/d/e/1FAIpQLSfuk7R2oLp9f3dazMwiQkHEX2n4eF09Zrei2W2O1dP8-xlCKQ/viewform?embedded=true" width="100%" height="1200"></iframe>
+  </div>
+</section>
 
 <script>
-let estData = [];
-let phData = [];
+/* =====================================================================
+   CONFIG
+   ===================================================================== */
+const SHEET_ID = '13whMJorFWHuylEfFDwbB30yobPtQ_G3EfAZtv040kQE';
+const sheetUrl = gid => `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv&gid=${gid}`;
+const URLS = { pto: sheetUrl(1297010746), calledOff: sheetUrl(2139820898) };
 
-let estOldData = [];
-let phOldData = [];
+const DAYS = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+const WEEK = ['Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday'];
+const ALL = 'All Supervisors';
+const REFRESH_MS = 60000;
+const REPEAT_THRESHOLD = 3;     // incidents in 30 days before an agent is flagged
 
-let data = [];
-let ptoList = [];
-let calledOffList = [];
-let currentWorkingAgents = [];
-let supervisorStatsData = {};
-let supervisorDetailsData = {};
-
-let sortColumn = '';
-let sortAsc = true;
-
-let rosterSortColumn = '';
-let rosterSortAsc = true;
-let ptoSortColumn = '';
-let ptoSortAsc = true;
-
-let attendanceSortColumn = '';
-let attendanceSortAsc = true;
-let realtimeMode = false;
-    const SHEET_ID = '13whMJorFWHuylEfFDwbB30yobPtQ_G3EfAZtv040kQE';
-
-const URLS = {
-
-    est:
-    `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv&gid=1744579532`,
-
-    ph:
-    `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv&gid=574343014`,
-
-    estOld:
-    `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv&gid=1905554286`,
-
-    phOld:
-    `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv&gid=2104243158`,
-
-    pto:
-    `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv&gid=1297010746`,
-
-    calledOff:
-    `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv&gid=2139820898`
+const SUP_CLASSES = {
+  MANILYN: 'row-manilyn', ANMHECA: 'row-anmheca', REMMO: 'row-remmo',
+  CHRISTOPHER: 'row-christopher', MICHAEL: 'row-michael'
 };
-let realtimeTimer = null;
-let clockTimer = null;
 
-
-function sortRoster(col){
-
-    if(rosterSortColumn === col){
-        rosterSortAsc = !rosterSortAsc;
-    }else{
-        rosterSortColumn = col;
-        rosterSortAsc = true;
-    }
-
-    buildRosterView();
-}
-
-function toggleAgentDropdown(){
-
-    let dropdown =
-        document.getElementById('agentDropdown');
-
-    dropdown.style.display =
-        dropdown.style.display === 'block'
-        ? 'none'
-        : 'block';
-}
-function updateAgentCount(){
-
-    let count =
-        document.querySelectorAll(
-            '.compareAgentCheck:checked'
-        ).length;
-
-    document.getElementById(
-        'agentDropdownBtn'
-    ).innerHTML =
-        `👤 Select Agents (${count})`;
-}
-    
-function buildRosterView(){
-
-    let html='';
-
-    let supervisor =
-    document.getElementById('rosterSupervisor')
-    ?.value || 'All Supervisors';
-
-
-let search =
-    document.getElementById('rosterSearch')
-    ?.value
-    .toUpperCase() || '';
-
-let rows = [...estData];
-    
-    rows = rows.filter(r => {
-
-    let supervisorMatch =
-        supervisor === 'All Supervisors' ||
-        r.Supervisor === supervisor;
-
-    let agentMatch =
-        search === '' ||
-        (r.Name || '')
-            .toUpperCase()
-            .includes(search);
-
-    return supervisorMatch && agentMatch;
-});
-
-    if(rosterSortColumn){
-
-    rows.sort((a,b)=>{
-
-        let av = a[rosterSortColumn] || '';
-        let bv = b[rosterSortColumn] || '';
-
-        // Sort Name/Supervisor alphabetically
-        if(
-            rosterSortColumn === 'Name' ||
-            rosterSortColumn === 'Supervisor'
-        ){
-            return rosterSortAsc
-                ? String(av).localeCompare(String(bv))
-                : String(bv).localeCompare(String(av));
-        }
-
-        // Sort schedule columns by start time
-        let at =
-            av === 'OFF'
-            ? 9999
-            : tm(String(av).split('-')[0].trim());
-
-        let bt =
-            bv === 'OFF'
-            ? 9999
-            : tm(String(bv).split('-')[0].trim());
-
-        return rosterSortAsc
-            ? at - bt
-            : bt - at;
-
-    });
-
-}
-console.log(rows[0]);
-rows.forEach(r=>{
-    let phRow = phData.find(x =>
-
-    (x.Name || '')
-        .trim()
-        .toUpperCase()
-
-    ===
-
-    (r.Name || '')
-        .trim()
-        .toUpperCase()
-
-);
-
-let supervisorClass = '';
-
-let supervisorName =
-    (r.Supervisor || '')
-    .trim()
-    .toUpperCase();
-
-if(supervisorName.includes('MANILYN'))
-    supervisorClass = 'row-manilyn';
-
-else if(supervisorName.includes('anmheca'))
-    supervisorClass = 'row-anmheca';
-
-else if(supervisorName.includes('REMMO'))
-    supervisorClass = 'row-remmo';
-
-else if(supervisorName.includes('CHRISTOPHER'))
-    supervisorClass = 'row-christopher';
-
-else if(supervisorName.includes('MICHAEL'))
-    supervisorClass = 'row-michael';
-
-html += `
-<tr class="${supervisorClass}">
-
-    <td>${r.Name || ''}</td>
-
-
-    <td>
-    <div style="color:#003366;font-weight:bold;">
-        🇺🇸 ${convertShiftRange(r['Monday']) || 'OFF'}
-    </div>
-
-    <div style="color:#14532d;font-weight:bold;">
-        🇵🇭 ${convertShiftRange(phRow?.['Monday']) || 'OFF'}
-    </div>
-    </td>
-    <td>
-    <div style="color:#003366;font-weight:bold;">
-        🇺🇸 ${convertShiftRange(r['Tuesday']) || 'OFF'}
-    </div>
-
-    <div style="color:#14532d;font-weight:bold;">
-        🇵🇭 ${convertShiftRange(phRow?.['Tuesday']) || 'OFF'}
-    </div>
-    </td>
-
-        <td>
-    <div style="color:#003366;font-weight:bold;">
-        🇺🇸 ${convertShiftRange(r['Wednesday']) || 'OFF'}
-    </div>
-
-    <div style="color:#14532d;font-weight:bold;">
-        🇵🇭 ${convertShiftRange(phRow?.['Wednesday']) || 'OFF'}
-    </div>
-    </td>
-
-        <td>
-    <div style="color:#003366;font-weight:bold;">
-        🇺🇸 ${convertShiftRange(r['Thursday']) || 'OFF'}
-    </div>
-
-    <div style="color:#14532d;font-weight:bold;">
-        🇵🇭 ${convertShiftRange(phRow?.['Thursday']) || 'OFF'}
-    </div>
-    </td>
-
-        <td>
-    <div style="color:#003366;font-weight:bold;">
-        🇺🇸 ${convertShiftRange(r['Friday']) || 'OFF'}
-    </div>
-
-    <div style="color:#14532d;font-weight:bold;">
-        🇵🇭 ${convertShiftRange(phRow?.['Friday']) || 'OFF'}
-    </div>
-    </td>
-
-        <td>
-    <div style="color:#003366;font-weight:bold;">
-        🇺🇸 ${convertShiftRange(r['Saturday']) || 'OFF'}
-    </div>
-
-    <div style="color:#14532d;font-weight:bold;">
-        🇵🇭 ${convertShiftRange(phRow?.['Saturday']) || 'OFF'}
-    </div>
-    </td>
-
-        <td>
-    <div style="color:#003366;font-weight:bold;">
-        🇺🇸 ${convertShiftRange(r['Sunday']) || 'OFF'}
-    </div>
-
-    <div style="color:#14532d;font-weight:bold;">
-        🇵🇭 ${convertShiftRange(phRow?.['Sunday']) || 'OFF'}
-    </div>
-    </td>
-
-    <td>${r.Supervisor || ''}</td>
-</tr>`;
-
-    });
-
-    document.querySelector(
-        '#rosterTable tbody'
-    ).innerHTML = html;
-}
-
-    function sortPTO(col){
-
-    if(ptoSortColumn === col){
-        ptoSortAsc = !ptoSortAsc;
-    }else{
-        ptoSortColumn = col;
-        ptoSortAsc = true;
-    }
-
-    buildPTOTable();
-}
-    function buildPTOTable(){
-
-    if(!ptoList.length){
-        document.querySelector('#ptoTable tbody').innerHTML =
-            '<tr><td>No PTO records found</td></tr>';
-        return;
-    }
-
-    const dateColumn = 'EST Date';
-
-let columns = [
-    'Name',
-    'EST Date',
-    'Reason',
-    'Supervisor'
+/* Leave / attendance reason types. Array index doubles as sort order. */
+const PTO_TYPES = [
+  { keys: ['VACATION'],                       icon: '🌴', color: '#17a2b8', label: 'Vacation Leave' },
+  { keys: ['MATERNITY', 'MAT LEAVE', 'LOA'],  icon: '🤱', color: '#9c27b0', label: 'Maternity Leave' },
+  { keys: ['SICK'],                           icon: '🤒', color: '#e53935', label: 'Sick Leave' },
+  { keys: ['BEREAVEMENT'],                    icon: '🕊️', color: '#6c757d', label: 'Bereavement' }
 ];
-
-    let selectedSupervisor =
-    document.getElementById('ptoSupervisor').value;
-        
-        let selectedDate =
-    document.getElementById('ptoDate').value;
-
-let search =
-    document.getElementById('ptoSearch')
-    ?.value
-    .toUpperCase() || '';
-
-    document.querySelector('#ptoTable thead').innerHTML =
-    '<tr>' +
-    columns.map(c => {
-
-    let title = c;
-
-if(c === 'Name')
-    title = '👤 Agent Name';
-
-if(c === 'EST Date')
-    title = '📅 Date';
-
-if(c === 'Reason')
-    title = '🚦 Reason';
-
-if(c === 'Supervisor')
-    title = '🧑‍💼 Supervisor';
-
-    return `
-        <th onclick="sortPTO('${c}')">
-            ${title}
-        </th>
-    `;
-}).join('') +
-    '</tr>';
-
-    let html = '';
-        let rows = [...ptoList];
-
-if(ptoSortColumn){
-
-    rows.sort((a,b)=>{
-
-        let av = a[ptoSortColumn] || '';
-        let bv = b[ptoSortColumn] || '';
-
-        if(
-    ptoSortColumn === 'EST Date' ||
-    ptoSortColumn === 'PH Date'
-){
-
-    return ptoSortAsc
-        ? new Date(av) - new Date(bv)
-        : new Date(bv) - new Date(av);
-
-}
-
-return ptoSortAsc
-    ? String(av).localeCompare(String(bv))
-    : String(bv).localeCompare(String(av));
-
-    });
-
-}
-
-    rows
-.filter(r => {
-
-    let supervisorMatch =
-        selectedSupervisor === 'All Supervisors' ||
-        r.Supervisor === selectedSupervisor;
-
-    let searchMatch =
-        search === '' ||
-        (r.Name || '')
-            .toUpperCase()
-            .includes(search);
-
-    let dateMatch = true;
-
-    if(selectedDate){
-        dateMatch =
-    getPTODate(r) === selectedDate;
-    }
-
-    return (
-        supervisorMatch &&
-        searchMatch &&
-        dateMatch
-    );
-
-})
-.forEach(r => {
-
-        html += '<tr>';
-
-        columns.forEach(c => {
-            let value = r[c];
-
-if(typeof value === 'number' && value > 40000){
-
-    let d = new Date(
-        (value - 25569) * 86400 * 1000
-    );
-
-    value = d.toLocaleDateString(
-        'en-US',
-        {
-            month:'short',
-            day:'numeric',
-            year:'numeric'
-        }
-    );
-}
-
-
-html += `<td>${value || ''}</td>`;
-        });
-
-        html += '</tr>';
-
-    });
-
-    document.querySelector('#ptoTable tbody').innerHTML = html;
-}
-    function clearPTODate(){
-
-    document.getElementById('ptoDate').value = '';
-
-    buildPTOTable();
-
-}
-
-    function sortAttendance(col){
-
-    if(attendanceSortColumn === col){
-        attendanceSortAsc = !attendanceSortAsc;
-    }else{
-        attendanceSortColumn = col;
-        attendanceSortAsc = true;
-    }
-
-    buildCalledOffTable();
-}
-
-function buildCalledOffTable(){
-
-    if(!calledOffList.length){
-        document.querySelector('#calledOffTable tbody').innerHTML =
-            '<tr><td>No Called Off records found</td></tr>';
-        return;
-    }
-
-    let columns = [
-    'Name',
-    'EST Date',
-    'Reason',
-    'Supervisor'
+const ATT_TYPES = [
+  { keys: ['NCNS'],       icon: '❌', color: '#000',    label: 'NCNS' },
+  { keys: ['LATE'],       icon: '⏰', color: '#ff9800', label: 'Running Late' },
+  { keys: ['LEFT EARLY'], icon: '↘️', color: '#9c27b0', label: 'Left Early' }
 ];
+const PTO_OTHER = { icon: '🏖️', color: '#17a2b8' };
+const ATT_OTHER = { icon: '🚫', color: '#dc3545', label: 'Called Off' };
 
-let selectedSupervisor =
-    document.getElementById('calledOffSupervisor').value;
+/* =====================================================================
+   STATE
+   ===================================================================== */
+let estData = [], phData = [], estOldData = [], phOldData = [];
+let ptoList = [], calledOffList = [];
+let currentWorkingAgents = [];
+let realtimeMode = false, realtimeTimer = null;
 
-let selectedDate =
-    document.getElementById('calledOffDate').value;
+const sortState = {
+  schedule: { col: '', asc: true },
+  roster:   { col: '', asc: true },
+  pto:      { col: '', asc: true },
+  att:      { col: '', asc: true }
+};
 
-let search =
-    document.getElementById('calledOffSearch')
-    ?.value
-    .toUpperCase() || '';
+/* =====================================================================
+   HELPERS
+   ===================================================================== */
+const $ = id => document.getElementById(id);
+const pad = n => String(n).padStart(2, '0');
+const up = s => (s ?? '').toString().trim().toUpperCase();
+const esc = s => String(s ?? '').replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+const isOff = shift => !shift || up(shift) === 'OFF';
+const ymd = d => `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
+const fmtDate = (d, opts = { month: 'short', day: 'numeric', year: 'numeric' }) => d.toLocaleDateString('en-US', opts);
 
-    document.querySelector('#calledOffTable thead').innerHTML =
-    '<tr>' +
-    columns.map(c => {
+function parseYMD(s) {
+  const [y, m, d] = s.split('-').map(Number);
+  return new Date(y, m - 1, d);
+}
+const dayName = dateStr => DAYS[parseYMD(dateStr).getDay()];
 
-    let title = c;
+/* Current wall-clock time in New York, as a local Date */
+const estNow = () => new Date(new Date().toLocaleString('en-US', { timeZone: 'America/New_York' }));
 
-   if(c === 'Name')
-    title = '👤 Agent Name';
-
-if(c === 'EST Date')
-    title = '📅 Date';
-
-if(c === 'Reason')
-    title = '🚦 Reason';
-
-if(c === 'Supervisor')
-    title = '🧑‍💼 Supervisor';
-
-    return `
-        <th onclick="sortAttendance('${c}')">
-            ${title}
-        </th>
-    `;
-})
-.join('') +
-    '</tr>';
-
-    let html = '';
-    let rows = [...calledOffList];
-
-if(attendanceSortColumn){
-
-    rows.sort((a,b)=>{
-
-    let av = a[attendanceSortColumn] || '';
-    let bv = b[attendanceSortColumn] || '';
-
-    if(attendanceSortColumn === 'Date'){
-
-        return attendanceSortAsc
-            ? new Date(av) - new Date(bv)
-            : new Date(bv) - new Date(av);
-
-    }
-
-    return attendanceSortAsc
-        ? String(av).localeCompare(String(bv))
-        : String(bv).localeCompare(String(av));
-
-});
-
+/* Accepts ISO strings, m/d/yyyy strings and Excel serial numbers -> 'YYYY-MM-DD' */
+function normalizeDate(value) {
+  if (!value) return '';
+  if (typeof value === 'number') return new Date((value - 25569) * 86400 * 1000).toISOString().split('T')[0];
+  const s = String(value).trim();
+  if (/^\d{4}-\d{2}-\d{2}/.test(s)) return s.slice(0, 10);
+  const d = new Date(s);
+  return isNaN(d) ? '' : ymd(d);
 }
 
-    rows
-.filter(r => {
+/* Time helpers: Excel fraction | 'HH:MM' -> minutes */
+function tm(v) {
+  if (v === '' || v == null) return null;
+  if (typeof v === 'number') return Math.round(v * 1440);
+  const p = v.toString().trim().split(':');
+  return p.length < 2 ? null : parseInt(p[0]) * 60 + parseInt(p[1]);
+}
+const im = v => (v && v.includes(':')) ? tm(v) : 0;
+const toHHMM = mins => { mins = ((mins % 1440) + 1440) % 1440; return `${pad(Math.floor(mins / 60))}:${pad(mins % 60)}`; };
 
-    let supervisorMatch =
-        selectedSupervisor === 'All Supervisors' ||
-        r.Supervisor === selectedSupervisor;
-
-    let searchMatch =
-        search === '' ||
-        (r.Name || '')
-            .toUpperCase()
-            .includes(search);
-
-   let dateMatch = true;
-
-if(selectedDate){
-
-    dateMatch =
-        normalizeDate(
-            r['EST Date']
-        ) === selectedDate;
-
+function fmtAMPM(hhmm) {
+  if (!hhmm) return '';
+  const [h, m] = hhmm.split(':');
+  return `${pad(parseInt(h) % 12 || 12)}:${m} ${parseInt(h) >= 12 ? 'PM' : 'AM'}`;
+}
+function formatTimeRange(v, duration) {
+  const s = tm(v);
+  return s == null ? '' : `${fmtAMPM(toHHMM(s))} - ${fmtAMPM(toHHMM(s + duration))}`;
+}
+function convertShiftRange(shift) {
+  if (isOff(shift)) return 'OFF';
+  const p = shift.split('-');
+  return p.length !== 2 ? shift : `${fmtAMPM(p[0].trim())} - ${fmtAMPM(p[1].trim())}`;
+}
+/* 'HH:MM-HH:MM' -> [startMins, endMins] or null */
+function parseShift(shift) {
+  if (isOff(shift)) return null;
+  const p = shift.toString().split('-');
+  if (p.length !== 2) return null;
+  const st = tm(p[0].trim()), en = tm(p[1].trim());
+  return (st == null || en == null) ? null : [st, en];
 }
 
-return (
-    supervisorMatch &&
-    searchMatch &&
-    dateMatch
+const supClass = name => {
+  const n = up(name), k = Object.keys(SUP_CLASSES).find(k => n.includes(k));
+  return k ? SUP_CLASSES[k] : '';
+};
+const recFor = (list, name, date) =>
+  list.find(x => up(x.Name) === up(name) && normalizeDate(x['EST Date']) === date);
+
+function matchType(types, reason, fallback) {
+  const r = up(reason);
+  const i = types.findIndex(t => t.keys.some(k => r.includes(k)));
+  return i < 0 ? { ...fallback, order: types.length } : { ...types[i], order: i };
+}
+const badge = t => `<span style="color:${t.color};font-weight:bold">${t.icon} ${esc(t.label)}</span>`;
+
+const emptyItem = (color, text) => `<li class="empty" style="--c:${color}">${text}</li>`;
+const nameTimeItem = (cls, x) => `<li class="${cls}"><strong>${esc(x.name)}</strong><br><small>${x.time}</small></li>`;
+const uniqueSupervisors = () => [...new Set(estData.map(x => x.Supervisor).filter(Boolean))];
+
+/* Click handler for cards that reveal a hidden .details block */
+function toggleDetails(card) {
+  const d = card.querySelector('.details');
+  if (d) d.hidden = !d.hidden;
+}
+
+function sortBy(view, col) {
+  const s = sortState[view];
+  s.asc = s.col === col ? !s.asc : true;
+  s.col = col;
+  ({ schedule: buildScheduleView, roster: buildRosterView, pto: () => buildRecordTable('pto'), att: () => buildRecordTable('att') })[view]();
+}
+
+/* =====================================================================
+   TABS
+   ===================================================================== */
+function showTab(id) {
+  document.querySelectorAll('.tab-panel').forEach(p => p.hidden = true);
+  $(id).hidden = false;
+
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  const trigger = document.querySelector(`.tabs [data-tab="${id}"]`);
+  trigger?.closest('.dropdown')?.querySelector('.tab-btn')?.classList.add('active');
+
+  if (id === 'ptoTab') buildRecordTable('pto');
+  if (id === 'calledOffTab') buildRecordTable('att');
+  if (id === 'rosterTab') buildRosterView();
+  if (id === 'forecastTab') refreshForecast();
+  if (id === 'scheduleComparisonTab') { loadCompareAgents(); buildScheduleComparison(); }
+}
+
+document.querySelectorAll('[data-tab]').forEach(el =>
+  el.addEventListener('click', e => { e.preventDefault(); showTab(el.dataset.tab); })
 );
 
-})
-.forEach(r => {
-
-        html += '<tr>';
-
-        columns.forEach(c => {
-
-    let value = r[c];
-
-    if(typeof value === 'number' && value > 40000){
-
-    let d = new Date(
-        (value - 25569) * 86400 * 1000
-    );
-
-    value = d.toLocaleDateString(
-        'en-US',
-        {
-            month:'short',
-            day:'numeric',
-            year:'numeric'
-        }
-    );
+/* =====================================================================
+   DATA LOADING
+   ===================================================================== */
+async function loadSheet(url) {
+  const res = await fetch(url);
+  if (!res.ok) throw new Error(`HTTP ${res.status}`);
+  const parsed = Papa.parse(await res.text(), { header: true, skipEmptyLines: 'greedy' });
+  if (!parsed.meta.fields?.includes('Name')) throw new Error('sheet has no "Name" column - is it shared?');
+  return parsed.data.filter(row => {
+    const n = (row.Name || '').toString().trim();
+    return n && n !== "'" && n !== '""';
+  });
 }
 
-    html += `<td>${value || ''}</td>`;
-});
+const loadErrors = {};
+let lastUpdated = null;
 
-        html += '</tr>';
-
-    });
-
-    document.querySelector('#calledOffTable tbody').innerHTML = html;
+function renderStatus() {
+  const msgs = Object.values(loadErrors).filter(Boolean);
+  $('statusBanner').hidden = !msgs.length;
+  $('statusBanner').innerHTML = '⚠️ ' + msgs.map(esc).join(' · ');
+  $('lastUpdated').textContent = lastUpdated
+    ? `Last updated ${lastUpdated.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}` : '';
 }
 
-    function clearCalledOffDate(){
-
-    document.getElementById('calledOffDate').value = '';
-
-    buildCalledOffTable();
-
-}
-    
-function getSelectedDay() {
-
-    let selectedDate =
-        document.getElementById('selectedDate').value;
-
-    if (!selectedDate)
-        return 'Monday';
-
-    const days = [
-        'Sunday',
-        'Monday',
-        'Tuesday',
-        'Wednesday',
-        'Thursday',
-        'Friday',
-        'Saturday'
-    ];
-
-    const parts = selectedDate.split('-');
-
-    const localDate = new Date(
-        Number(parts[0]),
-        Number(parts[1]) - 1,
-        Number(parts[2])
-    );
-
-    return days[localDate.getDay()];
+async function loadAttendance() {
+  try {
+    [ptoList, calledOffList] = await Promise.all([loadSheet(URLS.pto), loadSheet(URLS.calledOff)]);
+    loadErrors.attendance = '';
+    lastUpdated = new Date();
+  } catch (err) {
+    loadErrors.attendance = `Couldn't load attendance data (${err.message}) - retrying every 60 seconds`;
+  }
+  renderStatus();
 }
 
-    console.log(
-    'SELECTED DATE:',
-    document.getElementById('selectedDate')?.value
-);
-
-console.log(
-    'DAY:',
-    getSelectedDay()
-);
-
-function getOffsetHours(){
-    return 0;
-}
-function convertTime(timeValue){
-
-    if(
-    timeValue === '' ||
-    timeValue === null ||
-    timeValue === undefined
-)
-    return '';
-
-    let mins;
-
-    if(typeof timeValue === 'number'){
-
-        mins = Math.round(
-            timeValue * 1440
-        );
-
-    }else{
-
-        let p =
-            timeValue.toString().split(':');
-
-        mins =
-            parseInt(p[0]) * 60 +
-            parseInt(p[1]);
-    }
-
-    mins += getOffsetHours() * 60;
-
-    mins =
-        ((mins % 1440) + 1440) % 1440;
-
-    return (
-        String(Math.floor(mins / 60))
-        .padStart(2,'0')
-        + ':' +
-        String(mins % 60)
-        .padStart(2,'0')
-    );
+async function loadRawData() {
+  try {
+    const wb = XLSX.read(await (await fetch('./RawData.xlsx')).arrayBuffer(), { type: 'array' });
+    const sheet = name => wb.Sheets[name] ? XLSX.utils.sheet_to_json(wb.Sheets[name], { defval: '' }) : [];
+    estData = sheet('EST');
+    if (!estData.length) throw new Error('EST sheet is empty');
+    phData = sheet('PH');
+    estOldData = sheet('EST_OLD');
+    phOldData = sheet('PH_OLD');
+    loadErrors.schedules = '';
+  } catch (err) {
+    loadErrors.schedules = `Couldn't load schedules from RawData.xlsx (${err.message})`;
+  }
+  renderStatus();
 }
 
-function formatAMPM(time24){
-
-    if(!time24)
-        return '';
-
-    let [hours, mins] =
-        time24.split(':');
-
-    hours = parseInt(hours);
-
-    let suffix =
-        hours >= 12 ? 'PM' : 'AM';
-
-    hours = hours % 12;
-
-    if(hours === 0)
-        hours = 12;
-
-    return (
-        String(hours)
-        .padStart(2,'0')
-        + ':' +
-        mins +
-        ' ' +
-        suffix
-    );
+async function refreshAttendanceData(notify = false) {
+  await loadAttendance();
+  renderAll();
+  if (notify) alert(loadErrors.attendance
+    ? '⚠️ Refresh failed - see the banner at the top.'
+    : '✅ PTO and Attendance refreshed');
 }
 
-function convertShiftRange(shift){
-
-    if(
-        !shift ||
-        shift.toString().trim().toUpperCase() === 'OFF'
-    ){
-        return 'OFF';
-    }
-
-    let parts = shift.split('-');
-
-    if(parts.length !== 2){
-        return shift;
-    }
-
-    return (
-        formatAMPM(parts[0].trim()) +
-        ' - ' +
-        formatAMPM(parts[1].trim())
-    );
-}
-    function toggleRealtime(){
-
-    realtimeMode = !realtimeMode;
-
-    const btn =
-        document.getElementById('realtimeBtn');
-
-    if(realtimeMode){
-
-        btn.innerHTML =
-    '🔴 Stop Live Mode (EST)';
-
-        document.getElementById(
-    'missingCheckBtn'
-).disabled = false;
-
-        document.getElementById('selectedDate').disabled = true;
-        document.getElementById('interval').disabled = true;
-        document.getElementById('supervisor').disabled = true;
-        document.getElementById('showStaffingBtn').disabled = true;
-
-        updateRealtime();
-
-        realtimeTimer =
-            setInterval(
-                updateRealtime,
-                60000
-            );
-
-        updateClock();
-
-        clockTimer =
-            setInterval(
-                updateClock,
-                1000
-            );
-
-    }else{
-
-        btn.innerHTML =
-            '🟢 Live Mode (EST)';
-
-        document.getElementById(
-    'missingCheckBtn'
-).disabled = true;
-
-        document.getElementById('selectedDate').disabled = false;
-        document.getElementById('interval').disabled = false;
-        document.getElementById('supervisor').disabled = false;
-        document.getElementById('showStaffingBtn').disabled = false;
-
-        clearInterval(realtimeTimer);
-        clearInterval(clockTimer);
-    }
-}
-
-function updateRealtime(){
-
-    const selectedTZ = 'EDT';
-
-let now;
-
-now = new Date(
-    new Date().toLocaleString(
-        "en-US",
-        {
-            timeZone: "America/New_York"
-        }
-    )
-);
-
-    loadTimezoneData();
-
-    loadSup();
-
-    const yyyy =
-        now.getFullYear();
-
-    const mm =
-        String(now.getMonth() + 1)
-        .padStart(2,'0');
-
-    const dd =
-        String(now.getDate())
-        .padStart(2,'0');
-
-    document.getElementById('selectedDate').value =
-        `${yyyy}-${mm}-${dd}`;
-    document.getElementById('ptoDate').value =
-    `${yyyy}-${mm}-${dd}`;
-
-document.getElementById('calledOffDate').value =
-    `${yyyy}-${mm}-${dd}`;
-
-document.getElementById('scheduleDate').value =
-    `${yyyy}-${mm}-${dd}`;
-    
-document.getElementById('supervisorDate').value =
-    `${yyyy}-${mm}-${dd}`;
-
-    document.getElementById('interval').value =
-    String(now.getHours()).padStart(2,'0')
-    + ':'
-    + String(now.getMinutes()).padStart(2,'0');
-
-    const roundedMinutes =
-    now.getMinutes() >= 30 ? '30' : '00';
-
-
-runLookup();
-
-buildSupervisorAllDaySummary();
-
-buildScheduleView();
-
-buildRosterView();
-
-buildPTOTable();
-
-buildCalledOffTable();
-}
-
-function updateClock(){
-
-    const tz = 'EDT';
-
-let now;
-
-if(tz === 'PH'){
-
-    now = new Date(
-        new Date().toLocaleString(
-            "en-US",
-            {
-                timeZone: "Asia/Manila"
-            }
-        )
-    );
-
-}else{
-
-    now = new Date(
-        new Date().toLocaleString(
-            "en-US",
-            {
-                timeZone: "America/New_York"
-            }
-        )
-    );
-
-}
-
-    const time =
-        now.toLocaleTimeString(
-            [],
-            {
-                hour:'2-digit',
-                minute:'2-digit',
-                second:'2-digit'
-            }
-        );
-
-    const date =
-        now.toLocaleDateString(
-            'en-US',
-            {
-                month:'short',
-                day:'numeric',
-                year:'numeric'
-            }
-        );
-
-    document.getElementById('liveClock').innerHTML =
-    `🕒 ${time} &nbsp; | &nbsp; 📅 ${date} &nbsp; | &nbsp; 🌎 ${tz}`;
-}
-   function loadTimezoneData(){
-
-    data = estData;
-
-}
-    
-function refreshAllViews(){
-
-    loadTimezoneData();
-
-    loadSup();
-
-    runLookup();
-
-    buildScheduleView();
-
-    buildRosterView();
-
-    buildPTOTable();
-
-    buildCalledOffTable();
-}
-  
-    async function refreshAttendanceData(){
-
-    ptoList =
-        await loadSheet(
-            'https://docs.google.com/spreadsheets/d/13whMJorFWHuylEfFDwbB30yobPtQ_G3EfAZtv040kQE/gviz/tq?tqx=out:csv&gid=1297010746'
-        );
-
-    calledOffList =
-        await loadSheet(URLS.calledOff);
-
-    runLookup();
-
-    buildPTOTable();
-
-    buildCalledOffTable();
-
-    buildScheduleView();
-
-    buildSupervisorAllDaySummary();
-
-    buildDailyOverview();
-
-    buildCoverageTimeline();
-
-    alert(
-        "✅ PTO and Attendance refreshed"
-    );
-}
-function formatExcelTime(v) {
-    if (v === '' || v == null) return '';
-
-    if (typeof v === 'number') {
-        let mins = Math.round(v * 1440);
-
-        return String(Math.floor(mins / 60)).padStart(2, '0') +
-            ':' +
-            String(mins % 60).padStart(2, '0');
-    }
-
-    return v;
-}
-    function formatTimeRange(v,duration){
-
-    if(v === '' || v == null){
-        return '';
-    }
-
-    let start =
-        convertTime(v);
-
-    let startMins =
-        im(start);
-
-    let endMins =
-        (startMins + duration) % 1440;
-
-    let end =
-        String(Math.floor(endMins / 60))
-        .padStart(2,'0')
-        + ':' +
-        String(endMins % 60)
-        .padStart(2,'0');
-
-    return (
-        formatAMPM(start)
-        + ' - ' +
-        formatAMPM(end)
-    );
-}
-
-    function goToTab(tabId){
-
-    document.querySelectorAll('.tab-btn')
-        .forEach(btn =>
-            btn.classList.remove('active')
-        );
-
-document.getElementById('lookupTab').style.display = 'none';
-document.getElementById('supervisorTab').style.display = 'none';
-document.getElementById('forecastTab').style.display = 'none';
-document.getElementById('scheduleTab').style.display = 'none';
-document.getElementById('rosterTab').style.display = 'none';
-document.getElementById('ptoTab').style.display = 'none';
-document.getElementById('calledOffTab').style.display = 'none';
-document.getElementById('missingTab').style.display = 'none';
-document.getElementById('scheduleComparisonTab').style.display = 'none';
-document.getElementById('attendanceFormTab').style.display = 'none';
-document.getElementById('ptoFormTab').style.display = 'none';
-
-    document.getElementById(tabId).style.display = 'block';
-
-    if(tabId === 'scheduleTab'){
-    document.querySelectorAll('.tab-btn')[2]
-        .classList.add('active');
-}
-    if(tabId === 'ptoTab'){
-    document.querySelectorAll('.tab-btn')[4]
-        .classList.add('active');
-}
-
-if(tabId === 'calledOffTab'){
-    document.querySelectorAll('.tab-btn')[5]
-        .classList.add('active');
-}
-}
-
-function showTab(id, b) {
-
-document.getElementById('lookupTab').style.display = 'none';
-document.getElementById('supervisorTab').style.display = 'none';
-document.getElementById('forecastTab').style.display = 'none';
-document.getElementById('scheduleTab').style.display = 'none';
-document.getElementById('rosterTab').style.display = 'none';
-document.getElementById('ptoTab').style.display = 'none';
-document.getElementById('calledOffTab').style.display = 'none';
-document.getElementById('missingTab').style.display = 'none';
-document.getElementById('scheduleComparisonTab').style.display = 'none';
-document.getElementById('attendanceFormTab').style.display = 'none';
-document.getElementById('ptoFormTab').style.display = 'none';
-
-    if(id === 'ptoTab'){
-        buildPTOTable();
-    }
-
-    if(id === 'calledOffTab'){
-        buildCalledOffTable();
-    }
-
-    document.getElementById(id).style.display = 'block';
-
-    document
-        .querySelectorAll('.tab-btn')
-        .forEach(x => x.classList.remove('active'));
-
-    b.classList.add('active');
-
-    if(id === 'rosterTab'){
-        buildRosterView();
-    }
-
-    if(id === 'forecastTab'){
-    refreshForecast();
-}
-    if(id === 'scheduleComparisonTab'){
-
-    loadCompareAgents();
-
-    buildScheduleComparison();
-}
-}
-
-/* ADD HERE */
-function refreshSupervisorSummary(){
-
-    const selectedDate =
-        document.getElementById('supervisorDate').value;
-
-const selectedTime =
-    document.getElementById('interval').value;
-
-    if(selectedDate){
-
-        document.getElementById('selectedDate').value =
-            selectedDate;
-
-    }
-
-    if(selectedTime){
-
-        document.getElementById('interval').value =
-            selectedTime;
-
-    }
-
-buildSupervisorAllDaySummary();
-
-}
-    
-async function loadSheet(url){
-
-    const response = await fetch(url);
-
-    const csv = await response.text();
-
-    const parsed = Papa.parse(csv,{
-        header:true,
-        skipEmptyLines:'greedy'
-    }).data;
-
-    return parsed.filter(row => {
-
-        const name =
-            (row.Name || '').toString().trim();
-
-        return (
-            name !== '' &&
-            name !== "'" &&
-            name !== '""'
-        );
-
-    });
-
-}
-    
-    
-window.addEventListener('load', async () => {
-
-    calledOffList = await loadSheet(URLS.calledOff);
-
-console.log("CALLED OFF", calledOffList);
-
-    
-    document.getElementById(
-    'missingCheckBtn'
-).disabled = true;
-
-    const interval =
-    document.getElementById('interval')
-
-
-for (let h = 0; h < 24; h++) {
-
-    for (let m = 0; m < 60; m += 30) {
-
-        let valueTime =
-            String(h).padStart(2,'0')
-            + ':'
-            + String(m).padStart(2,'0');
-
-        let hour12 =
-            h % 12 || 12;
-
-        let suffix =
-            h >= 12 ? 'PM' : 'AM';
-
-        let displayTime =
-            String(hour12).padStart(2,'0')
-            + ':'
-            + String(m).padStart(2,'0')
-            + ' '
-            + suffix;
-
-        interval.innerHTML +=
-        `<option value="${valueTime}">
-            ${displayTime}
-        </option>`;
-            }
-}
-
-interval.value = '09:00';
-
-    
-    document.getElementById('selectedDate').value =
-        new Date().toISOString().split('T')[0];
-    
-    document.getElementById('ptoDate').value =
-    new Date().toISOString().split('T')[0];
-
-document.getElementById('calledOffDate').value =
-    new Date().toISOString().split('T')[0];
-
-    document.getElementById('scheduleDate').value =
-        new Date().toISOString().split('T')[0];
-    
-    document.getElementById('supervisorDate').value =
-    new Date().toISOString().split('T')[0];
-
-    document.getElementById('forecastDate').value =
-    new Date().toISOString().split('T')[0];
-
-    const response = await fetch('./RawData.xlsx');
-    
-    const arrayBuffer = await response.arrayBuffer();
-
-    const wb = XLSX.read(arrayBuffer, {
-        type: 'array'
-    });
-
-    console.log(wb.SheetNames);
-
-    estData = XLSX.utils.sheet_to_json(
-    wb.Sheets['EST'],
-    { defval:'' }
-);
-
-phData = XLSX.utils.sheet_to_json(
-    wb.Sheets['PH'],
-    { defval:'' }
-);
-    if(wb.Sheets['EST_OLD']){
-
-    estOldData = XLSX.utils.sheet_to_json(
-        wb.Sheets['EST_OLD'],
-        { defval:'' }
-    );
-
-}
-
-if(wb.Sheets['PH_OLD']){
-
-    phOldData = XLSX.utils.sheet_to_json(
-        wb.Sheets['PH_OLD'],
-        { defval:'' }
-    );
-
-}
-
-data = estData; // default timezone
-
-// PTO FROM GOOGLE SHEETS
-
-const ptoResponse =
-await fetch(
-'https://docs.google.com/spreadsheets/d/13whMJorFWHuylEfFDwbB30yobPtQ_G3EfAZtv040kQE/gviz/tq?tqx=out:csv&gid=1297010746'
-);
-
-const ptoCsv =
-await ptoResponse.text();
-
-ptoList =
-Papa.parse(ptoCsv,{
-    header:true,
-    skipEmptyLines:true
-}).data;
-
-console.log(
-    "PTO LOADED",
-    ptoList
-);
-    console.log("PTO DATA", ptoList);
-    console.log("PTO COUNT:", ptoList.length);
-    console.log("FIRST PTO:", ptoList[0]);
-    
-calledOffList =
-    await loadSheet(URLS.calledOff);
-
-console.table(calledOffList);
-
-console.log(
-    "CALLED OFF COUNT:",
-    calledOffList.length
-);
-    console.log("CALLED OFF DATA", calledOffList);
-    console.log("CALLED OFF ROWS", calledOffList.length);
-    console.log("CALLED OFF COUNT:", calledOffList.length);
-    console.log("FIRST CALLED OFF:", calledOffList[0]);
-
-loadTimezoneData();
-loadSup();
-buildRosterView();
-buildScheduleView();
-runLookup();
-buildSupervisorAllDaySummary();
-refreshForecast();
-buildActionCenter();
-buildUpcomingPTO();
-buildAttendanceTrends();
-updateClock();
-
-
-clockTimer =
-    setInterval(
-        updateClock,
-        1000
-    );
-
-/* AUTO REFRESH ATTENDANCE */
-setInterval(async () => {
-
-    ptoList =
-        await loadSheet(
-            'https://docs.google.com/spreadsheets/d/13whMJorFWHuylEfFDwbB30yobPtQ_G3EfAZtv040kQE/gviz/tq?tqx=out:csv&gid=1297010746'
-        );
-
-    calledOffList =
-        await loadSheet(URLS.calledOff);
-
-    runLookup();
-
-    buildPTOTable();
-
-    buildCalledOffTable();
-
-    buildScheduleView();
-
-    buildSupervisorAllDaySummary();
-
-    buildDailyOverview();
-
-    buildCoverageTimeline();
-
-    buildActionCenter();
-
-    buildUpcomingPTO();
-
-    buildAttendanceTrends();
-
-    console.log(
-        "PTO + Attendance refreshed"
-    );
-
-}, 60000);
-
-});
-
-    function refreshForecast(){
-
-    let forecastDate =
-        document.getElementById('forecastDate').value;
-
-    document.getElementById('supervisorDate').value =
-        forecastDate;
-
-    runLookup();
-
-    buildDailyOverview();
-
-    buildCoverageTimeline();
+function renderAll() {
+  loadSup();
+  runLookup();
+  buildScheduleView();
+  buildRosterView();
+  buildRecordTable('pto');
+  buildRecordTable('att');
+  buildSupervisorSummary();
+  buildDailyOverview();
+  buildCoverageTimeline();
+  buildActionCenter();
+  buildAttendanceTrends();
 }
 
 function loadSup() {
-
-    let su = [
-        ...new Set(
-            data.map(x => x.Supervisor).filter(Boolean)
-        )
-    ];
-
-    let h =
-        '<option>All Supervisors</option>' +
-        su.map(x => `<option>${x}</option>`).join('');
-
-    document.getElementById('supervisor').innerHTML = h;
-
-    document.getElementById('scheduleSupervisor').innerHTML = h;
-
-    if(document.getElementById('ptoSupervisor')){
-        document.getElementById('ptoSupervisor').innerHTML = h;
-    }
-
-    if(document.getElementById('calledOffSupervisor')){
-        document.getElementById('calledOffSupervisor').innerHTML = h;
-    }
-
-    if(document.getElementById('rosterSupervisor')){
-        document.getElementById('rosterSupervisor').innerHTML = h;
-    }
-
-    if(document.getElementById('compareSupervisor')){
-        document.getElementById('compareSupervisor').innerHTML = h;
-    }
-
-    if(document.getElementById('agentDropdown')){
-        loadCompareAgents();
-    }
-
+  const options = `<option>${ALL}</option>` + uniqueSupervisors().map(s => `<option>${esc(s)}</option>`).join('');
+  ['supervisor', 'scheduleSupervisor', 'ptoSupervisor', 'calledOffSupervisor', 'rosterSupervisor', 'compareSupervisor']
+    .forEach(id => {
+      const el = $(id), prev = el.value;
+      el.innerHTML = options;
+      if ([...el.options].some(o => o.value === prev)) el.value = prev;
+    });
 }
 
-function tm(v) {
-    if (v === '' || v == null) return null;
+/* =====================================================================
+   LIVE MODE & CLOCK
+   ===================================================================== */
+function toggleRealtime() {
+  realtimeMode = !realtimeMode;
+  $('realtimeBtn').innerHTML = realtimeMode ? '🔴 Stop Live Mode (EST)' : '🟢 Live Mode (EST)';
+  $('missingCheckBtn').disabled = !realtimeMode;
+  ['selectedDate', 'interval', 'supervisor', 'showStaffingBtn'].forEach(id => $(id).disabled = realtimeMode);
 
-    if (typeof v === 'number')
-        return Math.round(v * 1440);
-
-    let p = v.toString().trim().split(':');
-
-    if (p.length < 2) return null;
-
-    return parseInt(p[0]) * 60 + parseInt(p[1]);
+  clearInterval(realtimeTimer);
+  if (realtimeMode) {
+    updateRealtime();
+    realtimeTimer = setInterval(updateRealtime, REFRESH_MS);
+  }
 }
 
-function im(v) {
-
-    if (!v || !v.includes(':')) {
-        return 0;
-    }
-
-    let p = v.split(':');
-
-    return parseInt(p[0]) * 60 +
-           parseInt(p[1]);
+function updateRealtime() {
+  const now = estNow(), today = ymd(now);
+  ['selectedDate', 'ptoDate', 'calledOffDate', 'scheduleDate', 'supervisorDate'].forEach(id => $(id).value = today);
+  $('interval').value = `${pad(now.getHours())}:${now.getMinutes() >= 30 ? '30' : '00'}`;
+  renderAll();
 }
 
-function getStatus(r, d, i) {
-
-    const days = [
-        'Monday',
-        'Tuesday',
-        'Wednesday',
-        'Thursday',
-        'Friday',
-        'Saturday',
-        'Sunday'
-    ];
-
-    let c = im(i);
-
-    function chk(sh, p) {
-
-        if (
-            !sh ||
-            sh.toString().trim().toUpperCase() === 'OFF'
-        ) {
-            return null;
-        }
-
-        let a = sh.toString().split('-');
-
-        if (a.length !== 2) {
-            return null;
-        }
-
-        let st = tm(a[0].trim());
-        let en = tm(a[1].trim());
-
-        // Overnight shift
-        if (en < st) {
-
-            if (
-                (p && c < en) ||
-                (!p && c >= st)
-            ) {
-                return 'Working';
-            }
-
-            return null;
-        }
-
-        // Regular shift
-        return (
-            c >= st &&
-            c < en
-        ) ? 'Working' : null;
-    }
-
-    let status = chk(r[d], false);
-
-    if (!status) {
-
-        let prevDay =
-            days[(days.indexOf(d) + 6) % 7];
-
-        let prevShift =
-            (r[prevDay] || '')
-                .toString()
-                .trim();
-
-        if (
-            prevShift &&
-            prevShift.toUpperCase() !== 'OFF' &&
-            prevShift.includes('-')
-        ) {
-
-            let parts = prevShift.split('-');
-
-            let start = tm(parts[0].trim());
-            let end = tm(parts[1].trim());
-
-            if (end < start) {
-                status = chk(prevShift, true);
-            }
-        }
-    }
-
-    if (!status) {
-        return null;
-    }
-
-    let lu = tm(r['Lunch']);
-
-    if (
-        lu != null &&
-        c >= lu &&
-        c < lu + 60
-    ) {
-        return 'Lunch';
-    }
-
-    for (let b of [
-        r['Break 1'],
-        r['Break 2'],
-        r['Break 3']
-    ]) {
-
-        let bt = tm(b);
-
-        if (
-            bt != null &&
-            c >= bt &&
-            c < bt + 15
-        ) {
-            return 'Break';
-        }
-    }
-
-    return 'Working';
+function updateClock() {
+  const now = estNow();
+  const time = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+  $('liveClock').innerHTML = `🕒 ${time} &nbsp; | &nbsp; 📅 ${fmtDate(now)} &nbsp; | &nbsp; 🌎 EDT`;
 }
 
-function isAgentOnPTO(ptoRecord, rosterRecord){
+/* =====================================================================
+   STATUS LOGIC
+   ===================================================================== */
+/* Returns 'Working' | 'Break' | 'Lunch' | null for the given roster row, day and 'HH:MM' */
+function getStatus(r, day, time) {
+  const c = im(time);
+  let working = false;
 
-    const ptoDate =
-        normalizeDate(ptoRecord['EST Date']);
+  const today = parseShift(r[day]);
+  if (today) working = today[1] < today[0] ? c >= today[0] : (c >= today[0] && c < today[1]);
 
-    if(!ptoDate){
-        return false;
-    }
+  if (!working) {                                   // overnight shift carried over from yesterday
+    const prev = parseShift(r[DAYS[(DAYS.indexOf(day) + 6) % 7]]);
+    if (prev && prev[1] < prev[0]) working = c < prev[1];
+  }
+  if (!working) return null;
 
-    const ptoDateObj =
-        new Date(ptoDate);
+  const lunch = tm(r['Lunch']);
+  if (lunch != null && c >= lunch && c < lunch + 60) return 'Lunch';
 
-    const days = [
-        'Sunday',
-        'Monday',
-        'Tuesday',
-        'Wednesday',
-        'Thursday',
-        'Friday',
-        'Saturday'
-    ];
-
-    const dayName =
-        days[ptoDateObj.getDay()];
-
-    const shift =
-        rosterRecord[dayName];
-
-    if(
-        !shift ||
-        shift.toUpperCase() === 'OFF'
-    ){
-        return false;
-    }
-
-    let parts = shift.split('-');
-
-    if(parts.length !== 2){
-        return false;
-    }
-
-    let start = new Date(
-        `${ptoDate}T${parts[0].trim()}:00`
-    );
-
-    let end = new Date(
-        `${ptoDate}T${parts[1].trim()}:00`
-    );
-
-    if(end <= start){
-        end.setDate(end.getDate() + 1);
-    }
-
-    let now;
-
-    if(realtimeMode){
-
-        now = new Date(
-            new Date().toLocaleString(
-                "en-US",
-                {
-                    timeZone: "America/New_York"
-                }
-            )
-        );
-
-    }else{
-
-        let lookupDate =
-            document.getElementById('selectedDate').value;
-
-        let lookupTime =
-            document.getElementById('interval').value;
-
-        now = new Date(
-            `${lookupDate}T${lookupTime}:00`
-        );
-    }
-
-    console.log(
-    'PTO TEST',
-    ptoRecord?.Name,
-    now,
-    start,
-    end
-);
-
-return now >= start && now < end;
-}
-    function normalizeDate(value) {
-
-    if (!value)
-        return '';
-
-    // Excel serial date support
-    if (typeof value === 'number') {
-
-        let excelDate = new Date(
-            (value - 25569) * 86400 * 1000
-        );
-
-        return excelDate
-            .toISOString()
-            .split('T')[0];
-    }
-
-    let d = new Date(value);
-
-    if (isNaN(d))
-        return '';
-
-    return d.toISOString().split('T')[0];
+  for (const b of [r['Break 1'], r['Break 2'], r['Break 3']]) {
+    const bt = tm(b);
+    if (bt != null && c >= bt && c < bt + 15) return 'Break';
+  }
+  return 'Working';
 }
 
-  function isAgentCalledOff(callOffRecord, rosterRecord){
-
-    const callOffDate =
-    normalizeDate(callOffRecord['EST Date']);
-
-const callOffDateObj =
-    new Date(callOffDate);
-
-const days = [
-    'Sunday',
-    'Monday',
-    'Tuesday',
-    'Wednesday',
-    'Thursday',
-    'Friday',
-    'Saturday'
-];
-
-const dayName =
-    days[callOffDateObj.getDay()];
-
-const callOffShift =
-    rosterRecord[dayName];
-
-    if(!callOffDate || !callOffShift){
-        return false;
-    }
-
-    let parts = callOffShift.split('-');
-
-    if(parts.length !== 2){
-        return false;
-    }
-
-    let startTime = parts[0].trim();
-    let endTime = parts[1].trim();
-
-    let start = new Date(
-        `${callOffDate}T${startTime}:00`
-    );
-
-    let end = new Date(
-        `${callOffDate}T${endTime}:00`
-    );
-
-    if(end <= start){
-        end.setDate(end.getDate() + 1);
-    }
-
-    let now;
-
-    if(realtimeMode){
-
-    now = new Date(
-        new Date().toLocaleString(
-            "en-US",
-            {
-                timeZone: "America/New_York"
-            }
-        )
-    );
-
-}else{
-
-    let lookupDate =
-        document.getElementById('selectedDate').value;
-
-    let lookupTime =
-        document.getElementById('interval').value;
-
-    now = new Date(
-        `${lookupDate}T${lookupTime}:00`
-    );
-
+/* Minutes-since-midnight for the dashboard lookup (live or manual) */
+function lookupMinutes() {
+  if (realtimeMode) { const n = estNow(); return n.getHours() * 60 + n.getMinutes(); }
+  return im($('interval').value);
 }
-    console.log(
-    callOffRecord.Name,
-    callOffShift,
-    start,
-    end
-);
-console.log({
-    Agent: callOffRecord.Name,
-    CallOffDate: callOffDate,
-    DayUsed: dayName,
-    Shift: callOffShift,
-    Now: now,
-    Start: start,
-    End: end,
-    Result: now >= start && now < end
-});
-    return now >= start && now < end;
+
+/* True when "now" (live or selected lookup time) falls inside the agent's shift on the record's date */
+function isWithinShift(record, roster) {
+  const date = normalizeDate(record['EST Date']);
+  if (!date) return false;
+  const shift = parseShift(roster[dayName(date)]);
+  if (!shift) return false;
+
+  const base = parseYMD(date).getTime();
+  const start = base + shift[0] * 60000;
+  let end = base + shift[1] * 60000;
+  if (end <= start) end += 86400000;
+
+  const lookupDate = $('selectedDate').value;
+  const now = realtimeMode
+    ? estNow().getTime()
+    : parseYMD(lookupDate).getTime() + im($('interval').value) * 60000;
+
+  return now >= start && now < end;
 }
-    
-function getPTODate(record){
-    return normalizeDate(record['EST Date']);
+
+/* Per-agent state for a date: category, status badge, sort order */
+function getAgentState(r, day, date) {
+  const off = isOff(r[day]);
+  let state = off
+    ? { cat: 'OFF', html: '⚫ OFF', order: 99, rank: 4 }
+    : { cat: 'WORKING', html: '✅ Working', order: 9, rank: 3 };
+
+  const pto = recFor(ptoList, r.Name, date);
+  if (pto) {
+    const t = matchType(PTO_TYPES, pto.Reason, { ...PTO_OTHER, label: pto.Reason || 'PTO' });
+    state = { cat: 'PTO', html: badge(t), order: 1 + t.order, rank: 1 };
+  }
+  const co = recFor(calledOffList, r.Name, date);
+  if (co) {
+    const t = matchType(ATT_TYPES, co.Reason, ATT_OTHER);
+    state = { cat: 'ATTENDANCE', html: badge(t), order: 5 + t.order, rank: 2 };
+  }
+  return state;
 }
-    
+
+/* Scheduled / leave / absent flags for every agent on a date */
+function dayInfo(date) {
+  const day = dayName(date);
+  return estData.map(r => {
+    const scheduled = !isOff(r[day]);
+    const leave = scheduled && !!recFor(ptoList, r.Name, date);
+    const absent = scheduled && !leave && !!recFor(calledOffList, r.Name, date);
+    return { r, scheduled, leave, absent };
+  });
+}
+
+/* =====================================================================
+   DASHBOARD (live lookup)
+   ===================================================================== */
+function groupedBlocks(items, types, fallback, useReasonAsHeader) {
+  const groups = {};
+  items.forEach(x => (groups[x.reason] ??= []).push(x.name));
+  return Object.entries(groups).map(([reason, names]) => {
+    const t = matchType(types, reason, fallback);
+    return `<div class="group" style="--c:${t.color}">
+      <div class="group-title">${t.icon} ${esc(useReasonAsHeader ? reason : t.label)}</div>
+      ${names.map(n => `<div>• ${esc(n)}</div>`).join('')}
+    </div>`;
+  }).join('');
+}
+
 function runLookup() {
-    let d = getSelectedDay();
-    let i;
+  const date = $('selectedDate').value;
+  if (!date) return;
+  const day = dayName(date);
+  const supFilter = $('supervisor').value;
+  const mins = lookupMinutes();
+  const time = toHHMM(mins);
 
-if(realtimeMode){
+  const w = [], b = [], l = [], pto = [], calledOff = [], upBreaks = [], upLunches = [];
 
-    let now = new Date(
-        new Date().toLocaleString(
-            "en-US",
-            {
-                timeZone: "America/New_York"
-            }
-        )
-    );
+  estData.forEach(r => {
+    const p = recFor(ptoList, r.Name, date);
+    if (p && isWithinShift(p, r)) {
+      pto.push({ name: p.Name, reason: p.Reason || 'Leave' });
+      return;
+    }
+    const co = calledOffList.find(x => up(x.Name) === up(r.Name) && isWithinShift(x, r));
+    if (co) {
+      calledOff.push({ name: r.Name, reason: co.Reason || 'No Reason Provided' });
+      return;
+    }
 
-    i =
-        String(now.getHours()).padStart(2,'0')
-        + ':'
-        + String(now.getMinutes()).padStart(2,'0');
+    const st = getStatus(r, day, time);
+    if (!st) return;
+    if (supFilter !== ALL && r.Supervisor !== supFilter) return;
 
-    console.log("LIVE LOOKUP TIME:", i);
-
-}else{
-
-    i =
-        convertTime(
-            document.getElementById('interval').value
-        );
-
-}
-    
-    let s = document.getElementById('supervisor').value;
-    
-    let currentMinutes = im(i);
-
-let w = [];
-let b = [];
-let l = [];
-
-let pto = [];
-let calledOff = [];
-
-let upcomingBreaks = [];
-let upcomingLunches = [];
-let supervisorStats = {};
-
-    data.forEach(r => {
-let supervisor =
-    r.Supervisor || 'Unassigned';
-
-if(!supervisorStats[supervisor]){
-
-    supervisorStats[supervisor] = {
-    working:0,
-    leave:0,
-    absenteeism:0,
-    off:0,
-    teamSize:0,
-
-    workingAgents:[],
-    leaveAgents:[],
-    absenteeismAgents:[],
-    offAgents:[]
-};
-}
-    supervisorStats[supervisor].teamSize++;
-
-
-let agentName =
-    (r.Name || '')
-    .trim()
-    .toUpperCase();
-
-let selectedDate =
-    document.getElementById('selectedDate').value;
-console.log(
-    "Selected Date:",
-    selectedDate
-);
-let ptoRecord = ptoList.find(x =>
-
-    (x.Name || '')
-        .trim()
-        .toUpperCase() ===
-    (r.Name || '')
-        .trim()
-        .toUpperCase()
-
-    &&
-
-    getPTODate(x) === selectedDate
-
-);
-        console.log(
-    "Checking PTO:",
-    r.Name,
-    selectedDate,
-    ptoRecord
-);
-
-if (ptoRecord && isAgentOnPTO(ptoRecord, r)) {
-
-    supervisorStats[supervisor].leave++;
-
-    supervisorStats[supervisor]
-        .leaveAgents
-        .push(r.Name);
-
-    pto.push({
-        name: ptoRecord.Name,
-        reason: ptoRecord.Reason || ''
+    // upcoming breaks / lunch (next 30 minutes)
+    [r['Break 1'], r['Break 2'], r['Break 3']].forEach(br => {
+      const bt = tm(br);
+      if (bt != null && bt > mins && bt <= mins + 30) upBreaks.push({ name: r.Name, time: fmtAMPM(toHHMM(bt)) });
     });
+    const lt = tm(r['Lunch']);
+    if (lt != null && lt > mins && lt <= mins + 30) upLunches.push({ name: r.Name, time: fmtAMPM(toHHMM(lt)) });
 
-    return;
+    // "Working" includes people currently on break / lunch
+    w.push({ name: r.Name, type: st.toLowerCase() });
+    if (st === 'Break') {
+      const bt = [r['Break 1'], r['Break 2'], r['Break 3']].find(x => { const t = tm(x); return t != null && mins >= t && mins < t + 15; });
+      b.push({ name: r.Name, time: formatTimeRange(bt, 15) });
+    }
+    if (st === 'Lunch') l.push({ name: r.Name, time: formatTimeRange(r['Lunch'], 60) });
+  });
+
+  // counts + percentages (w already contains break & lunch agents)
+  const total = w.length + pto.length + calledOff.length;
+  const pct = n => (total ? ((n / total) * 100).toFixed(1) : 0) + '% of team';
+  [['workingCount', 'staffingPercent', w.length], ['breakCount', 'breakPercent', b.length],
+   ['lunchCount', 'lunchPercent', l.length], ['ptoCount', 'ptoPercent', pto.length],
+   ['calledOffCount', 'attendancePercent', calledOff.length]]
+    .forEach(([countId, pctId, n]) => { $(countId).textContent = n; $(pctId).textContent = pct(n); });
+
+  const order = { working: 1, break: 2, lunch: 3 };
+  w.sort((x, y) => order[x.type] - order[y.type] || x.name.localeCompare(y.name));
+  currentWorkingAgents = w.map(x => up(x.name));
+
+  $('workingList').innerHTML = w.map(x => `<li class="${x.type}">${esc(x.name)}</li>`).join('');
+  $('breakList').innerHTML = b.length ? b.map(x => nameTimeItem('break', x)).join('') : emptyItem('#ff9800', '☕ No ongoing breaks');
+  $('lunchList').innerHTML = l.length ? l.map(x => nameTimeItem('lunch', x)).join('') : emptyItem('#dc3545', '🍽️ No ongoing lunches');
+  $('upcomingBreakList').innerHTML = upBreaks.length ? upBreaks.map(x => nameTimeItem('', x)).join('') : emptyItem('#ff9800', '☕ No upcoming breaks');
+  $('upcomingLunchList').innerHTML = upLunches.length ? upLunches.map(x => nameTimeItem('', x)).join('') : emptyItem('#dc3545', '🍽️ No upcoming lunches');
+  $('ptoList').innerHTML = groupedBlocks(pto, PTO_TYPES, { ...PTO_OTHER, label: 'Leave' }, true);
+  $('calledOffList').innerHTML = groupedBlocks(calledOff, ATT_TYPES, ATT_OTHER, true);
 }
-        
-let coRecord = calledOffList.find(x =>
 
-    (x.Name || '')
-        .trim()
-        .toUpperCase() ===
-    (r.Name || '')
-        .trim()
-        .toUpperCase()
+function buildActionCenter() {
+  const date = $('selectedDate').value;
+  const todays = calledOffList.filter(x => normalizeDate(x['EST Date']) === date);
 
-    &&
+  // Today's exceptions, one line each: "⏰ Name - Running Late (Supervisor)"
+  const exceptionLines = todays.map(rec => {
+    const t = matchType(ATT_TYPES, rec.Reason, ATT_OTHER);
+    const label = t.order === ATT_TYPES.length ? (rec.Reason || t.label) : t.label;
+    const sup = (rec.Supervisor || '').split(' ')[0];
+    return `<div style="color:${t.color};font-weight:600;font-size:14px;line-height:1.7;padding-left:22px">
+      ${t.icon} ${esc(rec.Name)} - ${esc(label)}${sup ? ` (${esc(sup)})` : ''}</div>`;
+  }).join('');
 
-    isAgentCalledOff(x, r)
+  // Who is on leave the day after the selected date
+  let tomorrowHtml = '';
+  if (date) {
+    const t = parseYMD(date); t.setDate(t.getDate() + 1);
+    const names = [...new Set(ptoList.filter(x => normalizeDate(x['EST Date']) === ymd(t)).map(x => x.Name))].sort();
+    const label = `Tomorrow (${fmtDate(t, { month: 'short', day: 'numeric' })})`;
+    tomorrowHtml = names.length
+      ? `<details style="color:#17a2b8;font-weight:bold">
+           <summary style="cursor:pointer">🗓️ ${label}: ${names.length} agent(s) on leave</summary>
+           <div style="font-weight:normal;color:#333;padding-left:22px;line-height:1.6">${names.map(n => `• ${esc(n)}`).join('<br>')}</div>
+         </details>`
+      : `<div style="color:#28a745;font-weight:bold">✅ ${label}: no one on leave</div>`;
+  }
 
-);
+  $('actionCenterContent').innerHTML = `
+    <div style="line-height:2;font-size:15px">
+      ${todays.length > 0
+        ? `<div style="color:#dc3545;font-weight:bold">🚫 ${todays.length} Attendance Exception(s) Today</div>${exceptionLines}`
+        : `<div style="color:#28a745;font-weight:bold">✅ No Attendance Exceptions Today</div>`}
+      ${tomorrowHtml}
+    </div>`;
+}
 
-if (coRecord) {
+function buildAttendanceTrends() {
+  const since = new Date(); since.setDate(since.getDate() - 30);
+  const counts = {}, agents = {};
+  calledOffList.forEach(rec => {
+    const d = normalizeDate(rec['EST Date']);
+    if (!d || parseYMD(d) < since) return;
+    const sup = rec.Supervisor || 'Unassigned';
+    counts[sup] = (counts[sup] || 0) + 1;
+    const a = agents[up(rec.Name)] ??= { name: rec.Name, sup, n: 0, ncns: 0 };
+    a.n++;
+    if (up(rec.Reason).includes('NCNS')) a.ncns++;
+  });
 
-    
-    console.log("CALLED OFF RECORD:", coRecord);
+  const html = Object.entries(counts).sort((a, b) => b[1] - a[1]).map(([sup, n]) => {
+    const icon = n >= 7 ? '🔴' : n >= 4 ? '🟡' : '🟢';
+    return `<div style="display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid #eee">
+      <span>${icon} ${esc(sup)}</span><strong>${n}</strong></div>`;
+  }).join('') || '<div style="color:#6c757d;font-style:italic">No attendance records in the last 30 days</div>';
 
-    supervisorStats[supervisor].absenteeism++;
+  const repeat = Object.values(agents).filter(a => a.n >= REPEAT_THRESHOLD).sort((a, b) => b.n - a.n || b.ncns - a.ncns);
+  const repeatHtml = `<div style="margin-top:12px;font-weight:bold;color:#003366">🔁 Repeat Attendance (${REPEAT_THRESHOLD}+ in 30 days)</div>` +
+    (repeat.length ? repeat.map(a => `
+      <div style="display:flex;justify-content:space-between;padding:4px 0;border-bottom:1px solid #eee">
+        <span>${a.n >= REPEAT_THRESHOLD * 2 ? '🔴' : '🟠'} ${esc(a.name)} <small style="color:#6c757d">${esc(a.sup)}</small></span>
+        <strong>${a.n}${a.ncns ? ` (${a.ncns} NCNS)` : ''}</strong>
+      </div>`).join('')
+    : '<div style="color:#6c757d;font-style:italic">None 🎉</div>');
 
-    supervisorStats[supervisor]
-        .absenteeismAgents
-        .push(r.Name);
+  $('attendanceTrendContent').innerHTML = html + repeatHtml;
+}
 
-    calledOff.push({
-        name: r.Name,
-        reason: coRecord.Reason || 'No Reason Provided'
+/* =====================================================================
+   SUPERVISOR SUMMARY
+   ===================================================================== */
+function buildSupervisorSummary() {
+  const date = $('supervisorDate').value;
+  if (!date) return;
+  const view = $('summaryView').value;
+  const end = parseYMD(date);
+
+  if (view === 'daily') {
+    $('summaryDateRange').innerHTML = `📅 Daily Summary: ${fmtDate(end, { month: 'long', day: 'numeric', year: 'numeric' })}`;
+    return buildDailySummary(date);
+  }
+  const start = view === 'mtd'
+    ? new Date(end.getFullYear(), end.getMonth(), 1)
+    : new Date(end.getFullYear(), end.getMonth(), end.getDate() - 6);
+  const label = view === 'mtd' ? 'Month To Date' : 'Weekly Summary';
+  $('summaryDateRange').innerHTML = `📅 ${label}: ${fmtDate(start)} - ${fmtDate(end)}`;
+  buildRangeSummary(start, end, view === 'mtd' ? 'Vacation Leave Days' : 'Vacation Days');
+}
+
+function buildDailySummary(date) {
+  const groups = {};
+  dayInfo(date).forEach(({ r, scheduled, leave, absent }) => {
+    const g = groups[r.Supervisor || 'Unassigned'] ??= { team: 0, scheduled: [], leave: [], absent: [], off: [] };
+    g.team++;
+    if (!scheduled) return g.off.push(r.Name);
+    g.scheduled.push(r.Name);
+    if (leave) g.leave.push(r.Name);
+    else if (absent) g.absent.push(r.Name);
+  });
+
+  const section = (label, arr) => `<strong>${label} (${arr.length})</strong><br>${arr.map(esc).join('<br>')}`;
+
+  $('supervisorSummaryCards').innerHTML = Object.entries(groups)
+    .sort((a, b) => (b[1].absent.length > 0) - (a[1].absent.length > 0) || a[0].localeCompare(b[0]))
+    .map(([name, g]) => {
+      const coverage = g.scheduled.length
+        ? (((g.scheduled.length - g.leave.length - g.absent.length) / g.scheduled.length) * 100).toFixed(1) : 0;
+      const bad = g.absent.length > 0;
+      return `
+        <div class="card" onclick="toggleDetails(this)" style="--c:${bad ? '#dc3545' : '#28a745'};background:${bad ? '#fff5f5' : '#fff'}">
+          <h3>${bad ? '🔴' : '🟢'} 👔 ${esc(name)}</h3>
+          <div>👥 Team Size: ${g.team}</div>
+          <div>📅 Scheduled: ${g.scheduled.length}</div>
+          <div>📋 Leave: ${g.leave.length}</div>
+          <div>🚫 Absenteeism: ${g.absent.length}</div>
+          <div>⚫ OFF: ${g.off.length}</div>
+          <hr>
+          <div>📊 Coverage: <strong>${coverage}%</strong></div>
+          <div class="details" hidden>
+            ${section('📅 Scheduled', g.scheduled)}<hr>${section('📋 Leave', g.leave)}<hr>
+            ${section('🚫 Absenteeism', g.absent)}<hr>${section('⚫ OFF', g.off)}
+          </div>
+        </div>`;
+    }).join('');
+}
+
+/* Expandable detail list for MTD / Weekly cards: "Name — Mon d (Reason)", sorted by date */
+function rangeDetailSection(label, items) {
+  const line = x => `${esc(x.name)} — ${fmtDate(parseYMD(x.date), { month: 'short', day: 'numeric' })}` +
+                    (x.reason ? ` (${esc(x.reason)})` : '');
+  const sorted = [...items].sort((a, b) => a.date.localeCompare(b.date) || a.name.localeCompare(b.name));
+  return `<strong>${label} (${items.length})</strong><br>${sorted.map(line).join('<br>') || '<em>None</em>'}`;
+}
+
+/* Month-to-date and weekly share one implementation */
+function buildRangeSummary(start, end, leaveLabel) {
+  const groups = {};
+  estData.forEach(a => {
+    (groups[a.Supervisor || 'Unassigned'] ??= { team: 0, leaveAgents: [], attendanceAgents: [] }).team++;
+  });
+  const rosterFor = name => estData.find(a => up(a.Name) === up(name));
+  const inRange = d => { if (!d) return false; const x = parseYMD(d); return x >= start && x <= end; };
+
+  ptoList.forEach(rec => {
+    const d = normalizeDate(rec['EST Date']);
+    if (!inRange(d) || !up(rec.Reason).includes('VACATION')) return;
+    const agent = rosterFor(rec.Name);
+    if (agent) groups[agent.Supervisor || 'Unassigned'].leaveAgents.push({ name: rec.Name, date: d, reason: rec.Reason });
+  });
+  calledOffList.forEach(rec => {
+    const d = normalizeDate(rec['EST Date']);
+    if (!inRange(d)) return;
+    const agent = rosterFor(rec.Name);
+    if (agent) groups[agent.Supervisor || 'Unassigned'].attendanceAgents.push({ name: rec.Name, date: d, reason: rec.Reason || 'No Reason' });
+  });
+
+  $('supervisorSummaryCards').innerHTML = Object.entries(groups)
+    .sort((a, b) => a[0].localeCompare(b[0]))
+    .map(([name, g]) => {
+      const leave = g.leaveAgents.length, attendance = g.attendanceAgents.length;
+      const reliability = g.team ? (((g.team - attendance) / g.team) * 100).toFixed(1) : 100;
+      const bad = attendance > 0;
+      return `
+        <div class="card" onclick="toggleDetails(this)" style="--c:${bad ? '#dc3545' : '#28a745'}">
+          <h3>${bad ? '🔴' : '🟢'} 👔 ${esc(name)}</h3>
+          <div>👥 Team Size: ${g.team}</div>
+          <div>🌴 ${leaveLabel}: ${leave}</div>
+          <div>🚫 Attendance Incidents: ${attendance}</div>
+          <hr>
+          <div>📊 Reliability Rate: <strong>${reliability}%</strong></div>
+          <div class="details" hidden>
+            ${rangeDetailSection('🌴 ' + leaveLabel, g.leaveAgents)}<hr>
+            ${rangeDetailSection('🚫 Attendance Incidents', g.attendanceAgents)}
+          </div>
+        </div>`;
+    }).join('');
+}
+
+/* =====================================================================
+   COVERAGE FORECAST
+   ===================================================================== */
+function refreshForecast() {
+  buildDailyOverview();
+  buildCoverageTimeline();
+}
+
+/* 48 half-hour slots with expected vs. available headcount */
+
+/* 48 half-hour slots with expected vs. available headcount */
+function coverageSlots(date) {
+  const day = dayName(date);
+  const excluded = new Set([
+    ...ptoList.filter(x => normalizeDate(x['EST Date']) === date).map(x => up(x.Name)),
+    ...calledOffList.filter(x => normalizeDate(x['EST Date']) === date).map(x => up(x.Name))
+  ]);
+  const slots = [];
+  for (let m = 0; m < 1440; m += 30) {
+    const time = toHHMM(m);
+    let expected = 0, available = 0;
+    estData.forEach(r => {
+      if (!getStatus(r, day, time)) return;
+      expected++;
+      if (!excluded.has(up(r.Name))) available++;
     });
-
-    return;
-}
-        let st = getStatus(r, d, i);
-
-if (!st) {
-
-    let todayShift = r[d];
-
-    if (
-        !todayShift ||
-        todayShift.toString().trim().toUpperCase() === 'OFF'
-    ) {
-
-        supervisorStats[supervisor].off++;
-
-        supervisorStats[supervisor]
-            .offAgents
-            .push(r.Name);
-
-    }
-
-    return;
-}
-        
-        for(let br of [
-    r['Break 1'],
-    r['Break 2'],
-    r['Break 3']
-]){
-
-    let bt = tm(br);
-
-    if(
-        bt != null &&
-        bt > currentMinutes &&
-        bt <= currentMinutes + 30
-    ){
-
-        upcomingBreaks.push({
-            name:r.Name,
-            time:formatAMPM(convertTime(br))
-        });
-
-    }
-}
-        let lunchTime = tm(r['Lunch']);
-
-if(
-    lunchTime != null &&
-    lunchTime > currentMinutes &&
-    lunchTime <= currentMinutes + 30
-){
-
-    upcomingLunches.push({
-        name:r.Name,
-        time:formatAMPM(
-            convertTime(r['Lunch'])
-        )
-    });
-
-}
-        
-
-        if (
-            s !== 'All Supervisors' &&
-            r.Supervisor !== s
-        )
-            return;
-
-
-
-if (st === 'Working') {
-
-    supervisorStats[supervisor].working++;
-
-    supervisorStats[supervisor]
-        .workingAgents
-        .push(r.Name);
-
-    w.push({
-        name: r.Name,
-        type: 'working'
-    });
+    slots.push({ time, expected, available });
+  }
+  return slots;
 }
 
-if (st === 'Break') {
+/* 15-minute slots where too many working agents are on break/lunch at once */
 
-    supervisorStats[supervisor].working++;
+function buildDailyOverview() {
+  const date = $('forecastDate').value;
+  if (!date) return;
 
-    let breakTime = '';
+  const info = dayInfo(date);
+  const sets = {
+    scheduled: info.filter(x => x.scheduled),
+    present: info.filter(x => x.scheduled && !x.leave && !x.absent),
+    leave: info.filter(x => x.leave),
+    absent: info.filter(x => x.absent)
+  };
+  const bySup = list => {
+    const g = {};
+    list.forEach(x => (g[x.r.Supervisor || 'Unassigned'] ??= []).push(x.r.Name));
+    return Object.entries(g).map(([s, names]) =>
+      `<div><strong>👔 ${esc(s)}</strong><br><br>${names.map(esc).join('<br>')}<hr></div>`).join('');
+  };
+  const card = (title, value, color, details = '') => `
+    <div class="card" style="--c:${color}" onclick="toggleDetails(this)">
+      <h3>${title}</h3><div class="value">${value}</div>
+      <div class="details" hidden>${details}</div>
+    </div>`;
 
-    for (let br of [
-        r['Break 1'],
-        r['Break 2'],
-        r['Break 3']
-    ]) {
+  const slots = coverageSlots(date);
+  const low = slots.reduce((a, s) => s.available < a.available ? s : a);
+  const high = slots.reduce((a, s) => s.available > a.available ? s : a);
+  const slotText = s => `<div>${fmtAMPM(s.time)}<br><strong>${s.available} agents</strong></div>`;
 
-        let bt = tm(br);
-
-        if (
-            bt != null &&
-            currentMinutes >= bt &&
-            currentMinutes < bt + 15
-        ) {
-            breakTime =
-                formatTimeRange(br, 15);
-            break;
-        }
-    }
-
-    w.push({
-        name: r.Name,
-        type: 'break'
-    });
-
-    b.push({
-        name: r.Name,
-        time: breakTime
-    });
+  $('dailyOverviewCards').innerHTML =
+    card('👥 Scheduled', sets.scheduled.length, '#0d6efd', bySup(sets.scheduled)) +
+    card('✅ Present', sets.present.length, '#28a745', bySup(sets.present)) +
+    card('📋 Leave', sets.leave.length, '#17a2b8', bySup(sets.leave)) +
+    card('🚫 Absenteeism', sets.absent.length, '#dc3545', bySup(sets.absent)) +
+    card('📉 Lowest Coverage', slotText(low), '#ff9800').replace('class="value"', '') +
+    card('📈 Highest Coverage', slotText(high), '#6f42c1').replace('class="value"', '');
 }
 
-if (st === 'Lunch') {
-
-    supervisorStats[supervisor].working++;
-
-    w.push({
-        name: r.Name,
-        type: 'lunch'
-    });
-
-    l.push({
-        name: r.Name,
-        time: formatTimeRange(
-            r['Lunch'],
-            60
-        )
-    });
-}
-   
-
-}); // closes data.forEach
-    document.getElementById('workingCount').textContent =
-    w.length;
-        let totalAgents =
-    w.length +
-    b.length +
-    l.length +
-    pto.length +
-    calledOff.length;
-
-let workingPct =
-    totalAgents > 0
-    ? ((w.length / totalAgents) * 100).toFixed(1)
-    : 0;
-
-let breakPct =
-    totalAgents > 0
-    ? ((b.length / totalAgents) * 100).toFixed(1)
-    : 0;
-
-let lunchPct =
-    totalAgents > 0
-    ? ((l.length / totalAgents) * 100).toFixed(1)
-    : 0;
-
-let ptoPct =
-    totalAgents > 0
-    ? ((pto.length / totalAgents) * 100).toFixed(1)
-    : 0;
-
-let attendancePct =
-    totalAgents > 0
-    ? ((calledOff.length / totalAgents) * 100).toFixed(1)
-    : 0;
-
-document.getElementById('staffingPercent').textContent =
-    workingPct + '% of team';
-        document.getElementById('breakPercent').textContent =
-    breakPct + '% of team';
-
-document.getElementById('lunchPercent').textContent =
-    lunchPct + '% of team';
-
-document.getElementById('ptoPercent').textContent =
-    ptoPct + '% of team';
-
-document.getElementById('attendancePercent').textContent =
-    attendancePct + '% of team';
-
-    document.getElementById('breakCount').textContent =
-        b.length;
-
-    document.getElementById('lunchCount').textContent =
-        l.length;
-
-document.getElementById('ptoCount').textContent =
-    pto.length;
-
-document.getElementById('calledOffCount').textContent =
-    calledOff.length;
-    
-w.sort((a, b) => {
-
-    const order = {
-        working: 1,
-        break: 2,
-        lunch: 3
-    };
-
-    if (order[a.type] !== order[b.type]) {
-        return order[a.type] - order[b.type];
-    }
-
-    return a.name.localeCompare(b.name);
-});
-    currentWorkingAgents =
-    w.map(x =>
-        x.name.toUpperCase().trim()
-    );
-
-document.getElementById('workingList').innerHTML =
-    w.map(x =>
-        `<li class="${x.type}">
-            ${x.name}
-        </li>`
-    ).join('');
-
-     document.getElementById('breakList').innerHTML =
-
-b.length
-
-? b.map(x => `
-<li class="break">
-    <strong>${x.name}</strong><br>
-    <small>${x.time}</small>
-</li>
-`).join('')
-
-: `
-<li style="
-    padding:12px;
-    background:#f8f9fa;
-    border-left:4px solid #ff9800;
-    color:#6c757d;
-    font-style:italic;
-    border-radius:6px;
-">
-    ☕ No ongoing breaks
-</li>
-`;
-
-   document.getElementById('lunchList').innerHTML =
-
-l.length
-
-? l.map(x => `
-<li class="lunch">
-    <strong>${x.name}</strong><br>
-    <small>${x.time}</small>
-</li>
-`).join('')
-
-: `
-<li style="
-    padding:12px;
-    background:#f8f9fa;
-    border-left:4px solid #dc3545;
-    color:#6c757d;
-    font-style:italic;
-    border-radius:6px;
-">
-    🍽️ No ongoing lunches
-</li>
-`;
-
-const groupedPTO = {};
-
-pto.forEach(x => {
-
-    const reason = x.reason || 'Leave';
-
-    if (!groupedPTO[reason]) {
-        groupedPTO[reason] = [];
-    }
-
-    groupedPTO[reason].push(x.name);
-
-});
-
-document.getElementById('ptoList').innerHTML =
-
-Object.entries(groupedPTO).map(([reason, names]) => {
-
-    let icon = '🧾';
-    let color = '#17a2b8';
-
-    if(reason.toUpperCase().includes('VACATION')){
-        icon = '🌴';
-        color = '#17a2b8';
-    }
-    else if(reason.toUpperCase().includes('MATERNITY')){
-        icon = '🤱';
-        color = '#9c27b0';
-    }
-    else if(reason.toUpperCase().includes('SICK')){
-        icon = '🤒';
-        color = '#e53935';
-    }
-    else if(reason.toUpperCase().includes('BEREAVEMENT')){
-        icon = '🕊️';
-        color = '#6c757d';
-    }
-
-    return `
-        <div style="
-            margin-bottom:12px;
-            padding:12px;
-            border-left:5px solid ${color};
-            background:#fff;
-            border-radius:8px;
-        ">
-            <div style="
-                font-weight:bold;
-                color:${color};
-                margin-bottom:8px;
-            ">
-                ${icon} ${reason}
-            </div>
-
-            ${names.map(name => `
-                <div>• ${name}</div>
-            `).join('')}
-
-        </div>
-    `;
-
-}).join('');
-
-const groupedAttendance = {};
-
-calledOff.forEach(x => {
-
-    let reason = x.reason || 'Called Off';
-
-    if(!groupedAttendance[reason]){
-        groupedAttendance[reason] = [];
-    }
-
-    groupedAttendance[reason].push(x.name);
-
-});
-
-document.getElementById('calledOffList').innerHTML =
-
-Object.entries(groupedAttendance).map(([reason,names]) => {
-
-    let icon = '🚫';
-    let color = '#dc3545';
-    let header = reason;
-
-    if(reason.toUpperCase().includes('NCNS')){
-        icon = '❌';
-        color = '#000';
-    }
-    else if(
-        reason.toUpperCase().includes('RUNNING LATE') ||
-        reason.toUpperCase().includes('LATE')
-    ){
-        icon = '⏰';
-        color = '#ff9800';
-    }
-    else if(reason.toUpperCase().includes('LEFT EARLY')){
-        icon = '↘️';
-        color = '#9c27b0';
-    }
-
-    return `
-        <div style="
-            margin-bottom:12px;
-            padding:12px;
-            border-left:5px solid ${color};
-            background:#fff;
-            border-radius:8px;
-        ">
-
-            <div style="
-                font-weight:bold;
-                color:${color};
-                margin-bottom:8px;
-            ">
-                ${icon} ${header}
-            </div>
-
-            ${names.map(name => `
-                <div>• ${name}</div>
-            `).join('')}
-
-        </div>
-    `;
-
-}).join('');
-    
-document.getElementById("upcomingBreakList").innerHTML =
-
-upcomingBreaks.length
-
-? upcomingBreaks.map(x => `
-<li>
-    <strong>${x.name}</strong><br>
-    <small>${x.time}</small>
-</li>
-`).join('')
-
-: `
-<li style="
-    padding:12px;
-    background:#f8f9fa;
-    border-left:4px solid #ff9800;
-    color:#6c757d;
-    font-style:italic;
-    border-radius:6px;
-">
-    ☕ No upcoming breaks
-</li>
-`;
-
-    
-
-document.getElementById("upcomingLunchList").innerHTML =
-
-upcomingLunches.length
-
-? upcomingLunches.map(x => `
-<li>
-    <strong>${x.name}</strong><br>
-    <small>${x.time}</small>
-</li>
-`).join('')
-
-: `
-<li style="
-    padding:12px;
-    background:#f8f9fa;
-    border-left:4px solid #dc3545;
-    color:#6c757d;
-    font-style:italic;
-    border-radius:6px;
-">
-    🍽️ No upcoming lunches
-</li>
-`;
-
-    supervisorStatsData = supervisorStats;
-    supervisorDetailsData = supervisorStats;
-    
-} // closes runLookup
-
-function buildActionCenter(){
-
-    const selectedDate =
-        document.getElementById('selectedDate').value;
-
-    let attendanceToday =
-        calledOffList.filter(x =>
-
-            normalizeDate(
-                x['EST Date']
-            ) === selectedDate
-
-        ).length;
-
-    let today = new Date();
-
-    let nextWeek = new Date();
-
-    nextWeek.setDate(
-        today.getDate() + 7
-    );
-
-    let upcomingPTO =
-        ptoList.filter(x => {
-
-            let ptoDate =
-                new Date(
-                    getPTODate(x)
-                );
-
-            return (
-                ptoDate >= today &&
-                ptoDate <= nextWeek
-            );
-
-        }).length;
-
-    document.getElementById(
-        'actionCenterContent'
-    ).innerHTML = `
-
-        <div style="
-            line-height:2;
-            font-size:15px;
-        ">
-
-            ${
-                attendanceToday > 0
-
-                ?
-
-                `<div style="
-                    color:#dc3545;
-                    font-weight:bold;
-                ">
-                    🚫 ${attendanceToday} Attendance Exception(s) Today
-                 </div>`
-
-                :
-
-                `<div style="
-                    color:#28a745;
-                    font-weight:bold;
-                ">
-                    ✅ No Attendance Exceptions Today
-                 </div>`
-            }
-
-            <div style="
-                color:#17a2b8;
-                font-weight:bold;
-            ">
-                🏖️ ${upcomingPTO}
-                Upcoming PTO in Next 7 Days
-            </div>
-
-        </div>
-    `;
+function buildCoverageTimeline() {
+  const date = $('forecastDate').value;
+  if (!date) return;
+
+  const cells = coverageSlots(date).map(s => {
+    const ok = s.available >= s.expected;
+    const color = ok ? '#2e7d32' : '#c62828';
+    return `<div style="padding:8px 10px;border-radius:8px;background:${ok ? '#e8f5e9' : '#ffebee'};color:${color};border-left:4px solid ${color};font-size:13px">
+      <strong>${fmtAMPM(s.time)}</strong> &nbsp;&nbsp; Expected: <strong>${s.expected}</strong> &nbsp;|&nbsp; Actual: <strong>${s.available}</strong></div>`;
+  }).join('');
+
+  $('coverageTimelinePanel').innerHTML = `
+    <h3>📈 Full Day Coverage Forecast</h3>
+    <div style="display:grid;grid-template-columns:repeat(4,1fr);grid-template-rows:repeat(12,auto);grid-auto-flow:column;gap:10px;margin-top:15px">${cells}</div>`;
 }
 
-function buildUpcomingPTO(){
-
-    let today = new Date();
-
-    today.setHours(0,0,0,0);
-
-    let nextTwoDays = new Date(today);
-
-    nextTwoDays.setDate(
-        nextTwoDays.getDate() + 2
-    );
-
-    let upcoming = ptoList.filter(record => {
-
-        let ptoDate =
-            new Date(
-                getPTODate(record)
-            );
-
-        return (
-            ptoDate >= today &&
-            ptoDate <= nextTwoDays
-        );
-
-    });
-
-    upcoming.sort((a,b) =>
-
-        new Date(
-            getPTODate(a)
-        )
-
-        -
-
-        new Date(
-            getPTODate(b)
-        )
-
-    );
-
-    let grouped = {};
-
-    upcoming.forEach(record => {
-
-        let dateKey =
-            getPTODate(record);
-
-        if(!grouped[dateKey]){
-            grouped[dateKey] = [];
-        }
-
-        grouped[dateKey].push(
-            record.Name
-        );
-
-    });
-
-    let html = '';
-
-    Object.keys(grouped)
-
-    .sort()
-
-    .forEach(date => {
-
-        let formattedDate =
-            new Date(date)
-            .toLocaleDateString(
-                'en-US',
-                {
-                    year:'numeric',
-                    month:'long',
-                    day:'numeric'
-                }
-            );
-
-        html += `
-        <div style="
-            margin-bottom:12px;
-            padding:10px;
-            background:#f8fafc;
-            border-left:4px solid #17a2b8;
-            border-radius:8px;
-        ">
-
-            <div style="
-                font-weight:bold;
-                color:#003366;
-                margin-bottom:6px;
-            ">
-                📆 ${formattedDate}
-            </div>
-
-            ${grouped[date]
-                .sort()
-                .map(name => `
-                    <div>
-                        • ${name}
-                    </div>
-                `)
-                .join('')
-            }
-
-        </div>
-        `;
-
-    });
-
-    if(!upcoming.length){
-
-        html = `
-        <div style="
-            color:#6c757d;
-            font-style:italic;
-        ">
-            No PTO scheduled in the next 2 days
-        </div>
-        `;
-    }
-
-    document.getElementById(
-        'upcomingPTOList'
-    ).innerHTML = html;
-}
-
-    function buildAttendanceTrends(){
-
-    let last30Days = new Date();
-
-    last30Days.setDate(
-        last30Days.getDate() - 30
-    );
-
-    let supervisorCounts = {};
-
-    calledOffList.forEach(record => {
-
-        let attendanceDate =
-            new Date(
-                normalizeDate(
-                    record['EST Date']
-                )
-            );
-
-        if(attendanceDate < last30Days){
-            return;
-        }
-
-        let supervisor =
-            record.Supervisor || 'Unassigned';
-
-        if(!supervisorCounts[supervisor]){
-            supervisorCounts[supervisor] = 0;
-        }
-
-        supervisorCounts[supervisor]++;
-
-    });
-
-    let html = '';
-
-    Object.entries(supervisorCounts)
-
-    .sort((a,b) => b[1] - a[1])
-
-    .forEach(([supervisor,count]) => {
-
-        let icon = '🟢';
-
-        if(count >= 7){
-            icon = '🔴';
-        }
-        else if(count >= 4){
-            icon = '🟡';
-        }
-
-        html += `
-        <div style="
-            display:flex;
-            justify-content:space-between;
-            padding:6px 0;
-            border-bottom:1px solid #eee;
-        ">
-
-            <span>
-                ${icon} ${supervisor}
-            </span>
-
-            <strong>
-                ${count}
-            </strong>
-
-        </div>
-        `;
-    });
-
-    if(html === ''){
-
-        html = `
-        <div style="
-            color:#6c757d;
-            font-style:italic;
-        ">
-            No attendance records in the last 30 days
-        </div>
-        `;
-    }
-
-    document.getElementById(
-        'attendanceTrendContent'
-    ).innerHTML = html;
-}
-    
-function buildDailyOverview(){
-
-    const selectedDate =
-        document.getElementById(
-            'supervisorDate'
-        ).value;
-
-    const days = [
-        'Sunday',
-        'Monday',
-        'Tuesday',
-        'Wednesday',
-        'Thursday',
-        'Friday',
-        'Saturday'
-    ];
-
-    const dayName =
-        days[
-            new Date(selectedDate).getDay()
-        ];
-
-    let scheduled = 0;
-
-    data.forEach(r => {
-
-        let shift = r[dayName];
-
-        if(
-            shift &&
-            shift.toString().trim().toUpperCase() !== 'OFF'
-        ){
-            scheduled++;
-        }
-
-    });
-
-    let leave =
-        ptoList.filter(x =>
-            getPTODate(x) === selectedDate
-        ).length;
-
-    let absenteeism =
-        calledOffList.filter(x =>
-            normalizeDate(
-                x['EST Date']
-            ) === selectedDate
-        ).length;
-
-    let expected =
-        scheduled -
-        leave -
-        absenteeism;
-
-    let html = `
-
-    <div class="card"
-         onclick="showForecastAgents('scheduled')"
-         style="
-            border-top:5px solid #0d6efd;
-            cursor:pointer;
-         ">
-        <h3>👥 Scheduled</h3>
-        <div class="value">${scheduled}</div>
-
-        <div
-            id="forecast-scheduled"
-            style="
-                display:none;
-                margin-top:10px;
-                padding-top:10px;
-                border-top:1px solid #ddd;
-                font-size:12px;
-                text-align:left;
-            ">
-        </div>
-    </div>
-
-    <div class="card"
-         onclick="showForecastAgents('present')"
-         style="
-            border-top:5px solid #28a745;
-            cursor:pointer;
-         ">
-        <h3>✅ Present</h3>
-        <div class="value">${expected}</div>
-
-        <div
-            id="forecast-present"
-            style="
-                display:none;
-                margin-top:10px;
-                padding-top:10px;
-                border-top:1px solid #ddd;
-                font-size:12px;
-                text-align:left;
-            ">
-        </div>
-    </div>
-
-    <div class="card"
-         onclick="showForecastAgents('leave')"
-         style="
-            border-top:5px solid #17a2b8;
-            cursor:pointer;
-         ">
-        <h3>📋 Leave</h3>
-        <div class="value">${leave}</div>
-
-        <div
-            id="forecast-leave"
-            style="
-                display:none;
-                margin-top:10px;
-                padding-top:10px;
-                border-top:1px solid #ddd;
-                font-size:12px;
-                text-align:left;
-            ">
-        </div>
-    </div>
-
-    <div class="card"
-         onclick="showForecastAgents('absenteeism')"
-         style="
-            border-top:5px solid #dc3545;
-            cursor:pointer;
-         ">
-        <h3>🚫 Absenteeism</h3>
-        <div class="value">${absenteeism}</div>
-
-        <div
-            id="forecast-absenteeism"
-            style="
-                display:none;
-                margin-top:10px;
-                padding-top:10px;
-                border-top:1px solid #ddd;
-                font-size:12px;
-                text-align:left;
-            ">
-        </div>
-    </div>
-
-    <div class="card"
-         style="border-top:5px solid #ff9800;">
-        <h3>📉 Lowest Coverage</h3>
-        <div id="lowestCoverageCard">--</div>
-    </div>
-
-    <div class="card"
-         style="border-top:5px solid #6f42c1;">
-        <h3>📈 Highest Coverage</h3>
-        <div id="highestCoverageCard">--</div>
-    </div>
-    `;
-
-    document.getElementById(
-        'dailyOverviewCards'
-    ).innerHTML = html;
-
-    buildCoverageForecast();
-}
-
-    function showForecastAgents(type){
-
-    const section =
-        document.getElementById(
-            'forecast-' + type
-        );
-
-    if(section.style.display === 'block'){
-
-        section.style.display = 'none';
-        return;
-
-    }
-
-    const selectedDate =
-        document.getElementById(
-            'supervisorDate'
-        ).value;
-
-    const days = [
-        'Sunday',
-        'Monday',
-        'Tuesday',
-        'Wednesday',
-        'Thursday',
-        'Friday',
-        'Saturday'
-    ];
-
-    let day =
-        days[new Date(selectedDate).getDay()];
-
-    let grouped = {};
-
-    data.forEach(r => {
-
-        let supervisor =
-            r.Supervisor || 'Unassigned';
-
-        if(!grouped[supervisor]){
-            grouped[supervisor] = [];
-        }
-
-        let shift = r[day] || 'OFF';
-
-        let isLeave =
-            ptoList.some(x =>
-
-                (x.Name || '')
-                .trim()
-                .toUpperCase()
-
-                ===
-
-                (r.Name || '')
-                .trim()
-                .toUpperCase()
-
-                &&
-
-                getPTODate(x) === selectedDate
-
-            );
-
-        let isAbsent =
-            calledOffList.some(x =>
-
-                (x.Name || '')
-                .trim()
-                .toUpperCase()
-
-                ===
-
-                (r.Name || '')
-                .trim()
-                .toUpperCase()
-
-                &&
-
-                normalizeDate(
-                    x['EST Date']
-                ) === selectedDate
-
-            );
-
-        if(
-            type === 'scheduled' &&
-            shift.toUpperCase() !== 'OFF'
-        ){
-            grouped[supervisor].push(r.Name);
-        }
-
-        if(
-            type === 'present' &&
-            shift.toUpperCase() !== 'OFF' &&
-            !isLeave &&
-            !isAbsent
-        ){
-            grouped[supervisor].push(r.Name);
-        }
-
-        if(
-            type === 'leave' &&
-            isLeave
-        ){
-            grouped[supervisor].push(r.Name);
-        }
-
-        if(
-            type === 'absenteeism' &&
-            isAbsent
-        ){
-            grouped[supervisor].push(r.Name);
-        }
-
-    });
-
-    let html = '';
-
-    Object.entries(grouped)
-
-    .filter(([_,agents]) =>
-        agents.length > 0
-    )
-
-    .forEach(([supervisor,agents]) => {
-
-        html += `
-            <div style="margin-bottom:10px;">
-
-                <strong>
-                    👔 ${supervisor}
-                </strong>
-
-                <br><br>
-
-                ${agents.join('<br>')}
-
-                <hr>
-
-            </div>
-        `;
-
-    });
-
-    section.innerHTML = html;
-
-    section.style.display = 'block';
-}
-    
-    function buildCoverageForecast(){
-
-    let selectedDate =
-        document.getElementById(
-            'supervisorDate'
-        ).value;
-
-    if(!selectedDate) return;
-
-    const days = [
-        'Sunday',
-        'Monday',
-        'Tuesday',
-        'Wednesday',
-        'Thursday',
-        'Friday',
-        'Saturday'
-    ];
-
-    let day =
-        days[
-            new Date(selectedDate).getDay()
-        ];
-
-    let lowestCount = 9999;
-    let highestCount = 0;
-
-    let lowestTime = '';
-    let highestTime = '';
-
-    for(let h = 0; h < 24; h++){
-
-        for(let m = 0; m < 60; m += 30){
-
-            let currentTime =
-                String(h).padStart(2,'0')
-                + ':'
-                + String(m).padStart(2,'0');
-
-            let activeAgents = 0;
-
-            data.forEach(r => {
-
-                let shift = r[day];
-
-                if(
-                    !shift ||
-                    shift.toUpperCase() === 'OFF'
-                ){
-                    return;
-                }
-
-                let ptoRecord =
-                    ptoList.find(x =>
-
-                        (x.Name || '')
-                        .trim()
-                        .toUpperCase()
-
-                        ===
-
-                        (r.Name || '')
-                        .trim()
-                        .toUpperCase()
-
-                        &&
-
-                        getPTODate(x)
-                        ===
-                        selectedDate
-                    );
-
-                if(ptoRecord){
-                    return;
-                }
-
-                let attendanceRecord =
-                    calledOffList.find(x =>
-
-                        (x.Name || '')
-                        .trim()
-                        .toUpperCase()
-
-                        ===
-
-                        (r.Name || '')
-                        .trim()
-                        .toUpperCase()
-
-                        &&
-
-                        normalizeDate(
-                            x['EST Date']
-                        ) === selectedDate
-                    );
-
-                if(attendanceRecord){
-                    return;
-                }
-
-                let status =
-                    getStatus(
-                        r,
-                        day,
-                        currentTime
-                    );
-
-                if(status){
-                    activeAgents++;
-                }
-
-            });
-
-            if(activeAgents > highestCount){
-
-                highestCount =
-                    activeAgents;
-
-                highestTime =
-                    currentTime;
-
-            }
-
-            if(activeAgents < lowestCount){
-
-                lowestCount =
-                    activeAgents;
-
-                lowestTime =
-                    currentTime;
-
-            }
-
-        }
-    }
-
-    document.getElementById(
-        'lowestCoverageCard'
-    ).innerHTML =
-        `${formatAMPM(lowestTime)}
-         <br><strong>${lowestCount} agents</strong>`;
-
-    document.getElementById(
-        'highestCoverageCard'
-    ).innerHTML =
-        `${formatAMPM(highestTime)}
-         <br><strong>${highestCount} agents</strong>`;
-}
-
-function buildCoverageTimeline(){
-
-    let selectedDate =
-        document.getElementById(
-            'supervisorDate'
-        ).value;
-
-    if(!selectedDate){
-        return;
-    }
-
-    const days = [
-        'Sunday',
-        'Monday',
-        'Tuesday',
-        'Wednesday',
-        'Thursday',
-        'Friday',
-        'Saturday'
-    ];
-
-    let day =
-        days[
-            new Date(selectedDate).getDay()
-        ];
-
-    let html = `
-    <h3>
-        📈 Full Day Coverage Forecast
-    </h3>
-
-    <div style="
-    display:grid;
-    grid-template-columns:repeat(4,1fr);
-    grid-template-rows:repeat(12,auto);
-    grid-auto-flow:column;
-    gap:10px;
-    margin-top:15px;
-">
-`;
-
-    // <<< STEP 4 GOES HERE >>>
-
-for(let h=0; h<24; h++){
-
-    for(let m=0; m<60; m+=30){
-
-        let currentTime =
-            String(h).padStart(2,'0')
-            + ':'
-            + String(m).padStart(2,'0');
-
-        let expectedCount = 0;
-        let availableCount = 0;
-
-        data.forEach(r => {
-
-let shift = r[day];
-
-if(
-    !shift ||
-    shift.toString().trim().toUpperCase() === 'OFF'
-){
-    return;
-}
-
-let status =
-    getStatus(
-        r,
-        day,
-        currentTime
-    );
-
-if(status){
-    expectedCount++;
-}
-    
-
-            let ptoRecord =
-                ptoList.find(x =>
-
-                    (x.Name || '')
-                    .trim()
-                    .toUpperCase()
-
-                    ===
-
-                    (r.Name || '')
-                    .trim()
-                    .toUpperCase()
-
-                    &&
-
-                    getPTODate(x)
-                    ===
-                    selectedDate
-                );
-
-            if(ptoRecord){
-                return;
-            }
-
-            let attendanceRecord =
-                calledOffList.find(x =>
-
-                    (x.Name || '')
-                    .trim()
-                    .toUpperCase()
-
-                    ===
-
-                    (r.Name || '')
-                    .trim()
-                    .toUpperCase()
-
-                    &&
-
-                    normalizeDate(
-                        x['EST Date']
-                    ) === selectedDate
-                );
-
-            if(attendanceRecord){
-                return;
-            }
-
-            if(status){
-    availableCount++;
-}
-        });
-
-let bgColor = '#e8f5e9';
-let textColor = '#2e7d32';
-
-// Green when Actual = Expected
-if(availableCount === expectedCount){
-
-    bgColor = '#e8f5e9';
-    textColor = '#2e7d32';
-
-}
-// Red when Actual < Expected
-else if(availableCount < expectedCount){
-
-    bgColor = '#ffebee';
-    textColor = '#c62828';
-
-}
-else if(availableCount < 25){
-
-    bgColor = '#fff8e1';
-    textColor = '#ef6c00';
-
-}
-
-html += `
-<div style="
-    padding:8px 10px;
-    border-radius:8px;
-    background:${bgColor};
-    color:${textColor};
-    border-left:4px solid ${textColor};
-    font-size:13px;
-">
-
-    <strong>${formatAMPM(currentTime)}</strong>
-
-    &nbsp;&nbsp;
-
-    Expected:
-    <strong>${expectedCount}</strong>
-
-    &nbsp;|&nbsp;
-
-    Actual:
-    <strong>${availableCount}</strong>
-
-</div>
-`;
-
-    }
-}
-
-    // <<< END OF STEP 4 >>>
-
-    html += `
-        </div>
-    `;
-
-    document.getElementById(
-        'coverageTimelinePanel'
-    ).innerHTML = html;
-
-}
-    
-function buildSupervisorCards(){
-
-    let html = '';
-
-    Object.entries(supervisorStatsData)
-    .sort((a,b)=>a[0].localeCompare(b[0]))
-    .forEach(([name,stats])=>{
-
-        let staffingPct =
-    stats.teamSize > 0
-    ? (
-        (stats.working / stats.teamSize) * 100
-      ).toFixed(1)
-    : 0;
-        let cardColor =
-    stats.absenteeism > 0
-        ? '#dc3545'
-        : '#28a745';
-
-let statusIcon =
-    stats.absenteeism > 0
-        ? '🔴'
-        : '🟢';
-
-let bgColor =
-    stats.absenteeism > 0
-        ? '#fff5f5'
-        : '#f6fff8';
-
-        html += `
-        <div class="card"
-     onclick="toggleSupervisorDetails('${name}')"
-     style="
-        flex:0 0 260px;
-        text-align:left;
-        cursor:pointer;
-        border-top:6px solid ${cardColor};
-        background:${bgColor};
-     ">
-
-
-            <h3 style="
-                margin-bottom:10px;
-                font-size:16px;
-            ">
-                ${statusIcon} 👔 ${name}
-            </h3>
-
-            <div style="
-                font-size:14px;
-                line-height:1.8;
-            ">
-                <div>
-                    👥 Team Size:
-                    <strong>${stats.teamSize}</strong>
-                </div>
-                <div>
-                    ✅ Working:
-                    <strong>${stats.working}</strong>
-                </div>
-
-                <div>
-                    📋 Leave:
-                    <strong>${stats.leave}</strong>
-                </div>
-
-                <div>
-                    🚫 Absenteeism:
-                    <strong>${stats.absenteeism}</strong>
-                </div>
-
-                <div>
-                    ⚫ OFF:
-                    <strong>${stats.off}</strong>
-                </div>
-                <div style="
-    margin-top:10px;
-    padding-top:10px;
-    border-top:1px solid #ddd;
-    font-weight:bold;
-">
-    📊 Staffing:
-    <strong>${staffingPct}%</strong>
-</div>
-
-<div
-    id="details-${name.replaceAll(' ','-')}"
-    style="
-        display:none;
-        margin-top:10px;
-        padding-top:10px;
-        border-top:1px solid #ddd;
-        font-size:12px;
-    ">
-</div>
-
-</div>
-
-</div>
-`;
-
-    });
-
-    document.getElementById(
-        'supervisorSummaryCards'
-    ).innerHTML = html;
-}
-    function toggleSupervisorDetails(name){
-
-    const section =
-        document.getElementById(
-            'details-' +
-            name.replaceAll(' ','-')
-        );
-
-    if(section.style.display === 'block'){
-
-        section.style.display = 'none';
-        return;
-
-    }
-
-    const stats =
-        supervisorDetailsData[name];
-
-    section.innerHTML = `
-        <div>
-            <strong>✅ Working (${stats.workingAgents.length})</strong><br>
-            ${stats.workingAgents.join('<br>')}
-        </div>
-
-        <hr>
-
-        <div>
-            <strong>📋 Leave (${stats.leaveAgents.length})</strong><br>
-            ${stats.leaveAgents.join('<br>')}
-        </div>
-
-        <hr>
-
-        <div>
-            <strong>🚫 Absenteeism (${stats.absenteeismAgents.length})</strong><br>
-            ${stats.absenteeismAgents.join('<br>')}
-        </div>
-
-        <hr>
-
-        <div>
-            <strong>⚫ OFF (${stats.offAgents.length})</strong><br>
-            ${stats.offAgents.join('<br>')}
-        </div>
-    `;
-
-    section.style.display = 'block';
-}
-
-function openSupervisorDailyView(supervisorName){
-
-    const summaryDate =
-        document.getElementById('supervisorDate').value;
-
-    const summaryTime =
-    document.getElementById('interval').value;
-
-    showTab(
-        'scheduleTab',
-        document.querySelectorAll('.tab-btn')[2]
-    );
-
-    document.getElementById(
-        'scheduleSupervisor'
-    ).value = supervisorName;
-
-    if(summaryDate){
-
-        document.getElementById(
-            'scheduleDate'
-        ).value = summaryDate;
-
-    }
-
-    if(summaryDate){
-
-        document.getElementById(
-            'selectedDate'
-        ).value = summaryDate;
-
-    }
-
-    if(summaryTime){
-
-        document.getElementById(
-            'interval'
-        ).value = summaryTime;
-
-    }
-
-    buildScheduleView();
-
-    document.getElementById(
-        'scheduleSupervisor'
-    ).style.border =
-        '2px solid #1e88e5';
-
-    setTimeout(() => {
-
-        document.getElementById(
-            'scheduleSupervisor'
-        ).style.border = '';
-
-    }, 2000);
-
-}
-    
-function sortSchedule(col) {
-    if (sortColumn === col) {
-        sortAsc = !sortAsc;
-    } else {
-        sortColumn = col;
-        sortAsc = true;
-    }
-
-    buildScheduleView();
+/* =====================================================================
+   DAILY SCHEDULE
+   ===================================================================== */
+function showAllAgents() {
+  $('scheduleSupervisor').value = ALL;
+  $('agentSearch').value = '';
+  buildScheduleView();
 }
 
 function buildScheduleView() {
-    const selectedDate =
-    document.getElementById('scheduleDate').value;
+  const date = $('scheduleDate').value;
+  if (!date) return;
+  const day = dayName(date);
+  const sup = $('scheduleSupervisor').value;
+  const q = up($('agentSearch').value);
+  const source = $('scheduleTimezone').value === 'PH' ? phData : estData;
 
-const days = [
-    'Sunday',
-    'Monday',
-    'Tuesday',
-    'Wednesday',
-    'Thursday',
-    'Friday',
-    'Saturday'
-];
+  const rows = source
+    .filter(r => (sup === ALL || r.Supervisor === sup) && (!q || up(r.Name).includes(q)))
+    .map(r => ({ r, shift: r[day] || 'OFF', ...getAgentState(r, day, date) }));
 
-let day =
-    days[new Date(selectedDate).getDay()];
+  const { col, asc } = sortState.schedule;
+  const dir = asc ? 1 : -1;
+  rows.sort((a, b) => {
+    if (!col) return a.rank - b.rank || String(a.r.Name || '').localeCompare(b.r.Name || '');   // default: leaves, attendance, working, off
+    if (col === 'STATUS') return dir * (a.order - b.order);
+    const key = x => String(col === 'SHIFT' ? x.shift : (x.r[col] || ''));
+    return dir * key(a).localeCompare(key(b));
+  });
 
-    let s =
-        document.getElementById('scheduleSupervisor').value;
+  const counts = { WORKING: 0, PTO: 0, ATTENDANCE: 0, OFF: 0 };
+  rows.forEach(x => counts[x.cat]++);
 
-let search =
-    document.getElementById('agentSearch')
-    ? document.getElementById('agentSearch').value.trim().toUpperCase()
-    : '';
+  $('scheduleTable').tBodies[0].innerHTML = rows.map(({ r, shift, html, cat }) => `
+    <tr class="${supClass(r.Supervisor)} ${cat === 'OFF' ? 'roster-off' : ''}">
+      <td>${esc(r.Name)}</td>
+      <td>${html}</td>
+      <td>${convertShiftRange(shift)}</td>
+      <td>${formatTimeRange(r['Break 1'], 15)}</td>
+      <td>${formatTimeRange(r['Lunch'], 60)}</td>
+      <td>${formatTimeRange(r['Break 2'], 15)}</td>
+      <td>${formatTimeRange(r['Break 3'], 15)}</td>
+      <td>${esc(r.Supervisor)}</td>
+    </tr>`).join('');
 
-let sourceData =
-    document.getElementById('scheduleTimezone')?.value === 'PH'
-    ? phData
-    : estData;
-
-let rows = [...sourceData].filter(r => {
-
-    let supervisorMatch =
-        s === 'All Supervisors' ||
-        r.Supervisor === s;
-
-    let agentMatch =
-        search === '' ||
-        (r.Name || '')
-            .toUpperCase()
-            .includes(search);
-
-    return (
-        supervisorMatch &&
-        agentMatch
-    );
-
-});
-
-    if (sortColumn) {
-
-    rows.sort((a,b) => {
-
-        // STATUS SORT
-        if(sortColumn === 'STATUS'){
-
-            let getStatusOrder = (r) => {
-
-                let shift = r[day] || 'OFF';
-
-                if(
-                    shift.toString().trim().toUpperCase() === 'OFF'
-                ){
-                    return 99;
-                }
-
-                let ptoRecord = ptoList.find(x =>
-
-                    (x.Name || '').trim().toUpperCase() ===
-                    (r.Name || '').trim().toUpperCase()
-
-                    &&
-
-                    getPTODate(x) === selectedDate
-                );
-
-                if(ptoRecord){
-
-                let reason =
-                (ptoRecord.Reason || '')
-                .toUpperCase();
-    
-                 if(reason.includes('VACATION'))
-                        return 1;
-
-                    if(
-                        reason.includes('MATERNITY') ||
-                        reason.includes('MAT LEAVE') ||
-                        reason.includes('LOA')
-                    )
-                        return 2;
-
-                    if(reason.includes('SICK'))
-                        return 3;
-
-                    return 4;
-                }
-
-                let coRecord = calledOffList.find(x =>
-
-                    (x.Name || '').trim().toUpperCase() ===
-                    (r.Name || '').trim().toUpperCase()
-
-                    &&
-
-                    normalizeDate(
-                        x['EST Date']
-                    ) === selectedDate
-                );
-
-                if(coRecord){
-
-                    let reason =
-                        (coRecord.Reason || '')
-                        .toUpperCase();
-
-                    if(reason.includes('NCNS'))
-                        return 5;
-
-                    if(reason.includes('LATE'))
-                        return 6;
-
-                    if(reason.includes('LEFT EARLY'))
-                        return 7;
-
-                    return 8;
-                }
-
-                return 9; // Working
-            };
-
-            let av = getStatusOrder(a);
-            let bv = getStatusOrder(b);
-
-            return sortAsc
-                ? av - bv
-                : bv - av;
-        }
-
-        let av =
-            sortColumn === 'SHIFT'
-            ? (a[day] || '')
-            : (a[sortColumn] || '');
-
-        let bv =
-            sortColumn === 'SHIFT'
-            ? (b[day] || '')
-            : (b[sortColumn] || '');
-
-        return sortAsc
-            ? String(av).localeCompare(String(bv))
-            : String(bv).localeCompare(String(av));
-
-    });
-
+  $('dvWorking').textContent = counts.WORKING;
+  $('dvPTO').textContent = counts.PTO;
+  $('dvAttendance').textContent = counts.ATTENDANCE;
+  $('dvOff').textContent = counts.OFF;
 }
 
-    let workingCount = 0;
-    let ptoCount = 0;
-    let attendanceCount = 0;
-    let offCount = 0;
+/* =====================================================================
+   WEEKLY ROSTER
+   ===================================================================== */
+function buildRosterView() {
+  const sup = $('rosterSupervisor').value;
+  const q = up($('rosterSearch').value);
+  const rows = estData.filter(r => (sup === ALL || r.Supervisor === sup) && (!q || up(r.Name).includes(q)));
 
-    let html = '';
+  const { col, asc } = sortState.roster;
+  if (col) {
+    const dir = asc ? 1 : -1;
+    const start = v => { const p = parseShift(v); return p ? p[0] : 9999; };
+    rows.sort((a, b) => (col === 'Name' || col === 'Supervisor')
+      ? dir * String(a[col] || '').localeCompare(String(b[col] || ''))
+      : dir * (start(a[col]) - start(b[col])));
+  }
 
-rows.sort((a,b) => {
+  const cell = (est, ph) => `<td>
+    <div class="us">🇺🇸 ${convertShiftRange(est)}</div>
+    <div class="ph">🇵🇭 ${convertShiftRange(ph)}</div></td>`;
 
-    function getCategory(record){
-
-        let shift = record[day] || 'OFF';
-
-        let ptoRecord = ptoList.find(x =>
-
-            (x.Name || '').trim().toUpperCase() ===
-            (record.Name || '').trim().toUpperCase()
-
-            &&
-
-            getPTODate(x) === selectedDate
-
-        );
-
-        if(ptoRecord){
-            return 1; // Leaves
-        }
-
-        let calledOffRecord = calledOffList.find(x =>
-
-            (x.Name || '').trim().toUpperCase() ===
-            (record.Name || '').trim().toUpperCase()
-
-            &&
-
-            normalizeDate(
-                x['EST Date']
-            ) === selectedDate
-
-        );
-
-        if(calledOffRecord){
-            return 2; // Attendance Alerts
-        }
-
-        if(
-            shift.toString()
-                 .trim()
-                 .toUpperCase() === 'OFF'
-        ){
-            return 4; // OFF
-        }
-
-        return 3; // Working
-    }
-
-    let av = getCategory(a);
-    let bv = getCategory(b);
-
-    if(av !== bv){
-        return av - bv;
-    }
-
-    return (a.Name || '')
-        .localeCompare(
-            b.Name || ''
-        );
-
-});
-
-rows.forEach(r => {
-
-let category = 'WORKING';
-
-let shift = r[day] || 'OFF';
-
-shift = shift || 'OFF';
-
-let status = '✅ Working';
-
-if(
-    shift.toString().trim().toUpperCase() === 'OFF'
-){
-    status = '⚫ OFF';
-    category = 'OFF';
+  $('rosterTable').tBodies[0].innerHTML = rows.map(r => {
+    const phRow = phData.find(x => up(x.Name) === up(r.Name));
+    return `<tr class="${supClass(r.Supervisor)}">
+      <td>${esc(r.Name)}</td>
+      ${WEEK.map(d => cell(r[d], phRow?.[d])).join('')}
+      <td>${esc(r.Supervisor)}</td>
+    </tr>`;
+  }).join('');
 }
 
-let ptoRecord = ptoList.find(x =>
-
-    (x.Name || '')
-        .trim()
-        .toUpperCase() ===
-    (r.Name || '')
-        .trim()
-        .toUpperCase()
-
-    &&
-
-    getPTODate(x) === selectedDate
-
-);
-
-if(ptoRecord){
-
-    category = 'PTO';
-
-    let reason =
-        (ptoRecord.Reason || '')
-        .toUpperCase();
-
-    if(reason.includes('VACATION')){
-
-        status =
-            '<span style="color:#17a2b8;font-weight:bold;">🌴 Vacation Leave</span>';
-
-    }
-    else if(
-        reason.includes('MATERNITY') ||
-        reason.includes('MAT LEAVE') ||
-        reason.includes('LOA')
-    ){
-
-        status =
-            '<span style="color:#9c27b0;font-weight:bold;">🤱 Maternity Leave</span>';
-
-    }
-    else if(reason.includes('SICK')){
-
-        status =
-            '<span style="color:#e53935;font-weight:bold;">🤒 Sick Leave</span>';
-
-    }
-    else if(reason.includes('BEREAVEMENT')){
-
-        status =
-            '<span style="color:#6c757d;font-weight:bold;">🕊️ Bereavement</span>';
-
-    }
-    else{
-
-        status =
-            `<span style="color:#17a2b8;font-weight:bold;">
-                🏖️ ${ptoRecord.Reason || 'PTO'}
-            </span>`;
-
-    }
-
-}
-
-let calledOffRecord = calledOffList.find(x =>
-
-    (x.Name || '')
-        .trim()
-        .toUpperCase() ===
-    (r.Name || '')
-        .trim()
-        .toUpperCase()
-
-    &&
-
-    normalizeDate(x['EST Date']) === selectedDate
-
-);
-
-if(calledOffRecord){
-
-    category = 'ATTENDANCE';
-
-    let reason =
-        (calledOffRecord.Reason || '')
-        .toUpperCase();
-
-    if(reason.includes('NCNS')){
-
-        status =
-            '<span style="color:black;font-weight:bold;">❌ NCNS</span>';
-
-    }
-    else if(
-    reason.includes('RUNNING LATE') ||
-    reason.includes('LATE')
-){
-
-        status =
-            '<span style="color:#ff9800;font-weight:bold;">⏰ Running Late</span>';
-
-    }
-    else if(reason.includes('LEFT EARLY')){
-
-        status =
-            '<span style="color:#9c27b0;font-weight:bold;">↘️ Left Early</span>';
-
-    }
-    else{
-
-        status =
-            '<span style="color:#dc3545;font-weight:bold;">🚦 Called Off</span>';
-
-    }
-
-}
-if(category === 'WORKING'){
-    workingCount++;
-}
-
-if(category === 'PTO'){
-    ptoCount++;
-}
-
-if(category === 'ATTENDANCE'){
-    attendanceCount++;
-}
-
-if(category === 'OFF'){
-    offCount++;
-}
-let rowClass =
-    shift.toString().trim().toUpperCase() === 'OFF'
-    ? 'roster-off'
-    : '';
-
-    let supervisorClass = '';
-
-    if(r.Supervisor === 'Manilyn Abellar')
-        supervisorClass = 'row-manilyn';
-
-    else if(r.Supervisor === 'Anmheca Valencia')
-        supervisorClass = 'row-anmheca';
-
-    else if(r.Supervisor === 'Remmo Panaligan')
-        supervisorClass = 'row-remmo';
-
-    else if(r.Supervisor === 'Christopher Rodas')
-        supervisorClass = 'row-christopher';
-
-    else if(r.Supervisor === 'Michael Dominguez')
-        supervisorClass = 'row-michael';
-
-    html += `
-<tr class="${supervisorClass} ${rowClass}">
-    <td>${r.Name || ''}</td>
-
-    <td>${status}</td>
-
-    <td>${convertShiftRange(shift)}</td>
-
-    <td>${formatTimeRange(r['Break 1'],15)}</td>
-
-    <td>${formatTimeRange(r['Lunch'],60)}</td>
-
-    <td>${formatTimeRange(r['Break 2'],15)}</td>
-
-    <td>${formatTimeRange(r['Break 3'],15)}</td>
-
-    <td>${r.Supervisor || ''}</td>
-</tr> `;
-    });
-
-    document.querySelector(
-        '#scheduleTable tbody'
-    ).innerHTML = html;
-   
-    document.getElementById('dvWorking').textContent =
-    workingCount;
-
-    document.getElementById('dvPTO').textContent =
-    ptoCount;
-
-    document.getElementById('dvAttendance').textContent =
-    attendanceCount;
-
-    document.getElementById('dvOff').textContent =
-    offCount;
-}
-
-    function toProperCase(name){
-
-    return name
-        .toLowerCase()
-        .replace(/\b\w/g, function(letter){
-            return letter.toUpperCase();
-        });
-
-}
-    function checkMissingAgents(){
-
-    if(!realtimeMode){
-
-        alert(
-            "⚠️ Live Mode (EST) must be enabled to ensure the Working list is current before checking for missing agents."
-        );
-
-        return;
-    }
-
-    let pasted =
-        document.getElementById('agentPaste')
-        .value
-        .split('\n')
-        .map(x => x.trim().toUpperCase())
-        .filter(Boolean);
-
-let found = [];
-let missing = [];
-let unexpected = [];
-
-    currentWorkingAgents.forEach(agent => {
-
-        if(pasted.includes(agent)){
-            found.push(agent);
-        }else{
-            missing.push(agent);
-        }
-
-    });
-        pasted.forEach(agent => {
-
-    if(!currentWorkingAgents.includes(agent)){
-        unexpected.push(agent);
-    }
-
-});
-
-    document.getElementById('foundAgents').innerHTML =
-    found.map(x =>
-        `<li class="working">${toProperCase(x)}</li>`
-    ).join('');
-
-document.getElementById('missingAgents').innerHTML =
-    missing.map(x =>
-        `<li style="color:red;font-weight:bold">
-            ${toProperCase(x)}
-         </li>`
-    ).join('');
-
-document.getElementById('unexpectedAgents').innerHTML =
-    unexpected.map(x =>
-        `<li style="
-            color:#ff9800;
-            font-weight:bold;
-        ">
-            ${toProperCase(x)}
-        </li>`
-    ).join('');
-
-}
-function loadCompareAgents(){
-
-    let timezone =
-        document.getElementById('compareTimezone').value;
-
-    let supervisor =
-        document.getElementById('compareSupervisor').value;
-
-    let sourceData =
-        timezone === 'PH'
-        ? phData
-        : estData;
-
-    let rows = [...sourceData];
-
-    if(supervisor !== 'All Supervisors'){
-
-        rows = rows.filter(r =>
-            r.Supervisor === supervisor
-        );
-
-    }
-
-    let agents = [
-        ...new Set(
-            rows
-                .map(x => x.Name)
-                .filter(Boolean)
-        )
-    ].sort();
-
-    document.getElementById('agentDropdown').innerHTML =
-        agents.map(agent => `
-            <label style="
-                display:block;
-                padding:4px 0;
-            ">
-                <input
-                    type="checkbox"
-                    class="compareAgentCheck"
-                    value="${agent}"
-                    onchange="
-                        updateAgentCount();
-                        buildScheduleComparison();
-                    ">
-                ${agent}
-            </label>
-        `).join('');
-
-    updateAgentCount();
-}
-    
-    function buildScheduleComparison(){
-
-    let timezone =
-        document.getElementById('compareTimezone').value;
-
-    let newData =
-        timezone === 'PH'
-        ? phData
-        : estData;
-
-    let oldData =
-        timezone === 'PH'
-        ? phOldData
-        : estOldData;
-
-    let selectedSupervisor =
-        document.getElementById('compareSupervisor')
-        ?.value || 'All Supervisors';
-
-    let selectedAgents =
-    Array.from(
-        document.querySelectorAll(
-            '.compareAgentCheck:checked'
-        )
-    ).map(x => x.value);
-
-    let html = '';
-
-    newData.forEach(newRow => {
-
-        if(
-            selectedSupervisor !== 'All Supervisors' &&
-            newRow.Supervisor !== selectedSupervisor
-        ){
-            return;
-        }
-
-        if(
-            selectedAgents.length > 0 &&
-            !selectedAgents.includes(newRow.Name)
-        ){
-            return;
-        }
-
-        let oldRow = oldData.find(x =>
-            (x.Name || '').trim().toUpperCase() ===
-            (newRow.Name || '').trim().toUpperCase()
-        );
-
-        if(!oldRow){
-            return;
-        }
-
-        let days = [
-            'Monday',
-            'Tuesday',
-            'Wednesday',
-            'Thursday',
-            'Friday',
-            'Saturday',
-            'Sunday'
-        ];
-
-        let hasChanges = days.some(day =>
-    (oldRow[day] || '') !==
-    (newRow[day] || '')
-);
-
-let showAll =
-    document.getElementById('showUnchanged')?.checked;
-
-// If agents are selected, always show them
-if(selectedAgents.length > 0){
-    // continue
-}
-else if(!showAll && !hasChanges){
-    return;
-}
-
-        html += `
-        <tr style="background:#ffffff;">
-            <td rowspan="2">
-                <strong>${newRow.Name}</strong>
-            </td>
-
-            <td>OLD</td>
-
-            ${days.map(day => `
-    <td>${convertShiftRange(oldRow[day])}</td>
-`).join('')}
-        </tr>
-
-        <tr style="background:#d4edda;">
-
-            <td>NEW</td>
-
-            ${days.map(day => {
-
-                let changed =
-                    (oldRow[day] || '') !==
-                    (newRow[day] || '');
-
-                return `
-                    <td style="
-                        ${changed
-                            ? 'background:#ffcdd2;font-weight:bold;'
-                            : ''}
-                    ">
-                        ${convertShiftRange(newRow[day])}
-                    </td>
-                `;
-
-            }).join('')}
-
-        </tr>
-        `;
-
-    });
-
-    document.querySelector(
-        '#scheduleComparisonTable tbody'
-    ).innerHTML =
-        html ||
-        `
-        <tr>
-            <td colspan="9">
-                No schedule differences found
-            </td>
-        </tr>
-        `;
-}
-function buildSupervisorAllDaySummary(){
-
-    const selectedDate =
-        document.getElementById('supervisorDate').value;
-
-    document.getElementById(
-    'summaryDateRange'
-).innerHTML =
-
-    `📅 Daily Summary:
-     ${new Date(selectedDate)
-        .toLocaleDateString(
-            'en-US',
-            {
-                month:'long',
-                day:'numeric',
-                year:'numeric'
-            }
-        )}`;
-    
-    const summaryView =
-    document.getElementById('summaryView').value;
-
-    if(summaryView === 'mtd'){
-
-    buildSupervisorMTDSummary();
-
-    return;
-}
-    if(summaryView === 'weekly'){
-
-    buildSupervisorWeeklySummary();
-
-    return;
-}
-
-    console.log(
-    'SUMMARY VIEW:',
-    summaryView
-);
-
-    const days = [
-        'Sunday',
-        'Monday',
-        'Tuesday',
-        'Wednesday',
-        'Thursday',
-        'Friday',
-        'Saturday'
-    ];
-
-    let day =
-        days[new Date(selectedDate).getDay()];
-
-    let supervisorData = {};
-
-    data.forEach(r=>{
-
-        let sup =
-            r.Supervisor || 'Unassigned';
-
-        if(!supervisorData[sup]){
-
-            supervisorData[sup] = {
-    teamSize:0,
-    scheduled:0,
-    leave:0,
-    absenteeism:0,
-    off:0,
-
-    scheduledAgents:[],
-    leaveAgents:[],
-    absenteeismAgents:[],
-    offAgents:[]
+/* =====================================================================
+   PTO + ABSENTEEISM TABLES
+   ===================================================================== */
+const RECORD_COLS = { 'Name': '👤 Agent Name', 'EST Date': '📅 Date', 'Reason': '🚦 Reason', 'Supervisor': '🧑‍💼 Supervisor' };
+const RECORD_VIEWS = {
+  pto: { table: 'ptoTable',      list: () => ptoList,       sup: 'ptoSupervisor',      date: 'ptoDate',      search: 'ptoSearch',      empty: 'No PTO records found' },
+  att: { table: 'calledOffTable', list: () => calledOffList, sup: 'calledOffSupervisor', date: 'calledOffDate', search: 'calledOffSearch', empty: 'No Called Off records found' }
 };
 
-        }
+function buildRecordTable(kind) {
+  const v = RECORD_VIEWS[kind], table = $(v.table), list = v.list();
+  if (!list.length) { table.tBodies[0].innerHTML = `<tr><td>${v.empty}</td></tr>`; return; }
 
-        supervisorData[sup].teamSize++;
+  table.tHead.innerHTML = '<tr>' + Object.entries(RECORD_COLS)
+    .map(([c, title]) => `<th onclick="sortBy('${kind}','${c}')">${title}</th>`).join('') + '</tr>';
 
-        let shift =
-            r[day] || 'OFF';
+  const sup = $(v.sup).value, date = $(v.date).value, q = up($(v.search).value);
+  const { col, asc } = sortState[kind];
+  const dir = asc ? 1 : -1;
 
-        if(
-            shift.toUpperCase() === 'OFF'
-        ){
-            supervisorData[sup].off++;
-            supervisorData[sup].offAgents.push(r.Name);
-            return;
-        }
+  const rows = list.filter(r =>
+    (sup === ALL || r.Supervisor === sup) &&
+    (!q || up(r.Name).includes(q)) &&
+    (!date || normalizeDate(r['EST Date']) === date)
+  );
 
-        supervisorData[sup].scheduled++;
-        supervisorData[sup].scheduledAgents.push(r.Name);
+  if (col) rows.sort((a, b) => col === 'EST Date'
+    ? dir * (new Date(normalizeDate(a[col])) - new Date(normalizeDate(b[col])))
+    : dir * String(a[col] || '').localeCompare(String(b[col] || '')));
 
-        let pto =
-            ptoList.find(x=>
-
-                (x.Name || '').trim().toUpperCase()
-
-                ===
-
-                (r.Name || '').trim().toUpperCase()
-
-                &&
-
-                getPTODate(x) === selectedDate
-            );
-
-        if(pto){
-
-            supervisorData[sup].leave++;
-            supervisorData[sup].leaveAgents.push(r.Name);
-            return;
-        }
-
-        let attendance =
-            calledOffList.find(x=>
-
-                (x.Name || '').trim().toUpperCase()
-
-                ===
-
-                (r.Name || '').trim().toUpperCase()
-
-                &&
-
-                normalizeDate(
-                    x['EST Date']
-                ) === selectedDate
-            );
-
-        if(attendance){
-
-            supervisorData[sup].absenteeism++;
-            supervisorData[sup].absenteeismAgents.push(r.Name);
-        }
-
-    });
-
-    let html = '';
-
-    Object.entries(supervisorData)
-
-.sort((a,b)=>{
-
-    let aIssue =
-        a[1].absenteeism > 0 ? 1 : 0;
-
-    let bIssue =
-        b[1].absenteeism > 0 ? 1 : 0;
-
-    if(aIssue !== bIssue){
-        return bIssue - aIssue;
-    }
-
-    return a[0].localeCompare(b[0]);
-
-})
-
-.forEach(([name,stats])=>{
-
-        let coverage =
-            stats.scheduled > 0
-            ? (
-                (
-                    (
-                        stats.scheduled
-                        -
-                        stats.leave
-                        -
-                        stats.absenteeism
-                    )
-                    /
-                    stats.scheduled
-                ) * 100
-              ).toFixed(1)
-            : 0;
-let cardColor =
-    stats.absenteeism > 0
-        ? '#dc3545'
-        : '#28a745';
-
-let backgroundColor =
-    stats.absenteeism > 0
-        ? '#fff5f5'
-        : '#ffffff';
-
-let statusIcon =
-    stats.absenteeism > 0
-        ? '🔴'
-        : '🟢';
-html += `
-<div class="card"
-     onclick="toggleSupervisorSummaryDetails('${name}')"
-     style="
-        border-top:6px solid ${cardColor};
-        background:${backgroundColor};
-     ">
-
-    <h3>${statusIcon} 👔 ${name}</h3>
-
-    <div>👥 Team Size: ${stats.teamSize}</div>
-
-    <div>📅 Scheduled: ${stats.scheduled}</div>
-
-    <div>📋 Leave: ${stats.leave}</div>
-
-    <div>🚫 Absenteeism: ${stats.absenteeism}</div>
-
-    <div>⚫ OFF: ${stats.off}</div>
-
-    <hr>
-
-    <div>
-        📊 Coverage:
-        <strong>${coverage}%</strong>
-    </div>
-
-    <!-- ADD THIS -->
-    <div
-        id="details-${name.replaceAll(' ','-')}"
-        style="
-            display:none;
-            margin-top:10px;
-            padding-top:10px;
-            border-top:1px solid #ddd;
-            font-size:12px;
-            text-align:left;
-        ">
-    </div>
-
-</div>
-`;
-    });
-
-    document.getElementById(
-        'supervisorSummaryCards'
-    ).innerHTML = html;
-    window.supervisorSummaryData =
-    supervisorData;
-}
-    function toggleSupervisorSummaryDetails(name){
-
-    const section =
-        document.getElementById(
-            'details-' +
-            name.replaceAll(' ','-')
-        );
-
-    if(section.style.display === 'block'){
-        section.style.display = 'none';
-        return;
-    }
-
-    const stats =
-        supervisorSummaryData[name];
-
-    section.innerHTML = `
-
-        <strong>📅 Scheduled (${stats.scheduledAgents.length})</strong><br>
-        ${stats.scheduledAgents.join('<br>')}
-
-        <hr>
-
-        <strong>📋 Leave (${stats.leaveAgents.length})</strong><br>
-        ${stats.leaveAgents.join('<br>')}
-
-        <hr>
-
-        <strong>🚫 Absenteeism (${stats.absenteeismAgents.length})</strong><br>
-        ${stats.absenteeismAgents.join('<br>')}
-
-        <hr>
-
-        <strong>⚫ OFF (${stats.offAgents.length})</strong><br>
-        ${stats.offAgents.join('<br>')}
-    `;
-
-    section.style.display = 'block';
+  table.tBodies[0].innerHTML = rows.map(r =>
+    '<tr>' + Object.keys(RECORD_COLS).map(c => `<td>${esc(r[c])}</td>`).join('') + '</tr>').join('');
 }
 
-    function buildSupervisorMTDSummary(){
+function clearRecordDate(kind) {
+  $(RECORD_VIEWS[kind].date).value = '';
+  buildRecordTable(kind);
+}
 
-    const selectedDate =
-        document.getElementById(
-            'supervisorDate'
-        ).value;
+/* =====================================================================
+   MISSING AGENT CHECKER
+   ===================================================================== */
+const toProperCase = name => name.toLowerCase().replace(/\b\w/g, c => c.toUpperCase());
 
-    const selectedDateObj =
-        new Date(selectedDate);
+function checkMissingAgents() {
+  if (!realtimeMode) {
+    alert('⚠️ Live Mode (EST) must be enabled to ensure the Working list is current before checking for missing agents.');
+    return;
+  }
+  const pasted = $('agentPaste').value.split('\n').map(up).filter(Boolean);
+  const found = currentWorkingAgents.filter(a => pasted.includes(a));
+  const missing = currentWorkingAgents.filter(a => !pasted.includes(a));
+  const unexpected = pasted.filter(a => !currentWorkingAgents.includes(a));
 
-    const monthStart =
-        new Date(
-            selectedDateObj.getFullYear(),
-            selectedDateObj.getMonth(),
-            1
-        );
-    document.getElementById(
-    'summaryDateRange'
-).innerHTML =
+  const list = (arr, style = '') => arr.map(x => `<li ${style}>${esc(toProperCase(x))}</li>`).join('');
+  $('foundAgents').innerHTML = list(found, 'class="working"');
+  $('missingAgents').innerHTML = list(missing, 'style="color:red;font-weight:bold"');
+  $('unexpectedAgents').innerHTML = list(unexpected, 'style="color:#ff9800;font-weight:bold"');
+}
 
-    `📅 Month To Date:
-     ${monthStart.toLocaleDateString('en-US',{
-        month:'short',
-        day:'numeric',
-        year:'numeric'
-     })}
-     -
-     ${selectedDateObj.toLocaleDateString('en-US',{
-        month:'short',
-        day:'numeric',
-        year:'numeric'
-     })}`;
+/* =====================================================================
+   SCHEDULE COMPARISON
+   ===================================================================== */
+function updateAgentCount() {
+  const n = document.querySelectorAll('.compareAgentCheck:checked').length;
+  $('agentDropdownBtn').innerHTML = `👤 Select Agents (${n})`;
+}
 
-    let supervisorData = {};
+function loadCompareAgents() {
+  const source = $('compareTimezone').value === 'PH' ? phData : estData;
+  const sup = $('compareSupervisor').value;
+  const agents = [...new Set(source
+    .filter(r => sup === ALL || r.Supervisor === sup)
+    .map(r => r.Name).filter(Boolean))].sort();
 
-    data.forEach(agent => {
+  $('agentDropdown').innerHTML = agents.map(a => `
+    <label style="display:block;padding:4px 0">
+      <input type="checkbox" class="compareAgentCheck" value="${esc(a)}"
+             onchange="updateAgentCount();buildScheduleComparison()"> ${esc(a)}
+    </label>`).join('');
+  updateAgentCount();
+}
 
-        let supervisor =
-            agent.Supervisor || 'Unassigned';
+function buildScheduleComparison() {
+  const ph = $('compareTimezone').value === 'PH';
+  const newData = ph ? phData : estData;
+  const oldData = ph ? phOldData : estOldData;
+  const sup = $('compareSupervisor').value;
+  const selected = [...document.querySelectorAll('.compareAgentCheck:checked')].map(x => x.value);
+  const showAll = $('showUnchanged').checked;
 
-        if(!supervisorData[supervisor]){
+  let html = '';
+  newData.forEach(n => {
+    if (sup !== ALL && n.Supervisor !== sup) return;
+    if (selected.length && !selected.includes(n.Name)) return;
 
-            supervisorData[supervisor] = {
-                teamSize:0,
-                leave:0,
-                attendance:0
-            };
+    const o = oldData.find(x => up(x.Name) === up(n.Name));
+    if (!o) return;
 
-        }
+    const changedDays = WEEK.filter(d => (o[d] || '') !== (n[d] || ''));
+    if (!selected.length && !showAll && !changedDays.length) return;
 
-        supervisorData[supervisor].teamSize++;
+    html += `
+      <tr>
+        <td rowspan="2"><strong>${esc(n.Name)}</strong></td>
+        <td>OLD</td>
+        ${WEEK.map(d => `<td>${convertShiftRange(o[d])}</td>`).join('')}
+      </tr>
+      <tr style="background:#d4edda">
+        <td>NEW</td>
+        ${WEEK.map(d => `<td style="${changedDays.includes(d) ? 'background:#ffcdd2;font-weight:bold' : ''}">${convertShiftRange(n[d])}</td>`).join('')}
+      </tr>`;
+  });
 
-    });
+  $('scheduleComparisonTable').tBodies[0].innerHTML =
+    html || '<tr><td colspan="9">No schedule differences found</td></tr>';
+}
 
-   /* VACATION LEAVE MTD ONLY */
+/* =====================================================================
+   INIT
+   ===================================================================== */
+function buildIntervalOptions() {
+  let html = '';
+  for (let m = 0; m < 1440; m += 30) {
+    const t = toHHMM(m);
+    html += `<option value="${t}">${fmtAMPM(t)}</option>`;
+  }
+  $('interval').innerHTML = html;
+  $('interval').value = '09:00';
+}
 
-ptoList.forEach(record => {
+window.addEventListener('load', async () => {
+  buildIntervalOptions();
 
-    let ptoDate =
-        new Date(
-            getPTODate(record)
-        );
+  const today = ymd(estNow());
+  ['selectedDate', 'ptoDate', 'calledOffDate', 'scheduleDate', 'supervisorDate', 'forecastDate']
+    .forEach(id => $(id).value = today);
 
-    if(
-        ptoDate < monthStart ||
-        ptoDate > selectedDateObj
-    ){
-        return;
-    }
+  await loadRawData();
 
-    let reason =
-        (record.Reason || '')
-        .toUpperCase();
+  await loadAttendance();
+  renderAll();
 
-    if(
-        !reason.includes('VACATION')
-    ){
-        return;
-    }
-
-    let rosterAgent =
-        data.find(a =>
-
-            (a.Name || '')
-            .trim()
-            .toUpperCase()
-
-            ===
-
-            (record.Name || '')
-            .trim()
-            .toUpperCase()
-
-        );
-
-    if(!rosterAgent){
-        return;
-    }
-
-    let supervisor =
-        rosterAgent.Supervisor || 'Unassigned';
-
-    supervisorData[supervisor].leave++;
-
+  updateClock();
+  setInterval(updateClock, 1000);
+  setInterval(() => refreshAttendanceData(false), REFRESH_MS);
 });
-
-    /* Attendance MTD */
-
-    calledOffList.forEach(record => {
-
-        let attendanceDate =
-            new Date(
-                normalizeDate(
-                    record['EST Date']
-                )
-            );
-
-        if(
-            attendanceDate < monthStart ||
-            attendanceDate > selectedDateObj
-        ){
-            return;
-        }
-
-        let rosterAgent =
-            data.find(a =>
-
-                (a.Name || '')
-                .trim()
-                .toUpperCase()
-
-                ===
-
-                (record.Name || '')
-                .trim()
-                .toUpperCase()
-
-            );
-
-        if(!rosterAgent){
-            return;
-        }
-
-        let supervisor =
-            rosterAgent.Supervisor || 'Unassigned';
-
-        supervisorData[supervisor].attendance++;
-
-    });
-
-    let html = '';
-
-    Object.entries(supervisorData)
-
-    .sort((a,b) =>
-        a[0].localeCompare(b[0])
-    )
-
-    .forEach(([name,stats]) => {
-
-        let reliability =
-
-            stats.teamSize > 0
-
-            ?
-
-            (
-                (
-                    stats.teamSize -
-                    stats.attendance
-                )
-
-                /
-
-                stats.teamSize
-
-                *
-
-                100
-
-            ).toFixed(1)
-
-            :
-
-            100;
-
-        let cardColor =
-            stats.attendance > 0
-            ? '#dc3545'
-            : '#28a745';
-
-        let statusIcon =
-            stats.attendance > 0
-            ? '🔴'
-            : '🟢';
-
-        html += `
-
-        <div class="card"
-             style="
-                border-top:6px solid ${cardColor};
-             ">
-
-            <h3>
-                ${statusIcon}
-                👔 ${name}
-            </h3>
-
-            <div>
-                👥 Team Size:
-                ${stats.teamSize}
-            </div>
-
-            <div>
-                🌴 Vacation Leave Days:
-                ${stats.leave}
-            </div>
-
-            <div>
-                🚫 Attendance Incidents:
-                ${stats.attendance}
-            </div>
-
-            <hr>
-
-            <div>
-                📊 Reliability Rate:
-                <strong>
-                    ${reliability}%
-                </strong>
-            </div>
-
-        </div>
-
-        `;
-
-    });
-                
-    document.getElementById(
-        'supervisorSummaryCards'
-    ).innerHTML = html;
-
-}
-
-function buildSupervisorWeeklySummary(){
-
-    const selectedDate =
-        document.getElementById(
-            'supervisorDate'
-        ).value;
-
-    const endDate =
-        new Date(selectedDate);
-
-    const startDate =
-        new Date(selectedDate);
-
-    startDate.setDate(
-        startDate.getDate() - 6
-    );
-
-    document.getElementById(
-    'summaryDateRange'
-).innerHTML =
-
-    `📅 Weekly Summary:
-     ${startDate.toLocaleDateString('en-US',{
-        month:'short',
-        day:'numeric',
-        year:'numeric'
-     })}
-     -
-     ${endDate.toLocaleDateString('en-US',{
-        month:'short',
-        day:'numeric',
-        year:'numeric'
-     })}`;
-
-    let supervisorData = {};
-
-    data.forEach(agent => {
-
-        let supervisor =
-            agent.Supervisor ||
-            'Unassigned';
-
-        if(!supervisorData[supervisor]){
-
-            supervisorData[supervisor] = {
-                teamSize:0,
-                leave:0,
-                attendance:0
-            };
-
-        }
-
-        supervisorData[supervisor].teamSize++;
-
-    });
-
-    /* VACATION DAYS */
-
-    ptoList.forEach(record => {
-
-        let ptoDate =
-            new Date(
-                getPTODate(record)
-            );
-
-        if(
-            ptoDate < startDate ||
-            ptoDate > endDate
-        ){
-            return;
-        }
-
-        let reason =
-            (record.Reason || '')
-            .toUpperCase();
-
-        if(
-            !reason.includes('VACATION')
-        ){
-            return;
-        }
-
-        let rosterAgent =
-            data.find(a =>
-
-                (a.Name || '')
-                .trim()
-                .toUpperCase()
-
-                ===
-
-                (record.Name || '')
-                .trim()
-                .toUpperCase()
-
-            );
-
-        if(!rosterAgent){
-            return;
-        }
-
-        let supervisor =
-            rosterAgent.Supervisor ||
-            'Unassigned';
-
-        supervisorData[supervisor].leave++;
-
-    });
-
-    /* ATTENDANCE INCIDENTS */
-
-    calledOffList.forEach(record => {
-
-        let attendanceDate =
-            new Date(
-                normalizeDate(
-                    record['EST Date']
-                )
-            );
-
-        if(
-            attendanceDate < startDate ||
-            attendanceDate > endDate
-        ){
-            return;
-        }
-
-        let rosterAgent =
-            data.find(a =>
-
-                (a.Name || '')
-                .trim()
-                .toUpperCase()
-
-                ===
-
-                (record.Name || '')
-                .trim()
-                .toUpperCase()
-
-            );
-
-        if(!rosterAgent){
-            return;
-        }
-
-        let supervisor =
-            rosterAgent.Supervisor ||
-            'Unassigned';
-
-        supervisorData[supervisor]
-            .attendance++;
-
-    });
-
-    let html = '';
-
-    Object.entries(supervisorData)
-
-    .sort((a,b) =>
-        a[0].localeCompare(b[0])
-    )
-
-    .forEach(([name,stats]) => {
-
-        let reliability =
-
-            stats.teamSize > 0
-
-            ?
-
-            (
-                (
-                    stats.teamSize
-                    -
-                    stats.attendance
-                )
-
-                /
-
-                stats.teamSize
-
-                *
-
-                100
-
-            ).toFixed(1)
-
-            :
-
-            100;
-
-        let cardColor =
-            stats.attendance > 0
-            ? '#dc3545'
-            : '#28a745';
-
-        let statusIcon =
-            stats.attendance > 0
-            ? '🔴'
-            : '🟢';
-
-        html += `
-
-        <div class="card"
-             style="
-                border-top:6px solid ${cardColor};
-             ">
-
-            <h3>
-                ${statusIcon}
-                👔 ${name}
-            </h3>
-
-            <div>
-                👥 Team Size:
-                ${stats.teamSize}
-            </div>
-
-            <div>
-                🌴 Vacation Days:
-                ${stats.leave}
-            </div>
-
-            <div>
-                🚫 Attendance Incidents:
-                ${stats.attendance}
-            </div>
-
-            <hr>
-
-            <div>
-                📊 Reliability Rate:
-                <strong>
-                    ${reliability}%
-                </strong>
-            </div>
-
-        </div>
-
-        `;
-
-    });
-
-    document.getElementById(
-        'supervisorSummaryCards'
-    ).innerHTML = html;
-
-}
-
-    
 </script>
 </body>
 </html>
