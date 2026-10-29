@@ -388,6 +388,18 @@ body{
     padding-bottom:6px;
   }
 }
+  /* No scrolling: panels grow with their content, all match the tallest */
+.panels{align-items:stretch}
+
+.panels .panel{
+  height:auto;
+  min-height:420px;
+  overflow:visible;
+}
+
+@media(max-width:560px){
+  .panels .panel{height:auto}
+}
 </style>
   
 </head>
