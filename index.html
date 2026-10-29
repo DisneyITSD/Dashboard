@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>DITSC L1 English - Phone Dashboard</title>
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🖥️</text></svg>">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
@@ -61,8 +61,71 @@ select:disabled,input:disabled{background:#f1f3f5;color:var(--gray);cursor:not-a
 .note.amber{background:#fff8e1;border-color:var(--orange);color:#663c00}
 .note.green{background:#eefbf3;border-color:var(--green);color:#14532d}
 .note h3{margin:0 0 8px}
-.cards,.panels{display:flex;flex-wrap:wrap;gap:10px;margin-top:10px;align-items:stretch}
-.card,.panel{background:#fff;border-radius:10px;box-shadow:0 2px 5px rgba(0,0,0,.1)}
+.cards,/* Dashboard panels */
+.panels{
+  display:grid;
+  grid-template-columns:repeat(5, minmax(0,1fr));
+  gap:10px;
+  align-items:start;
+}
+
+/* Uniform cards */
+.panel{
+  background:#fff;
+  border:1px solid var(--line);
+  border-radius:10px;
+  padding:12px 14px;
+  box-shadow:none;
+
+  /* allow height to grow naturally */
+  min-height:350px;
+  height:auto;
+}
+
+.panel h3{
+  font-size:13px;
+  text-transform:uppercase;
+  letter-spacing:.04em;
+  color:var(--muted);
+  margin-bottom:10px;
+}
+
+/* scroll only when content becomes excessive */
+#workingList,
+#breakList,
+#lunchList,
+#ptoList,
+#calledOffList{
+  max-height:calc(100vh - 420px);
+  overflow-y:auto;
+  overflow-x:hidden;
+}
+
+/* responsive */
+@media(max-width:1400px){
+  .panels{
+    grid-template-columns:repeat(3,1fr);
+  }
+}
+
+@media(max-width:980px){
+  .panels{
+    grid-template-columns:repeat(2,1fr);
+  }
+}
+
+@media(max-width:560px){
+  .panels{
+    grid-template-columns:1fr;
+  }
+}
+.card,
+.panel{
+  background:#f8fafc;
+  border:1px solid #e5e7eb;
+  border-radius:10px;
+  box-shadow:none;
+}
 .card{flex:1 1 180px;padding:10px;min-height:95px;text-align:center;cursor:pointer;border-radius:14px;border-top:5px solid var(--c,#0d6efd);transition:all .2s ease}
 .card h3{margin:4px 0;font-size:22px;font-weight:700}
 .card:hover{transform:translateY(-6px) scale(1.02);box-shadow:0 10px 22px rgba(0,0,0,.18)}
@@ -71,7 +134,7 @@ select:disabled,input:disabled{background:#f1f3f5;color:var(--gray);cursor:not-a
 .value{font-size:40px;font-weight:700;color:var(--navy)}
 .stat .value{color:var(--c)}
 .pct{font-size:14px;font-weight:700;color:var(--c);margin-top:-5px}
-.panel{padding:8px;flex:1 1 300px;min-height:350px}
+.panel{padding:8px;flex:1 1 auto;min-height:350px}
 .panel.compact{min-height:unset;padding:12px}
 .panel h3{margin:0 0 12px;padding-bottom:8px;border-bottom:1px solid #dcdcdc;color:var(--navy);font-size:18px;font-weight:700}
 .panel ul{list-style:none;padding:0;margin:0}
@@ -104,7 +167,7 @@ th{background:var(--navy);color:#fff;cursor:pointer;transition:.2s}
 th:hover{background:#0b4a86}
 th::after{content:' ↕';opacity:0;font-size:11px;transition:.2s}
 th:hover::after{opacity:1}
-.schedule-container{height:calc(100vh - 220px);overflow:auto;border:1px solid var(--border);border-radius:8px}
+.schedule-container{height:calc(100vh - 220px);overflow:auto;width:100%;border:1px solid var(--border);border-radius:8px}
 .schedule-container thead th{position:sticky;top:0;z-index:10}
 tbody tr:hover{filter:brightness(.96);transition:.2s}
 tr.row-manilyn td{background:#fde2f3}
@@ -131,110 +194,297 @@ iframe{border:none;border-radius:10px}
   .magic-line{position:static;font-size:18px;white-space:normal}
   .daily-summary{flex-direction:column}
 }
+
+@media (min-width:1600px){
+
+  .schedule-container{
+      height:calc(100vh - 150px);
+  }
+
+}
 </style>
+  
+<style>
+:root{--line:#e5e7eb;--muted:#6b7280}
+body{padding:0;background:#f5f6f8}
+.bar{position:sticky;top:0;z-index:50;background:#0f2a4d;color:#fff;display:flex;align-items:center;gap:14px;flex-wrap:wrap;padding:8px 16px;padding-top:calc(8px + env(safe-area-inset-top,0px))}
+.brand{display:flex;align-items:center;gap:10px}
+.bar .logo{height:34px;padding:2px;border-radius:8px}
+.bar .title{font-size:15px;line-height:1.1}
+.bar .subtitle{font-size:11px;color:#b9c7da}
+.bar .tabs{margin:0;flex:1;gap:2px}
+.tab-btn{background:none;font-weight:500;padding:8px 12px;opacity:.85}
+.tab-btn:hover,.tab-btn.active{background:rgba(255,255,255,.14);transform:none;box-shadow:none;opacity:1}
+.dropdown:hover .dropdown-content{display:none}
+.dropdown.open .dropdown-content{display:block}
+.dropdown-content{top:100%;left:0}
+.live{display:flex;align-items:center;gap:10px;font-size:12px}
+#liveClock{background:none;border:0;color:#fff;padding:0;font-size:12px;font-weight:400;letter-spacing:0}
+#lastUpdated{color:#b9c7da!important}
+#realtimeBtn{background:none;border:1px solid rgba(255,255,255,.4);border-radius:999px;padding:5px 12px;font-weight:500}
+#realtimeBtn:hover{background:rgba(255,255,255,.12)}
+#realtimeBtn.on{background:rgba(40,167,69,.35);border-color:#28a745}
+#statusBanner{margin:10px 16px 0}
+.tab-panel{
+  width:100%;
+  max-width:none;
+  padding:14px 20px;
+}
+.view-hint{background:none;border:0;padding:0;margin:0 0 10px;color:var(--muted);font-weight:400}
+.controls{box-shadow:none;border:1px solid var(--line);margin-bottom:12px}
+
+/* cards */
+.card{border:1px solid var(--line);border-left:4px solid var(--c,#0d6efd);border-radius:10px;box-shadow:none}
+.card:hover{transform:none;box-shadow:0 2px 8px rgba(0,0,0,.08)}
+.stats{display:grid;grid-template-columns:repeat(5,1fr);margin:0 0 12px}
+.stats .card{display:grid;grid-template-columns:1fr auto;align-items:baseline;text-align:left;min-height:0;padding:10px 14px}
+.stats .card h3{font-size:13px;font-weight:500;color:var(--muted);margin:0}
+.stats .card .value{grid-column:2;grid-row:1;font-size:26px;font-weight:600}
+.stats .card .pct{grid-column:2;margin:0;font-size:11px;font-weight:400;color:var(--muted);text-align:right}
+
+/* panels + collapsible summaries */
+.two-col{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px}
+.panels{
+  display:grid;
+  grid-template-columns:repeat(5,minmax(0,1fr));
+  gap:10px;
+  align-items:start;
+}
+.panel{min-height:0;padding:12px 14px;border:1px solid var(--line);box-shadow:none}
+.panel h3{font-size:13px;text-transform:uppercase;letter-spacing:.04em;color:var(--muted)}
+.panel h4{margin:10px 0 4px;font-size:12px;color:var(--muted)}
+#workingList,
+#ptoList{
+  overflow:visible;
+  height:auto;
+  max-height:none;
+}
+details.sum{background:#fff;border:1px solid var(--line);border-radius:10px;padding:10px 14px}
+details.sum>summary{cursor:pointer;display:flex;justify-content:space-between;gap:10px;font-weight:600}
+details.sum>summary span{font-weight:400;color:var(--muted);font-size:12.5px}
+details.sum>div{margin-top:10px;padding-top:10px;border-top:1px solid var(--line)}
+
+/* tables */
+th,td{border:0;border-bottom:1px solid var(--line)}
+th,th:hover{background:#fff;color:var(--muted);font-size:12px;text-transform:uppercase;letter-spacing:.04em}
+tr[class*=row-] td{background:transparent}
+tr[class*=row-] td:first-child::before{content:"";display:inline-block;width:9px;height:9px;border-radius:50%;background:var(--sc);margin-right:8px}
+.row-manilyn{--sc:#d9468f}.row-anmheca{--sc:#f08bc0}.row-remmo{--sc:#7c4dff}.row-christopher{--sc:#2563eb}.row-michael{--sc:#16a34a}
+tr.roster-off td{background:#f1f2f4}
+
+body{
+  max-width:100%;
+  overflow-x:hidden;
+}
+  
+/* toast */
+#toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:#0f2a4d;color:#fff;padding:9px 16px;border-radius:999px;opacity:0;pointer-events:none;transition:.25s;z-index:99}
+#toast.show{opacity:1}
+
+@media(max-width:980px){.stats{grid-template-columns:repeat(3,1fr)}.panels{grid-template-columns:1fr 1fr}.two-col{grid-template-columns:1fr}}
+@media(max-width:560px){.stats{grid-template-columns:1fr 1fr}.panels{grid-template-columns:1fr}#liveClock{display:none}}
+</style>
+
+<style>
+  /* ===== Dashboard: card + panel look ===== */
+.stats{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:10px;margin:0 0 10px}
+.stats .card{
+  display:block;text-align:center;padding:12px 10px;min-height:95px;
+  background:#fff;border:0;border-top:5px solid var(--c);
+  border-radius:14px;box-shadow:0 2px 8px rgba(0,0,0,.08);
+}
+.stats .card h3{font-size:22px;font-weight:700;color:#1f2937;margin:4px 0}
+.stats .card .value{font-size:40px;font-weight:700;color:var(--c);line-height:1.2}
+.stats .card .pct{font-size:14px;font-weight:700;color:var(--c);margin:-2px 0 0;text-align:center}
+.stats .card:hover{transform:translateY(-3px);box-shadow:0 8px 18px rgba(0,0,0,.14)}
+
+.panels{gap:10px;align-items:start}
+.panels .panel{
+  background:#fff;border:0;border-radius:14px;
+  box-shadow:0 2px 8px rgba(0,0,0,.08);padding:10px 12px;
+}
+.panels .panel h3{
+  font-size:16px;font-weight:700;text-transform:none;letter-spacing:0;
+  color:var(--navy);margin:0 0 12px;padding-bottom:8px;border-bottom:1px solid #dcdcdc;
+}
+.panels .panel h4{
+  font-size:13px;font-weight:700;text-transform:none;letter-spacing:0;
+  color:var(--navy);margin:14px 0 8px;
+}
+.panels .panel hr{border:0;border-top:1px solid #bbb;margin:14px 0}
+
+/* Working list: green rail down the left, plain names */
+#workingList{border-left:3px solid var(--green);padding-top:6px}
+#workingList li{padding:4px 3px;font-size:14px;line-height:1.35}
+#workingList li.break{background:#fff3cd;color:#b26a00;border-left:0;padding-left:3px}
+#workingList li.lunch{background:#f8d7da;color:#a71d2a;border-left:0;padding-left:3px}
+
+/* Break / Lunch ongoing items: bold name + small time on tinted block */
+#breakList li,#lunchList li{padding:4px 3px;font-size:14px;line-height:1.35}
+#breakList li{border-left:3px solid var(--orange)}
+#lunchList li{border-left:3px solid var(--red)}
+#breakList li strong,#lunchList li strong{font-weight:700}
+#breakList li small,#lunchList li small{font-size:12px;opacity:.9}
+#breakList{background:#fff3cd}
+#lunchList{background:#f8d7da}
+#breakList:empty,#lunchList:empty{background:none}
+
+/* Upcoming items: light gray cards with bold name */
+#upcomingBreakList li,#upcomingLunchList li{
+  background:#f8fafc;padding:6px 8px;font-size:14px;color:#111;
+}
+#upcomingBreakList li strong,#upcomingLunchList li strong{font-weight:700}
+#upcomingBreakList li small,#upcomingLunchList li small{font-size:12px;color:#333}
+#upcomingBreakList li.empty,#upcomingLunchList li.empty{color:var(--gray);font-weight:400}
+
+/* ===== Uniform panel height ===== */
+.panels{align-items:stretch}
+
+.panels .panel{
+  height:calc(100vh - 300px);   /* same height for all five */
+  min-height:420px;
+  overflow-y:auto;              /* scroll inside the card instead of growing */
+  overflow-x:hidden;
+}
+
+/* keep the title visible while scrolling */
+.panels .panel h3{
+  position:sticky;top:0;z-index:2;
+  background:#fff;
+  margin-top:0;
+}
+
+/* the lists no longer scroll on their own; the whole panel does */
+#workingList,#breakList,#lunchList,#ptoList,#calledOffList{
+  max-height:none;
+  overflow:visible;
+  height:auto;
+}
+
+@media(max-width:560px){
+  .panels .panel{height:60vh}
+}
+
+  /* Live Mode button on the left */
+#realtimeBtn{white-space:nowrap;flex-shrink:0;margin-left:4px}
+
+  /* Supervisor Summary + Coverage Forecast: all cards in one row */
+#supervisorSummaryCards,
+#dailyOverviewCards{
+  display:grid;
+  grid-template-columns:none;        /* drop the fixed 5 columns */
+  grid-auto-flow:column;             /* one column per card */
+  grid-auto-columns:minmax(0,1fr);   /* equal widths, shrink to fit */
+  gap:10px;
+  align-items:start;                 /* expanding one card doesn't stretch the others */
+}
+
+/* Narrow screens: scroll sideways instead of squeezing the cards */
+@media(max-width:900px){
+  #supervisorSummaryCards,
+  #dailyOverviewCards{
+    grid-auto-columns:minmax(200px,1fr);
+    overflow-x:auto;
+    padding-bottom:6px;
+  }
+}
+</style>
+  
 </head>
 
 <body>
 
-<div class="header">
-  <img src="logo.png" class="logo" alt="Logo">
-  <div>
-    <div class="title">DITSC L1 English - Phone</div>
-    <div class="subtitle">Staffing Dashboard</div>
+<div class="bar">
+  <div class="brand">
+    <img src="logo.png" class="logo" alt="Logo">
+    <div><div class="title">DITSC L1 English – Phone</div><div class="subtitle">One Team. One Goal. Endless Magic.</div></div>
   </div>
-  <div class="magic-line">🏰 One Team. One Goal. Endless Magic.</div>
-</div>
 
-<div class="live-bar">
-  <button id="realtimeBtn" onclick="toggleRealtime()">🟢 Live Mode (EST)</button>
-  <span id="liveClock">--:--:--</span>
-  <span id="lastUpdated" style="font-size:12px;color:#6c757d"></span>
-</div>
+  <!-- Live Mode button on the left -->
+  <button id="realtimeBtn" onclick="toggleRealtime()">Live Mode (EST)</button>
+
+  <nav class="tabs">
+    <div class="dropdown"><button class="tab-btn active" data-tab="lookupTab">Dashboard</button></div>
+    <div class="dropdown"><button class="tab-btn">Schedule ▾</button>
+      <div class="dropdown-content">
+        <a href="#" data-tab="scheduleTab">Daily view</a>
+        <a href="#" data-tab="rosterTab">Weekly view</a>
+        <a href="#" data-tab="scheduleComparisonTab">Schedule comparison</a>
+      </div></div>
+    <div class="dropdown"><button class="tab-btn">Attendance ▾</button>
+      <div class="dropdown-content">
+        <a href="#" data-tab="ptoTab">Leaves</a>
+        <a href="#" data-tab="calledOffTab">Absenteeism</a>
+      </div></div>
+    <div class="dropdown"><button class="tab-btn">Reports ▾</button>
+      <div class="dropdown-content">
+        <a href="#" data-tab="supervisorTab">Supervisor summary</a>
+        <a href="#" data-tab="forecastTab">Coverage forecast</a>
+      </div></div>
+    <div class="dropdown"><button class="tab-btn" data-tab="missingTab">Missing Agent Checker</button></div>
+    <div class="dropdown"><button class="tab-btn">+ Submit ▾</button>
+      <div class="dropdown-content">
+        <a href="#" data-tab="attendanceFormTab">Attendance form</a>
+        <a href="#" data-tab="ptoFormTab">PTO update form</a>
+        <a href="#" data-tab="announcementFormTab">Announcement form</a>
+      </div></div>
+  </nav>
+
+  <div class="live">
+    <span id="lastUpdated"></span>
+    <span id="liveClock">--:--:--</span>
+  </div>
+</div>  <!-- ← this closing tag was missing -->
+
 <div id="statusBanner" class="note red" hidden></div>
-
-<nav class="tabs">
-  <div class="dropdown">
-    <button class="tab-btn active" data-tab="lookupTab">🔍 Dashboard</button>
-  </div>
-
-  <div class="dropdown">
-    <button class="tab-btn">📊 Reports ▼</button>
-    <div class="dropdown-content">
-      <a href="#" data-tab="supervisorTab">👔 Supervisor Summary</a>
-      <a href="#" data-tab="forecastTab">📈 Coverage Forecast</a>
-    </div>
-  </div>
-
-  <div class="dropdown">
-    <button class="tab-btn">📅 Schedule ▼</button>
-    <div class="dropdown-content">
-      <a href="#" data-tab="scheduleTab">📅 Daily View</a>
-      <a href="#" data-tab="rosterTab">📊 Weekly View</a>
-      <a href="#" data-tab="scheduleComparisonTab">📝 Schedule Comparison</a>
-    </div>
-  </div>
-
-  <div class="dropdown">
-    <button class="tab-btn">👥 Attendance ▼</button>
-    <div class="dropdown-content">
-      <a href="#" data-tab="ptoTab">📋 Leaves</a>
-      <a href="#" data-tab="calledOffTab">🚫 Absenteeism</a>
-      <a href="#" data-tab="attendanceFormTab">📝 Attendance Form</a>
-      <a href="#" data-tab="ptoFormTab">🏖️ PTO Update Form</a>
-    </div>
-  </div>
-
-  <div class="dropdown">
-    <button class="tab-btn">🛠 Tools ▼</button>
-    <div class="dropdown-content">
-      <a href="#" data-tab="missingTab">🔎 Missing Agent Checker</a>
-    </div>
-  </div>
-</nav>
 
 <!-- ============ DASHBOARD ============ -->
 <section class="tab-panel" id="lookupTab">
-  <div class="view-hint">🔍 Real-time staffing overview including Working, Break, Lunch, Leave, and Attendance Alerts.</div>
-
-  <div class="two-col">
-    <div class="panel compact"><h3>🚨 Action Center</h3><div id="actionCenterContent"></div>
-      <div class="quick-actions">
-        <button onclick="showTab('attendanceFormTab')">📝 Attendance Form</button>
-        <button onclick="showTab('ptoFormTab')">🏖️ PTO Update Form</button>
-        <button onclick="showTab('missingTab')">🔎 Missing Agent Checker</button>
-      </div></div>
-    <div class="panel compact"><h3>📊 Attendance Trends</h3><div id="attendanceTrendContent"></div></div>
+    <div class="two-col">
+    <details class="sum"><summary>📢 Announcements <span id="annMeta"></span></summary><div id="actionCenterContent"></div></details>
+    <details class="sum"><summary>🚨 Attendance risk <span id="riskMeta"></span></summary><div id="attendanceTrendContent"></div></details>
   </div>
-
+  
   <div class="controls">
     <input type="date" id="selectedDate">
     <select id="interval"></select>
     <select id="supervisor"><option>All Supervisors</option></select>
     <button id="showStaffingBtn" onclick="runLookup()">Show Staffing</button>
-    <button class="blue" onclick="refreshAttendanceData(true)">🔄 Refresh Attendance</button>
+    <button class="blue" onclick="refreshAttendanceData(true)">↻ Refresh Attendance</button>
   </div>
 
-  <div class="cards">
-    <div class="card stat" style="--c:#28a745" data-tab="scheduleTab"><h3>🧑‍💻 Working</h3><div class="value" id="workingCount">0</div><div class="pct" id="staffingPercent">0%</div></div>
+  <div class="cards stats">
+    <div class="card stat" style="--c:#28a745" data-tab="scheduleTab"><h3>👷 Working</h3><div class="value" id="workingCount">0</div><div class="pct" id="staffingPercent">0%</div></div>
     <div class="card stat" style="--c:#ff9800" data-tab="scheduleTab"><h3>☕ Break</h3><div class="value" id="breakCount">0</div><div class="pct" id="breakPercent">0%</div></div>
     <div class="card stat" style="--c:#dc3545" data-tab="scheduleTab"><h3>🍽️ Lunch</h3><div class="value" id="lunchCount">0</div><div class="pct" id="lunchPercent">0%</div></div>
     <div class="card stat" style="--c:#17a2b8" data-tab="ptoTab"><h3>🗓️ Leave</h3><div class="value" id="ptoCount">0</div><div class="pct" id="ptoPercent">0%</div></div>
-    <div class="card stat" style="--c:#dc3545" data-tab="calledOffTab"><h3>🚫 Absenteeism</h3><div class="value" id="calledOffCount">0</div><div class="pct" id="attendancePercent">0%</div></div>
+    <div class="card stat" style="--c:#dc3545" data-tab="calledOffTab"><h3>🚫 Absent</h3><div class="value" id="calledOffCount">0</div><div class="pct" id="attendancePercent">0%</div></div>
   </div>
 
   <div class="panels">
-    <div class="panel"><h3>🧑‍💻 Working</h3><ul id="workingList"></ul></div>
+    <div class="panel"><h3>👷 Working</h3><ul id="workingList"></ul></div>
     <div class="panel">
-      <h3>☕ Break</h3><ul id="breakList"></ul>
-      <hr><h4>⏭️ Upcoming Breaks</h4><ul id="upcomingBreakList" class="upcoming"></ul>
-    </div>
-    <div class="panel">
-      <h3>🍽️ Lunch</h3><ul id="lunchList"></ul>
-      <hr><h4>⏭️ Upcoming Lunches</h4><ul id="upcomingLunchList" class="upcoming"></ul>
-    </div>
-    <div class="panel">
-      <h3>📋 Leave</h3><div id="ptoList"></div>
-      </div>
+  <h3>☕ Break</h3>
+
+  <ul id="breakList"></ul>
+
+  <hr>
+
+  <h4>⏩☕ Upcoming Breaks</h4>
+  <ul id="upcomingBreakList"></ul>
+</div>
+
+<div class="panel">
+  <h3>🍽️Lunch</h3>
+
+  <ul id="lunchList"></ul>
+
+  <hr>
+
+  <h4>⏩ 🍽️ Upcoming Lunches</h4>
+  <ul id="upcomingLunchList"></ul>
+</div>
+    <div class="panel"><h3>📋 Leave</h3><div id="ptoList"></div></div>
     <div class="panel"><h3>🚫 Absenteeism</h3><div id="calledOffList"></div></div>
   </div>
 </section>
@@ -469,13 +719,34 @@ iframe{border:none;border-radius:10px}
   </div>
 </section>
 
+  <section class="tab-panel" id="announcementFormTab" hidden>
+
+  <div class="view-hint">
+    📢 Submit dashboard announcements and reminders.
+  </div>
+
+  <div class="panel">
+    <iframe
+      src="https://docs.google.com/forms/d/e/1FAIpQLSf9x9VTY6x-nX82soQ3P1b5Dfx60PoKll5YVCeXlBa1qK9E1A/viewform?embedded=true"
+      width="100%"
+      height="1200">
+    </iframe>
+  </div>
+
+</section>
+
+  
 <script>
 /* =====================================================================
    CONFIG
    ===================================================================== */
 const SHEET_ID = '13whMJorFWHuylEfFDwbB30yobPtQ_G3EfAZtv040kQE';
 const sheetUrl = gid => `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv&gid=${gid}`;
-const URLS = { pto: sheetUrl(1297010746), calledOff: sheetUrl(2139820898) };
+const URLS = {
+  pto: sheetUrl(1297010746),
+  calledOff: sheetUrl(2139820898),
+  announcements: sheetUrl(6259028)
+};
 
 const DAYS = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
 const WEEK = ['Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday'];
@@ -507,7 +778,7 @@ const ATT_OTHER = { icon: '🚫', color: '#dc3545', label: 'Called Off' };
    STATE
    ===================================================================== */
 let estData = [], phData = [], estOldData = [], phOldData = [];
-let ptoList = [], calledOffList = [];
+let ptoList = [], calledOffList = [], announcementList = [];
 let currentWorkingAgents = [];
 let realtimeMode = false, realtimeTimer = null;
 
@@ -648,6 +919,23 @@ async function loadSheet(url) {
   });
 }
 
+  async function loadAnnouncementSheet(url) {
+  const res = await fetch(url);
+
+  if (!res.ok)
+    throw new Error(`HTTP ${res.status}`);
+
+  const parsed = Papa.parse(
+    await res.text(),
+    {
+      header: true,
+      skipEmptyLines: 'greedy'
+    }
+  );
+
+  return parsed.data;
+}
+
 const loadErrors = {};
 let lastUpdated = null;
 
@@ -661,7 +949,12 @@ function renderStatus() {
 
 async function loadAttendance() {
   try {
-    [ptoList, calledOffList] = await Promise.all([loadSheet(URLS.pto), loadSheet(URLS.calledOff)]);
+    [ptoList, calledOffList, announcementList] =
+  await Promise.all([
+    loadSheet(URLS.pto),
+    loadSheet(URLS.calledOff),
+    loadAnnouncementSheet(URLS.announcements)
+  ]);
     loadErrors.attendance = '';
     lastUpdated = new Date();
   } catch (err) {
@@ -689,7 +982,7 @@ async function loadRawData() {
 async function refreshAttendanceData(notify = false) {
   await loadAttendance();
   renderAll();
-  if (notify) alert(loadErrors.attendance
+  if (notify) toast(loadErrors.attendance
     ? '⚠️ Refresh failed - see the banner at the top.'
     : '✅ PTO and Attendance refreshed');
 }
@@ -927,43 +1220,297 @@ function buildActionCenter() {
   let tomorrowHtml = '';
   if (date) {
     const t = parseYMD(date); t.setDate(t.getDate() + 1);
-    const names = [...new Set(ptoList.filter(x => normalizeDate(x['EST Date']) === ymd(t)).map(x => x.Name))].sort();
+    const leaveAgents = ptoList
+  .filter(x => normalizeDate(x['EST Date']) === ymd(t))
+  .sort((a, b) => a.Name.localeCompare(b.Name));
     const label = `Tomorrow (${fmtDate(t, { month: 'short', day: 'numeric' })})`;
-    tomorrowHtml = names.length
+    tomorrowHtml = leaveAgents.length
       ? `<details style="color:#17a2b8;font-weight:bold">
-           <summary style="cursor:pointer">🗓️ ${label}: ${names.length} agent(s) on leave</summary>
-           <div style="font-weight:normal;color:#333;padding-left:22px;line-height:1.6">${names.map(n => `• ${esc(n)}`).join('<br>')}</div>
+           <summary style="cursor:pointer">🗓️ ${label}: ${leaveAgents.length} agent(s) on leave</summary>
+           <div style="font-weight:normal;color:#333;padding-left:22px;line-height:1.6">
+  ${leaveAgents.map(x => {
+
+  const t = matchType(
+    PTO_TYPES,
+    x.Reason,
+    { icon:'🏖️', label:x.Reason || 'Leave' }
+  );
+
+  return `• ${esc(x.Name)} - ${t.icon} ${esc(t.label)}`;
+
+}).join('<br>')}
+</div>
          </details>`
       : `<div style="color:#28a745;font-weight:bold">✅ ${label}: no one on leave</div>`;
   }
 
   $('actionCenterContent').innerHTML = `
-    <div style="line-height:2;font-size:15px">
-      ${todays.length > 0
-        ? `<div style="color:#dc3545;font-weight:bold">🚫 ${todays.length} Attendance Exception(s) Today</div>${exceptionLines}`
-        : `<div style="color:#28a745;font-weight:bold">✅ No Attendance Exceptions Today</div>`}
+    ${buildAnnouncements()}
       ${tomorrowHtml}
     </div>`;
 }
 
-function buildAttendanceTrends() {
-  const since = new Date(); since.setDate(since.getDate() - 30);
-  const counts = {}, agents = {};
-  calledOffList.forEach(rec => {
-    const d = normalizeDate(rec['EST Date']);
-    if (!d || parseYMD(d) < since) return;
-    const sup = rec.Supervisor || 'Unassigned';
-    counts[sup] = (counts[sup] || 0) + 1;
-    const a = agents[up(rec.Name)] ??= { name: rec.Name, sup, n: 0, ncns: 0 };
-    a.n++;
-    if (up(rec.Reason).includes('NCNS')) a.ncns++;
-  });
+  function buildAnnouncements() {
 
-  const html = Object.entries(counts).sort((a, b) => b[1] - a[1]).map(([sup, n]) => {
-    const icon = n >= 7 ? '🔴' : n >= 4 ? '🟡' : '🟢';
-    return `<div style="display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid #eee">
-      <span>${icon} ${esc(sup)}</span><strong>${n}</strong></div>`;
-  }).join('') || '<div style="color:#6c757d;font-style:italic">No attendance records in the last 30 days</div>';
+  const today = ymd(estNow());
+
+  const active = announcementList.filter(a => {
+
+  const start = normalizeDate(a['Start Date']);
+  const end   = normalizeDate(a['End Date']);
+
+  return (!start || start <= today) &&
+         (!end || end >= today);
+
+});
+
+const high = active.filter(a =>
+  a.Priority?.includes('High')
+);
+
+const reminders = active.filter(a =>
+  a.Priority?.includes('Reminder')
+);
+
+const info = active.filter(a =>
+  a.Priority?.includes('Informational')
+);
+    const recent = [...active]
+  .sort((a,b) =>
+    new Date(b.Timestamp) - new Date(a.Timestamp)
+  )
+  .slice(0,3);
+
+  if (!active.length) {
+    return `
+      <div style="color:#6c757d;font-weight:600">
+        📢 No Active Announcements
+      </div>
+    `;
+  }
+
+return `
+
+<div style="
+  margin-bottom:10px;
+  padding-bottom:8px;
+  border-bottom:1px solid #e5e7eb;
+">
+
+  <div style="
+    font-weight:700;
+    color:#003366;
+    margin-bottom:6px;
+  ">
+    🕒 Recent Announcements
+  </div>
+
+  ${
+  recent.length
+    ? recent.map(a => {
+
+  const color =
+    a.Priority?.includes('High')
+      ? '#dc3545'
+      : a.Priority?.includes('Reminder')
+      ? '#ff9800'
+      : '#28a745';
+
+  const icon =
+    a.Priority?.includes('High')
+      ? '🔴'
+      : a.Priority?.includes('Reminder')
+      ? '🟡'
+      : '🟢';
+
+  return `
+    <details style="margin-bottom:4px;">
+
+      <summary style="
+        cursor:pointer;
+        color:${color};
+        font-weight:600;
+      ">
+        ${icon} ${esc(a['Announcement Title'])}
+      </summary>
+
+      <div style="
+        margin:8px 0 0 20px;
+        padding:8px;
+        border-left:3px solid ${color};
+        background:#f8fafc;
+        border-radius:6px;
+        color:#333;
+      ">
+        ${esc(a['Announcement Message'])}
+
+        <br><br>
+
+        <small>
+          Posted by: ${esc(a['Posted By'])}
+        </small>
+
+      </div>
+
+    </details>
+  `;
+
+}).join('')
+
+      : `
+          <div style="color:#6c757d;">
+            No recent announcements
+          </div>
+        `
+  }
+
+</div>
+
+<details>
+  <summary>🔴 High Priority (${high.length})</summary>
+
+  ${high.map(a => `
+    <div class="announcement-item">
+      <strong>${esc(a['Announcement Title'])}</strong><br>
+      ${esc(a['Announcement Message'])}
+      <br>
+      <small>Posted by: ${esc(a['Posted By'])}</small>
+    </div>
+  `).join('')}
+</details>
+
+<details>
+  <summary>🟡 Reminders (${reminders.length})</summary>
+
+  ${reminders.map(a => `
+    <div class="announcement-item">
+      <strong>${esc(a['Announcement Title'])}</strong><br>
+      ${esc(a['Announcement Message'])}
+      <br>
+      <small>Posted by: ${esc(a['Posted By'])}</small>
+    </div>
+  `).join('')}
+</details>
+
+<details>
+  <summary>🟢 Informational (${info.length})</summary>
+
+  ${info.map(a => `
+    <div class="announcement-item">
+      <strong>${esc(a['Announcement Title'])}</strong><br>
+      ${esc(a['Announcement Message'])}
+      <br>
+      <small>Posted by: ${esc(a['Posted By'])}</small>
+    </div>
+  `).join('')}
+</details>
+
+`;
+}
+
+function buildAttendanceTrends() {
+  const now = new Date();
+const since = new Date(
+  now.getFullYear(),
+  now.getMonth(),
+  1
+);
+  const counts = {}, agents = {}, supervisorDetails = {};
+
+calledOffList.forEach(rec => {
+  const d = normalizeDate(rec['EST Date']);
+  if (!d || parseYMD(d) < since) return;
+
+  const sup = rec.Supervisor || 'Unassigned';
+
+  counts[sup] = (counts[sup] || 0) + 1;
+
+  const a = agents[up(rec.Name)] ??= {
+    name: rec.Name,
+    sup,
+    n: 0,
+    ncns: 0
+  };
+
+  a.n++;
+
+  if (up(rec.Reason).includes('NCNS')) a.ncns++;
+
+  supervisorDetails[sup] ??= {};
+  supervisorDetails[sup][rec.Name] ??= [];
+
+  supervisorDetails[sup][rec.Name].push({
+    date: d,
+    reason: rec.Reason || 'No Reason'
+  });
+});
+
+
+  const html = Object.entries(counts)
+  .sort((a, b) => b[1] - a[1])
+  .map(([sup, n]) => {
+
+    const icon =
+      n >= 7 ? '🔴' :
+      n >= 4 ? '🟡' :
+      '🟢';
+
+    const agentsHtml = Object.entries(supervisorDetails[sup] || {})
+      .sort((a,b) => a[0].localeCompare(b[0]))
+      .map(([agent, incidents]) => {
+
+        const incidentList = incidents
+          .sort((a,b) => b.date.localeCompare(a.date))
+          .map(i => {
+
+            const dateText = fmtDate(
+              parseYMD(i.date),
+              {
+                month: 'long',
+                day: '2-digit',
+                year: 'numeric'
+              }
+            );
+
+            const reasonIcon =
+              up(i.reason).includes('NCNS') ? '❌' :
+              up(i.reason).includes('LATE') ? '⏰' :
+              up(i.reason).includes('LEFT EARLY') ? '↘️' :
+              '🚫';
+
+            return `
+              <div style="padding-left:24px;font-size:13px">
+                📅 ${dateText} | ${reasonIcon} ${esc(i.reason)}
+              </div>
+            `;
+          })
+          .join('');
+
+        return `
+          <div style="margin-top:8px">
+            <div style="font-weight:600">
+              • ${esc(agent)}
+            </div>
+            ${incidentList}
+          </div>
+        `;
+      })
+      .join('');
+
+    return `
+      <details style="padding:4px 0;border-bottom:1px solid #eee">
+        <summary style="cursor:pointer;font-weight:600">
+          ${icon} ${esc(sup)}
+          <span style="float:right">${n}</span>
+        </summary>
+        <div style="margin-top:8px;padding-left:12px">
+          ${agentsHtml}
+        </div>
+      </details>
+    `;
+  })
+  .join('') ||
+'<div style="color:#6c757d;font-style:italic">No attendance records in the last 30 days</div>';
 
   const repeat = Object.values(agents).filter(a => a.n >= REPEAT_THRESHOLD).sort((a, b) => b.n - a.n || b.ncns - a.ncns);
   const repeatHtml = `<div style="margin-top:12px;font-weight:bold;color:#003366">🔁 Repeat Attendance (${REPEAT_THRESHOLD}+ in 30 days)</div>` +
@@ -1402,6 +1949,44 @@ window.addEventListener('load', async () => {
   setInterval(updateClock, 1000);
   setInterval(() => refreshAttendanceData(false), REFRESH_MS);
 });
+/* ---- cleanup additions ---- */
+// click-to-open menus
+document.querySelectorAll('.dropdown>.tab-btn:not([data-tab])').forEach(b => b.addEventListener('click', e => {
+  e.stopPropagation();
+  const d = b.parentElement, was = d.classList.contains('open');
+  document.querySelectorAll('.dropdown.open').forEach(x => x.classList.remove('open'));
+  if (!was) d.classList.add('open');
+}));
+document.addEventListener('click', () => document.querySelectorAll('.dropdown.open').forEach(x => x.classList.remove('open')));
+
+// toast instead of alert()
+function toast(t) {
+  let e = $('toast');
+  if (!e) { e = document.createElement('div'); e.id = 'toast'; document.body.appendChild(e); }
+  e.textContent = t; e.className = 'show';
+  clearTimeout(toast.t); toast.t = setTimeout(() => e.className = '', 2000);
+}
+
+// shorter clock
+updateClock = () => {
+  const n = estNow();
+  $('liveClock').textContent = n.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) + ' · ' + fmtDate(n) + ' EDT';
+};
+
+// highlight the Live pill
+const _tr = toggleRealtime;
+toggleRealtime = function () { _tr(); $('realtimeBtn').classList.toggle('on', realtimeMode); };
+
+// one-line summaries for the collapsed panels
+function updateSummaries() {
+  const n = document.querySelectorAll('#actionCenterContent .announcement-item').length;
+  $('annMeta').textContent = n ? `${n} active` : 'None active';
+  const m = ymd(new Date()).slice(0, 7);
+  const c = calledOffList.filter(x => normalizeDate(x['EST Date']).startsWith(m)).length;
+  $('riskMeta').textContent = `${c} incident${c === 1 ? '' : 's'} this month`;
+}
+const _ra = renderAll;
+renderAll = function () { _ra(); updateSummaries(); };
 </script>
 </body>
 </html>
