@@ -805,16 +805,28 @@ input:disabled{
     🔍 Real-time staffing overview including Working, Break, Lunch, Leave, and Attendance Alerts.
 </div>
 
-<div class="panel" style="
+<div style="
+    display:flex;
+    gap:10px;
     margin-bottom:15px;
-    min-height:unset;
-    padding:12px 15px;
 ">
 
-    <h3>🚨 Action Center</h3>
+    <div class="panel" style="
+        flex:1;
+        min-height:unset;
+        padding:12px;
+    ">
+        <h3>🚨 Action Center</h3>
+        <div id="actionCenterContent"></div>
+    </div>
 
-    <div id="actionCenterContent">
-        Loading...
+    <div class="panel" style="
+        flex:1;
+        min-height:unset;
+        padding:12px;
+    ">
+        <h3>📊 Attendance Trends</h3>
+        <div id="attendanceTrendContent"></div>
     </div>
 
 </div>
@@ -994,6 +1006,22 @@ style="background:#0d6efd;">
     <input
         type="date"
         id="supervisorDate">
+
+    <select id="summaryView">
+
+        <option value="daily">
+            Daily
+        </option>
+
+        <option value="mtd">
+            Month To Date
+        </option>
+
+        <option value="weekly">
+            Weekly
+        </option>
+
+    </select>
 
     <button onclick="refreshSupervisorSummary()">
         Show Summary
@@ -2890,6 +2918,7 @@ buildSupervisorAllDaySummary();
 refreshForecast();
 buildActionCenter();
 buildUpcomingPTO();
+buildAttendanceTrends();
 updateClock();
 
 
@@ -2927,6 +2956,8 @@ setInterval(async () => {
     buildActionCenter();
 
     buildUpcomingPTO();
+
+    buildAttendanceTrends();
 
     console.log(
         "PTO + Attendance refreshed"
@@ -4147,6 +4178,94 @@ function buildUpcomingPTO(){
 
     document.getElementById(
         'upcomingPTOList'
+    ).innerHTML = html;
+}
+
+    function buildAttendanceTrends(){
+
+    let last30Days = new Date();
+
+    last30Days.setDate(
+        last30Days.getDate() - 30
+    );
+
+    let supervisorCounts = {};
+
+    calledOffList.forEach(record => {
+
+        let attendanceDate =
+            new Date(
+                normalizeDate(
+                    record['EST Date']
+                )
+            );
+
+        if(attendanceDate < last30Days){
+            return;
+        }
+
+        let supervisor =
+            record.Supervisor || 'Unassigned';
+
+        if(!supervisorCounts[supervisor]){
+            supervisorCounts[supervisor] = 0;
+        }
+
+        supervisorCounts[supervisor]++;
+
+    });
+
+    let html = '';
+
+    Object.entries(supervisorCounts)
+
+    .sort((a,b) => b[1] - a[1])
+
+    .forEach(([supervisor,count]) => {
+
+        let icon = '🟢';
+
+        if(count >= 7){
+            icon = '🔴';
+        }
+        else if(count >= 4){
+            icon = '🟡';
+        }
+
+        html += `
+        <div style="
+            display:flex;
+            justify-content:space-between;
+            padding:6px 0;
+            border-bottom:1px solid #eee;
+        ">
+
+            <span>
+                ${icon} ${supervisor}
+            </span>
+
+            <strong>
+                ${count}
+            </strong>
+
+        </div>
+        `;
+    });
+
+    if(html === ''){
+
+        html = `
+        <div style="
+            color:#6c757d;
+            font-style:italic;
+        ">
+            No attendance records in the last 30 days
+        </div>
+        `;
+    }
+
+    document.getElementById(
+        'attendanceTrendContent'
     ).innerHTML = html;
 }
     
@@ -5723,6 +5842,20 @@ function buildSupervisorAllDaySummary(){
 
     const selectedDate =
         document.getElementById('supervisorDate').value;
+    const summaryView =
+    document.getElementById('summaryView').value;
+
+    if(summaryView === 'mtd'){
+
+    buildSupervisorMTDSummary();
+
+    return;
+}
+
+    console.log(
+    'SUMMARY VIEW:',
+    summaryView
+);
 
     const days = [
         'Sunday',
@@ -5963,6 +6096,236 @@ html += `
 
     section.style.display = 'block';
 }
+
+    function buildSupervisorMTDSummary(){
+
+    const selectedDate =
+        document.getElementById(
+            'supervisorDate'
+        ).value;
+
+    const selectedDateObj =
+        new Date(selectedDate);
+
+    const monthStart =
+        new Date(
+            selectedDateObj.getFullYear(),
+            selectedDateObj.getMonth(),
+            1
+        );
+
+    let supervisorData = {};
+
+    data.forEach(agent => {
+
+        let supervisor =
+            agent.Supervisor || 'Unassigned';
+
+        if(!supervisorData[supervisor]){
+
+            supervisorData[supervisor] = {
+                teamSize:0,
+                leave:0,
+                attendance:0
+            };
+
+        }
+
+        supervisorData[supervisor].teamSize++;
+
+    });
+
+   /* VACATION LEAVE MTD ONLY */
+
+ptoList.forEach(record => {
+
+    let ptoDate =
+        new Date(
+            getPTODate(record)
+        );
+
+    if(
+        ptoDate < monthStart ||
+        ptoDate > selectedDateObj
+    ){
+        return;
+    }
+
+    let reason =
+        (record.Reason || '')
+        .toUpperCase();
+
+    if(
+        !reason.includes('VACATION')
+    ){
+        return;
+    }
+
+    let rosterAgent =
+        data.find(a =>
+
+            (a.Name || '')
+            .trim()
+            .toUpperCase()
+
+            ===
+
+            (record.Name || '')
+            .trim()
+            .toUpperCase()
+
+        );
+
+    if(!rosterAgent){
+        return;
+    }
+
+    let supervisor =
+        rosterAgent.Supervisor || 'Unassigned';
+
+    supervisorData[supervisor].leave++;
+
+});
+
+    /* Attendance MTD */
+
+    calledOffList.forEach(record => {
+
+        let attendanceDate =
+            new Date(
+                normalizeDate(
+                    record['EST Date']
+                )
+            );
+
+        if(
+            attendanceDate < monthStart ||
+            attendanceDate > selectedDateObj
+        ){
+            return;
+        }
+
+        let rosterAgent =
+            data.find(a =>
+
+                (a.Name || '')
+                .trim()
+                .toUpperCase()
+
+                ===
+
+                (record.Name || '')
+                .trim()
+                .toUpperCase()
+
+            );
+
+        if(!rosterAgent){
+            return;
+        }
+
+        let supervisor =
+            rosterAgent.Supervisor || 'Unassigned';
+
+        supervisorData[supervisor].attendance++;
+
+    });
+
+    let html = '';
+
+    Object.entries(supervisorData)
+
+    .sort((a,b) =>
+        a[0].localeCompare(b[0])
+    )
+
+    .forEach(([name,stats]) => {
+
+        let reliability =
+
+            stats.teamSize > 0
+
+            ?
+
+            (
+                (
+                    stats.teamSize -
+                    stats.attendance
+                )
+
+                /
+
+                stats.teamSize
+
+                *
+
+                100
+
+            ).toFixed(1)
+
+            :
+
+            100;
+
+        let cardColor =
+            stats.attendance > 0
+            ? '#dc3545'
+            : '#28a745';
+
+        let statusIcon =
+            stats.attendance > 0
+            ? '🔴'
+            : '🟢';
+
+        html += `
+
+        <div class="card"
+             style="
+                border-top:6px solid ${cardColor};
+             ">
+
+            <h3>
+                ${statusIcon}
+                👔 ${name}
+            </h3>
+
+            <div>
+                👥 Team Size:
+                ${stats.teamSize}
+            </div>
+
+            <div>
+                🌴 Vacation Leave Days:
+                ${stats.leave}
+            </div>
+
+            <div>
+                🚫 Attendance Incidents:
+                ${stats.attendance}
+            </div>
+
+            <hr>
+
+            <div>
+                📊 Reliability Rate:
+                <strong>
+                    ${reliability}%
+                </strong>
+            </div>
+
+        </div>
+
+        `;
+
+    });
+
+    document.getElementById(
+        'supervisorSummaryCards'
+    ).innerHTML = html;
+
+}
+
+    
 </script>
 </body>
 </html>
