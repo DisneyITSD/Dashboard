@@ -805,6 +805,20 @@ input:disabled{
     🔍 Real-time staffing overview including Working, Break, Lunch, Leave, and Attendance Alerts.
 </div>
 
+<div class="panel" style="
+    margin-bottom:15px;
+    min-height:unset;
+    padding:12px 15px;
+">
+
+    <h3>🚨 Action Center</h3>
+
+    <div id="actionCenterContent">
+        Loading...
+    </div>
+
+</div>
+
 <!-- Agent Lookup Controls -->
 <div class='controls'>
 
@@ -831,7 +845,7 @@ style="background:#0d6efd;">
 </button>
 
 </div>
-
+    
 <div class='cards'>
 <div class='card'
      onclick="goToTab('scheduleTab')">
@@ -948,6 +962,12 @@ style="background:#0d6efd;">
     <h3>📋 Leave</h3>
 
     <ul id='ptoList'></ul>
+
+    <hr style="margin:15px 0;">
+
+    <h4>📅 Upcoming PTO (Next 2 Days)</h4>
+
+    <ul id="upcomingPTOList"></ul>
 
 </div>
 
@@ -2862,18 +2882,16 @@ console.log(
     console.log("FIRST CALLED OFF:", calledOffList[0]);
 
 loadTimezoneData();
-
 loadSup();
-
 buildRosterView();
-
 buildScheduleView();
-
 runLookup();
 buildSupervisorAllDaySummary();
 refreshForecast();
-
+buildActionCenter();
+buildUpcomingPTO();
 updateClock();
+
 
 clockTimer =
     setInterval(
@@ -2905,6 +2923,10 @@ setInterval(async () => {
     buildDailyOverview();
 
     buildCoverageTimeline();
+
+    buildActionCenter();
+
+    buildUpcomingPTO();
 
     console.log(
         "PTO + Attendance refreshed"
@@ -3923,6 +3945,211 @@ upcomingLunches.length
     
 } // closes runLookup
 
+function buildActionCenter(){
+
+    const selectedDate =
+        document.getElementById('selectedDate').value;
+
+    let attendanceToday =
+        calledOffList.filter(x =>
+
+            normalizeDate(
+                x['EST Date']
+            ) === selectedDate
+
+        ).length;
+
+    let today = new Date();
+
+    let nextWeek = new Date();
+
+    nextWeek.setDate(
+        today.getDate() + 7
+    );
+
+    let upcomingPTO =
+        ptoList.filter(x => {
+
+            let ptoDate =
+                new Date(
+                    getPTODate(x)
+                );
+
+            return (
+                ptoDate >= today &&
+                ptoDate <= nextWeek
+            );
+
+        }).length;
+
+    document.getElementById(
+        'actionCenterContent'
+    ).innerHTML = `
+
+        <div style="
+            line-height:2;
+            font-size:15px;
+        ">
+
+            ${
+                attendanceToday > 0
+
+                ?
+
+                `<div style="
+                    color:#dc3545;
+                    font-weight:bold;
+                ">
+                    🚫 ${attendanceToday} Attendance Exception(s) Today
+                 </div>`
+
+                :
+
+                `<div style="
+                    color:#28a745;
+                    font-weight:bold;
+                ">
+                    ✅ No Attendance Exceptions Today
+                 </div>`
+            }
+
+            <div style="
+                color:#17a2b8;
+                font-weight:bold;
+            ">
+                🏖️ ${upcomingPTO}
+                Upcoming PTO in Next 7 Days
+            </div>
+
+        </div>
+    `;
+}
+
+function buildUpcomingPTO(){
+
+    let today = new Date();
+
+    today.setHours(0,0,0,0);
+
+    let nextTwoDays = new Date(today);
+
+    nextTwoDays.setDate(
+        nextTwoDays.getDate() + 2
+    );
+
+    let upcoming = ptoList.filter(record => {
+
+        let ptoDate =
+            new Date(
+                getPTODate(record)
+            );
+
+        return (
+            ptoDate >= today &&
+            ptoDate <= nextTwoDays
+        );
+
+    });
+
+    upcoming.sort((a,b) =>
+
+        new Date(
+            getPTODate(a)
+        )
+
+        -
+
+        new Date(
+            getPTODate(b)
+        )
+
+    );
+
+    let grouped = {};
+
+    upcoming.forEach(record => {
+
+        let dateKey =
+            getPTODate(record);
+
+        if(!grouped[dateKey]){
+            grouped[dateKey] = [];
+        }
+
+        grouped[dateKey].push(
+            record.Name
+        );
+
+    });
+
+    let html = '';
+
+    Object.keys(grouped)
+
+    .sort()
+
+    .forEach(date => {
+
+        let formattedDate =
+            new Date(date)
+            .toLocaleDateString(
+                'en-US',
+                {
+                    year:'numeric',
+                    month:'long',
+                    day:'numeric'
+                }
+            );
+
+        html += `
+        <div style="
+            margin-bottom:12px;
+            padding:10px;
+            background:#f8fafc;
+            border-left:4px solid #17a2b8;
+            border-radius:8px;
+        ">
+
+            <div style="
+                font-weight:bold;
+                color:#003366;
+                margin-bottom:6px;
+            ">
+                📆 ${formattedDate}
+            </div>
+
+            ${grouped[date]
+                .sort()
+                .map(name => `
+                    <div>
+                        • ${name}
+                    </div>
+                `)
+                .join('')
+            }
+
+        </div>
+        `;
+
+    });
+
+    if(!upcoming.length){
+
+        html = `
+        <div style="
+            color:#6c757d;
+            font-style:italic;
+        ">
+            No PTO scheduled in the next 2 days
+        </div>
+        `;
+    }
+
+    document.getElementById(
+        'upcomingPTOList'
+    ).innerHTML = html;
+}
+    
 function buildDailyOverview(){
 
     const selectedDate =
