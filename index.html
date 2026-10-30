@@ -388,18 +388,6 @@ body{
     padding-bottom:6px;
   }
 }
-  /* No scrolling: panels grow with their content, all match the tallest */
-.panels{align-items:stretch}
-
-.panels .panel{
-  height:auto;
-  min-height:420px;
-  overflow:visible;
-}
-
-@media(max-width:560px){
-  .panels .panel{height:auto}
-}
 </style>
   
 </head>
@@ -433,6 +421,7 @@ body{
         <a href="#" data-tab="supervisorTab">Supervisor summary</a>
         <a href="#" data-tab="forecastTab">Coverage forecast</a>
       </div></div>
+    <div class="dropdown"><button class="tab-btn" data-tab="announcementsTab">Announcements</button></div>
     <div class="dropdown"><button class="tab-btn" data-tab="missingTab">Missing Agent Checker</button></div>
     <div class="dropdown"><button class="tab-btn">+ Submit ▾</button>
       <div class="dropdown-content">
@@ -446,17 +435,12 @@ body{
     <span id="lastUpdated"></span>
     <span id="liveClock">--:--:--</span>
   </div>
-</div>  <!-- ← this closing tag was missing -->
+</div>
 
 <div id="statusBanner" class="note red" hidden></div>
 
 <!-- ============ DASHBOARD ============ -->
 <section class="tab-panel" id="lookupTab">
-    <div class="two-col">
-    <details class="sum"><summary>📢 Announcements <span id="annMeta"></span></summary><div id="actionCenterContent"></div></details>
-    <details class="sum"><summary>🚨 Attendance risk <span id="riskMeta"></span></summary><div id="attendanceTrendContent"></div></details>
-  </div>
-  
   <div class="controls">
     <input type="date" id="selectedDate">
     <select id="interval"></select>
@@ -476,26 +460,20 @@ body{
   <div class="panels">
     <div class="panel"><h3>👷 Working</h3><ul id="workingList"></ul></div>
     <div class="panel">
-  <h3>☕ Break</h3>
+      <h3>☕ Break</h3>
+      <ul id="breakList"></ul>
+      <hr>
+      <h4>⏩☕ Upcoming Breaks</h4>
+      <ul id="upcomingBreakList"></ul>
+    </div>
 
-  <ul id="breakList"></ul>
-
-  <hr>
-
-  <h4>⏩☕ Upcoming Breaks</h4>
-  <ul id="upcomingBreakList"></ul>
-</div>
-
-<div class="panel">
-  <h3>🍽️Lunch</h3>
-
-  <ul id="lunchList"></ul>
-
-  <hr>
-
-  <h4>⏩ 🍽️ Upcoming Lunches</h4>
-  <ul id="upcomingLunchList"></ul>
-</div>
+    <div class="panel">
+      <h3>🍽️Lunch</h3>
+      <ul id="lunchList"></ul>
+      <hr>
+      <h4>⏩ 🍽️ Upcoming Lunches</h4>
+      <ul id="upcomingLunchList"></ul>
+    </div>
     <div class="panel"><h3>📋 Leave</h3><div id="ptoList"></div></div>
     <div class="panel"><h3>🚫 Absenteeism</h3><div id="calledOffList"></div></div>
   </div>
@@ -526,6 +504,27 @@ body{
   </div>
   <div id="dailyOverviewCards" class="cards" style="margin:15px 0"></div>
   <div id="coverageTimelinePanel" class="panel"></div>
+</section>
+
+<!-- ============ ANNOUNCEMENTS ============ -->
+<section class="tab-panel" id="announcementsTab" hidden>
+  <div class="view-hint">📢 All dashboard announcements, reminders and informational posts.</div>
+  <div class="controls">
+    <select id="annPriority" onchange="buildAnnouncementsTab()">
+      <option value="">All Priorities</option>
+      <option value="High">🔴 High Priority</option>
+      <option value="Reminder">🟡 Reminders</option>
+      <option value="Informational">🟢 Informational</option>
+    </select>
+    <select id="annScope" onchange="buildAnnouncementsTab()">
+      <option value="active">Active only</option>
+      <option value="all">All (incl. expired)</option>
+    </select>
+    <input type="text" id="annSearch" placeholder="🔍 Search announcements..." onkeyup="buildAnnouncementsTab()">
+    <button onclick="refreshAttendanceData(true)">↻ Refresh</button>
+    <button class="blue" data-tab="announcementFormTab">+ New Announcement</button>
+  </div>
+  <div id="announcementsList"></div>
 </section>
 
 <!-- ============ DAILY SCHEDULE ============ -->
@@ -731,12 +730,8 @@ body{
   </div>
 </section>
 
-  <section class="tab-panel" id="announcementFormTab" hidden>
-
-  <div class="view-hint">
-    📢 Submit dashboard announcements and reminders.
-  </div>
-
+<section class="tab-panel" id="announcementFormTab" hidden>
+  <div class="view-hint">📢 Submit dashboard announcements and reminders.</div>
   <div class="panel">
     <iframe
       src="https://docs.google.com/forms/d/e/1FAIpQLSf9x9VTY6x-nX82soQ3P1b5Dfx60PoKll5YVCeXlBa1qK9E1A/viewform?embedded=true"
@@ -744,7 +739,6 @@ body{
       height="1200">
     </iframe>
   </div>
-
 </section>
 
   
@@ -764,7 +758,6 @@ const DAYS = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Satur
 const WEEK = ['Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday'];
 const ALL = 'All Supervisors';
 const REFRESH_MS = 60000;
-const REPEAT_THRESHOLD = 3;     // incidents in 30 days before an agent is flagged
 
 const SUP_CLASSES = {
   MANILYN: 'row-manilyn', ANMHECA: 'row-anmheca', REMMO: 'row-remmo',
@@ -911,6 +904,7 @@ function showTab(id) {
   if (id === 'rosterTab') buildRosterView();
   if (id === 'forecastTab') refreshForecast();
   if (id === 'scheduleComparisonTab') { loadCompareAgents(); buildScheduleComparison(); }
+  if (id === 'announcementsTab') buildAnnouncementsTab();
 }
 
 document.querySelectorAll('[data-tab]').forEach(el =>
@@ -931,20 +925,10 @@ async function loadSheet(url) {
   });
 }
 
-  async function loadAnnouncementSheet(url) {
+async function loadAnnouncementSheet(url) {
   const res = await fetch(url);
-
-  if (!res.ok)
-    throw new Error(`HTTP ${res.status}`);
-
-  const parsed = Papa.parse(
-    await res.text(),
-    {
-      header: true,
-      skipEmptyLines: 'greedy'
-    }
-  );
-
+  if (!res.ok) throw new Error(`HTTP ${res.status}`);
+  const parsed = Papa.parse(await res.text(), { header: true, skipEmptyLines: 'greedy' });
   return parsed.data;
 }
 
@@ -961,12 +945,11 @@ function renderStatus() {
 
 async function loadAttendance() {
   try {
-    [ptoList, calledOffList, announcementList] =
-  await Promise.all([
-    loadSheet(URLS.pto),
-    loadSheet(URLS.calledOff),
-    loadAnnouncementSheet(URLS.announcements)
-  ]);
+    [ptoList, calledOffList, announcementList] = await Promise.all([
+      loadSheet(URLS.pto),
+      loadSheet(URLS.calledOff),
+      loadAnnouncementSheet(URLS.announcements)
+    ]);
     loadErrors.attendance = '';
     lastUpdated = new Date();
   } catch (err) {
@@ -1009,8 +992,7 @@ function renderAll() {
   buildSupervisorSummary();
   buildDailyOverview();
   buildCoverageTimeline();
-  buildActionCenter();
-  buildAttendanceTrends();
+  buildAnnouncementsTab();
 }
 
 function loadSup() {
@@ -1215,325 +1197,47 @@ function runLookup() {
   $('calledOffList').innerHTML = groupedBlocks(calledOff, ATT_TYPES, ATT_OTHER, true);
 }
 
-function buildActionCenter() {
-  const date = $('selectedDate').value;
-  const todays = calledOffList.filter(x => normalizeDate(x['EST Date']) === date);
-
-  // Today's exceptions, one line each: "⏰ Name - Running Late (Supervisor)"
-  const exceptionLines = todays.map(rec => {
-    const t = matchType(ATT_TYPES, rec.Reason, ATT_OTHER);
-    const label = t.order === ATT_TYPES.length ? (rec.Reason || t.label) : t.label;
-    const sup = (rec.Supervisor || '').split(' ')[0];
-    return `<div style="color:${t.color};font-weight:600;font-size:14px;line-height:1.7;padding-left:22px">
-      ${t.icon} ${esc(rec.Name)} - ${esc(label)}${sup ? ` (${esc(sup)})` : ''}</div>`;
-  }).join('');
-
-  // Who is on leave the day after the selected date
-  let tomorrowHtml = '';
-  if (date) {
-    const t = parseYMD(date); t.setDate(t.getDate() + 1);
-    const leaveAgents = ptoList
-  .filter(x => normalizeDate(x['EST Date']) === ymd(t))
-  .sort((a, b) => a.Name.localeCompare(b.Name));
-    const label = `Tomorrow (${fmtDate(t, { month: 'short', day: 'numeric' })})`;
-    tomorrowHtml = leaveAgents.length
-      ? `<details style="color:#17a2b8;font-weight:bold">
-           <summary style="cursor:pointer">🗓️ ${label}: ${leaveAgents.length} agent(s) on leave</summary>
-           <div style="font-weight:normal;color:#333;padding-left:22px;line-height:1.6">
-  ${leaveAgents.map(x => {
-
-  const t = matchType(
-    PTO_TYPES,
-    x.Reason,
-    { icon:'🏖️', label:x.Reason || 'Leave' }
-  );
-
-  return `• ${esc(x.Name)} - ${t.icon} ${esc(t.label)}`;
-
-}).join('<br>')}
-</div>
-         </details>`
-      : `<div style="color:#28a745;font-weight:bold">✅ ${label}: no one on leave</div>`;
-  }
-
-  $('actionCenterContent').innerHTML = `
-    ${buildAnnouncements()}
-      ${tomorrowHtml}
-    </div>`;
-}
-
-  function buildAnnouncements() {
-
+/* =====================================================================
+   ANNOUNCEMENTS TAB
+   ===================================================================== */
+function buildAnnouncementsTab() {
   const today = ymd(estNow());
+  const pri = $('annPriority').value;
+  const scope = $('annScope').value;
+  const q = up($('annSearch').value);
 
-  const active = announcementList.filter(a => {
+  const rows = announcementList.filter(a => {
+    if (!(a['Announcement Title'] || '').trim()) return false;
+    const start = normalizeDate(a['Start Date']), end = normalizeDate(a['End Date']);
+    const active = (!start || start <= today) && (!end || end >= today);
+    const hay = up(`${a['Announcement Title']} ${a['Announcement Message']} ${a['Posted By']}`);
+    return (scope === 'all' || active)
+        && (!pri || (a.Priority || '').includes(pri))
+        && (!q || hay.includes(q));
+  }).sort((a, b) => new Date(b.Timestamp) - new Date(a.Timestamp));
 
-  const start = normalizeDate(a['Start Date']);
-  const end   = normalizeDate(a['End Date']);
-
-  return (!start || start <= today) &&
-         (!end || end >= today);
-
-});
-
-const high = active.filter(a =>
-  a.Priority?.includes('High')
-);
-
-const reminders = active.filter(a =>
-  a.Priority?.includes('Reminder')
-);
-
-const info = active.filter(a =>
-  a.Priority?.includes('Informational')
-);
-    const recent = [...active]
-  .sort((a,b) =>
-    new Date(b.Timestamp) - new Date(a.Timestamp)
-  )
-  .slice(0,3);
-
-  if (!active.length) {
-    return `
-      <div style="color:#6c757d;font-weight:600">
-        📢 No Active Announcements
-      </div>
-    `;
+  if (!rows.length) {
+    $('announcementsList').innerHTML = '<div class="empty" style="--c:#6c757d">📢 No announcements found</div>';
+    return;
   }
 
-return `
+  $('announcementsList').innerHTML = rows.map(a => {
+    const p = a.Priority || '';
+    const [color, icon] = p.includes('High') ? ['#dc3545', '🔴']
+                        : p.includes('Reminder') ? ['#ff9800', '🟡'] : ['#28a745', '🟢'];
+    const start = normalizeDate(a['Start Date']), end = normalizeDate(a['End Date']);
+    const expired = end && end < today;
+    const period = (start || end)
+      ? `${start ? fmtDate(parseYMD(start)) : '—'} → ${end ? fmtDate(parseYMD(end)) : 'No end date'}` : 'No date range';
 
-<div style="
-  margin-bottom:10px;
-  padding-bottom:8px;
-  border-bottom:1px solid #e5e7eb;
-">
-
-  <div style="
-    font-weight:700;
-    color:#003366;
-    margin-bottom:6px;
-  ">
-    🕒 Recent Announcements
-  </div>
-
-  ${
-  recent.length
-    ? recent.map(a => {
-
-  const color =
-    a.Priority?.includes('High')
-      ? '#dc3545'
-      : a.Priority?.includes('Reminder')
-      ? '#ff9800'
-      : '#28a745';
-
-  const icon =
-    a.Priority?.includes('High')
-      ? '🔴'
-      : a.Priority?.includes('Reminder')
-      ? '🟡'
-      : '🟢';
-
-  return `
-    <details style="margin-bottom:4px;">
-
-      <summary style="
-        cursor:pointer;
-        color:${color};
-        font-weight:600;
-      ">
-        ${icon} ${esc(a['Announcement Title'])}
-      </summary>
-
-      <div style="
-        margin:8px 0 0 20px;
-        padding:8px;
-        border-left:3px solid ${color};
-        background:#f8fafc;
-        border-radius:6px;
-        color:#333;
-      ">
-        ${esc(a['Announcement Message'])}
-
-        <br><br>
-
-        <small>
-          Posted by: ${esc(a['Posted By'])}
-        </small>
-
-      </div>
-
-    </details>
-  `;
-
-}).join('')
-
-      : `
-          <div style="color:#6c757d;">
-            No recent announcements
-          </div>
-        `
-  }
-
-</div>
-
-<details>
-  <summary>🔴 High Priority (${high.length})</summary>
-
-  ${high.map(a => `
-    <div class="announcement-item">
-      <strong>${esc(a['Announcement Title'])}</strong><br>
-      ${esc(a['Announcement Message'])}
-      <br>
-      <small>Posted by: ${esc(a['Posted By'])}</small>
-    </div>
-  `).join('')}
-</details>
-
-<details>
-  <summary>🟡 Reminders (${reminders.length})</summary>
-
-  ${reminders.map(a => `
-    <div class="announcement-item">
-      <strong>${esc(a['Announcement Title'])}</strong><br>
-      ${esc(a['Announcement Message'])}
-      <br>
-      <small>Posted by: ${esc(a['Posted By'])}</small>
-    </div>
-  `).join('')}
-</details>
-
-<details>
-  <summary>🟢 Informational (${info.length})</summary>
-
-  ${info.map(a => `
-    <div class="announcement-item">
-      <strong>${esc(a['Announcement Title'])}</strong><br>
-      ${esc(a['Announcement Message'])}
-      <br>
-      <small>Posted by: ${esc(a['Posted By'])}</small>
-    </div>
-  `).join('')}
-</details>
-
-`;
-}
-
-function buildAttendanceTrends() {
-  const now = new Date();
-const since = new Date(
-  now.getFullYear(),
-  now.getMonth(),
-  1
-);
-  const counts = {}, agents = {}, supervisorDetails = {};
-
-calledOffList.forEach(rec => {
-  const d = normalizeDate(rec['EST Date']);
-  if (!d || parseYMD(d) < since) return;
-
-  const sup = rec.Supervisor || 'Unassigned';
-
-  counts[sup] = (counts[sup] || 0) + 1;
-
-  const a = agents[up(rec.Name)] ??= {
-    name: rec.Name,
-    sup,
-    n: 0,
-    ncns: 0
-  };
-
-  a.n++;
-
-  if (up(rec.Reason).includes('NCNS')) a.ncns++;
-
-  supervisorDetails[sup] ??= {};
-  supervisorDetails[sup][rec.Name] ??= [];
-
-  supervisorDetails[sup][rec.Name].push({
-    date: d,
-    reason: rec.Reason || 'No Reason'
-  });
-});
-
-
-  const html = Object.entries(counts)
-  .sort((a, b) => b[1] - a[1])
-  .map(([sup, n]) => {
-
-    const icon =
-      n >= 7 ? '🔴' :
-      n >= 4 ? '🟡' :
-      '🟢';
-
-    const agentsHtml = Object.entries(supervisorDetails[sup] || {})
-      .sort((a,b) => a[0].localeCompare(b[0]))
-      .map(([agent, incidents]) => {
-
-        const incidentList = incidents
-          .sort((a,b) => b.date.localeCompare(a.date))
-          .map(i => {
-
-            const dateText = fmtDate(
-              parseYMD(i.date),
-              {
-                month: 'long',
-                day: '2-digit',
-                year: 'numeric'
-              }
-            );
-
-            const reasonIcon =
-              up(i.reason).includes('NCNS') ? '❌' :
-              up(i.reason).includes('LATE') ? '⏰' :
-              up(i.reason).includes('LEFT EARLY') ? '↘️' :
-              '🚫';
-
-            return `
-              <div style="padding-left:24px;font-size:13px">
-                📅 ${dateText} | ${reasonIcon} ${esc(i.reason)}
-              </div>
-            `;
-          })
-          .join('');
-
-        return `
-          <div style="margin-top:8px">
-            <div style="font-weight:600">
-              • ${esc(agent)}
-            </div>
-            ${incidentList}
-          </div>
-        `;
-      })
-      .join('');
-
-    return `
-      <details style="padding:4px 0;border-bottom:1px solid #eee">
-        <summary style="cursor:pointer;font-weight:600">
-          ${icon} ${esc(sup)}
-          <span style="float:right">${n}</span>
-        </summary>
-        <div style="margin-top:8px;padding-left:12px">
-          ${agentsHtml}
-        </div>
-      </details>
-    `;
-  })
-  .join('') ||
-'<div style="color:#6c757d;font-style:italic">No attendance records in the last 30 days</div>';
-
-  const repeat = Object.values(agents).filter(a => a.n >= REPEAT_THRESHOLD).sort((a, b) => b.n - a.n || b.ncns - a.ncns);
-  const repeatHtml = `<div style="margin-top:12px;font-weight:bold;color:#003366">🔁 Repeat Attendance (${REPEAT_THRESHOLD}+ in 30 days)</div>` +
-    (repeat.length ? repeat.map(a => `
-      <div style="display:flex;justify-content:space-between;padding:4px 0;border-bottom:1px solid #eee">
-        <span>${a.n >= REPEAT_THRESHOLD * 2 ? '🔴' : '🟠'} ${esc(a.name)} <small style="color:#6c757d">${esc(a.sup)}</small></span>
-        <strong>${a.n}${a.ncns ? ` (${a.ncns} NCNS)` : ''}</strong>
-      </div>`).join('')
-    : '<div style="color:#6c757d;font-style:italic">None 🎉</div>');
-
-  $('attendanceTrendContent').innerHTML = html + repeatHtml;
+    return `<div class="group" style="--c:${color};${expired ? 'opacity:.6' : ''}">
+      <div class="group-title" style="margin-bottom:2px">${icon} ${esc(a['Announcement Title'])}
+        ${expired ? '<span style="color:#6c757d;font-weight:400;font-size:12px"> (expired)</span>' : ''}</div>
+      <div style="font-size:12px;color:#6c757d;margin-bottom:8px">📅 ${period}</div>
+      <div style="white-space:pre-wrap;color:#333">${esc(a['Announcement Message'])}</div>
+      <div style="margin-top:8px;font-size:12px;color:#6c757d">👤 ${esc(a['Posted By'])}</div>
+    </div>`;
+  }).join('');
 }
 
 /* =====================================================================
@@ -1655,8 +1359,6 @@ function refreshForecast() {
 }
 
 /* 48 half-hour slots with expected vs. available headcount */
-
-/* 48 half-hour slots with expected vs. available headcount */
 function coverageSlots(date) {
   const day = dayName(date);
   const excluded = new Set([
@@ -1676,8 +1378,6 @@ function coverageSlots(date) {
   }
   return slots;
 }
-
-/* 15-minute slots where too many working agents are on break/lunch at once */
 
 function buildDailyOverview() {
   const date = $('forecastDate').value;
@@ -1961,6 +1661,7 @@ window.addEventListener('load', async () => {
   setInterval(updateClock, 1000);
   setInterval(() => refreshAttendanceData(false), REFRESH_MS);
 });
+
 /* ---- cleanup additions ---- */
 // click-to-open menus
 document.querySelectorAll('.dropdown>.tab-btn:not([data-tab])').forEach(b => b.addEventListener('click', e => {
@@ -1989,16 +1690,6 @@ updateClock = () => {
 const _tr = toggleRealtime;
 toggleRealtime = function () { _tr(); $('realtimeBtn').classList.toggle('on', realtimeMode); };
 
-// one-line summaries for the collapsed panels
-function updateSummaries() {
-  const n = document.querySelectorAll('#actionCenterContent .announcement-item').length;
-  $('annMeta').textContent = n ? `${n} active` : 'None active';
-  const m = ymd(new Date()).slice(0, 7);
-  const c = calledOffList.filter(x => normalizeDate(x['EST Date']).startsWith(m)).length;
-  $('riskMeta').textContent = `${c} incident${c === 1 ? '' : 's'} this month`;
-}
-const _ra = renderAll;
-renderAll = function () { _ra(); updateSummaries(); };
 </script>
 </body>
 </html>
