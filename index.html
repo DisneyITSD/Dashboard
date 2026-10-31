@@ -390,6 +390,21 @@ body{
 }
 </style>
   
+<style>
+/* ===== Staffing alerts, shift-change panel, today column ===== */
+.stats .card.alert{--c:#dc3545!important;background:#fff5f5;animation:alertPulse 1.6s ease-in-out infinite}
+.stats .card.warn{--c:#ff9800!important;background:#fffaf0}
+@keyframes alertPulse{0%,100%{box-shadow:0 2px 8px rgba(220,53,69,.2)}50%{box-shadow:0 0 0 4px rgba(220,53,69,.35)}}
+.minTargetInput{width:80px;padding:9px 8px}
+.shift-panel{margin-top:12px}
+#comingOnList li:not(.empty){border-left:3px solid var(--green);padding-left:8px;margin-bottom:4px}
+#goingOffList li:not(.empty){border-left:3px solid var(--red);padding-left:8px;margin-bottom:4px}
+.chip{display:inline-block;margin:0 6px 6px 0;padding:6px 10px;border-radius:999px;background:#eef6ff;border:1px solid #cfe0f5;font-size:13px;color:var(--navy)}
+.chip.bad{background:#ffebee;border-color:#ef9a9a;color:#c62828}
+#rosterTable td.today-col{background:#fff8d6!important}
+#rosterTable th.today-col{background:#fff3cd;color:#8a6100}
+#rosterTable th.today-col::before{content:'\25CF '}
+</style>
 </head>
 
 <body>
@@ -438,6 +453,7 @@ body{
 </div>
 
 <div id="statusBanner" class="note red" hidden></div>
+<div id="highAnnouncements" class="note red" style="margin:10px 16px 0;white-space:pre-wrap" hidden></div>
 
 <!-- ============ DASHBOARD ============ -->
 <section class="tab-panel" id="lookupTab">
@@ -445,12 +461,13 @@ body{
     <input type="date" id="selectedDate">
     <select id="interval"></select>
     <select id="supervisor"><option>All Supervisors</option></select>
+    <label style="display:flex;align-items:center;gap:6px;font-weight:600">🎯 Min agents <input type="number" min="0" class="minTargetInput"></label>
     <button id="showStaffingBtn" onclick="runLookup()">Show Staffing</button>
     <button class="blue" onclick="refreshAttendanceData(true)">↻ Refresh Attendance</button>
   </div>
 
   <div class="cards stats">
-    <div class="card stat" style="--c:#28a745" data-tab="scheduleTab"><h3>👷 Working</h3><div class="value" id="workingCount">0</div><div class="pct" id="staffingPercent">0%</div></div>
+    <div class="card stat" id="workingCard" style="--c:#28a745" data-tab="scheduleTab"><h3>👷 Working</h3><div class="value" id="workingCount">0</div><div class="pct" id="staffingPercent">0%</div><div class="pct" id="targetNote"></div></div>
     <div class="card stat" style="--c:#ff9800" data-tab="scheduleTab"><h3>☕ Break</h3><div class="value" id="breakCount">0</div><div class="pct" id="breakPercent">0%</div></div>
     <div class="card stat" style="--c:#dc3545" data-tab="scheduleTab"><h3>🍽️ Lunch</h3><div class="value" id="lunchCount">0</div><div class="pct" id="lunchPercent">0%</div></div>
     <div class="card stat" style="--c:#17a2b8" data-tab="ptoTab"><h3>🗓️ Leave</h3><div class="value" id="ptoCount">0</div><div class="pct" id="ptoPercent">0%</div></div>
@@ -477,6 +494,16 @@ body{
     <div class="panel"><h3>📋 Leave</h3><div id="ptoList"></div></div>
     <div class="panel"><h3>🚫 Absenteeism</h3><div id="calledOffList"></div></div>
   </div>
+
+  <div class="panel shift-panel">
+    <h3>🔄 Next 2 Hours: Shift Changes <span id="shiftWindowLabel" style="font-weight:400;font-size:13px;color:#6b7280"></span></h3>
+    <div class="two-col">
+      <div><h4>🟢 Coming on</h4><ul id="comingOnList"></ul></div>
+      <div><h4>🔴 Going off</h4><ul id="goingOffList"></ul></div>
+    </div>
+    <h4>📊 Projected headcount (vs. minimum)</h4>
+    <div id="projectionRow"></div>
+  </div>
 </section>
 
 <!-- ============ SUPERVISOR SUMMARY ============ -->
@@ -500,6 +527,7 @@ body{
   <div class="view-hint">📊 Full-day staffing coverage forecast.</div>
   <div class="controls">
     <input type="date" id="forecastDate">
+    <label style="display:flex;align-items:center;gap:6px;font-weight:600">🎯 Min agents <input type="number" min="0" class="minTargetInput"></label>
     <button onclick="refreshForecast()">Show Forecast</button>
   </div>
   <div id="dailyOverviewCards" class="cards" style="margin:15px 0"></div>
@@ -759,6 +787,16 @@ const WEEK = ['Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sun
 const ALL = 'All Supervisors';
 const REFRESH_MS = 60000;
 
+/* Staffing target (minimum agents on the floor).
+   - DEFAULT_MIN_AGENTS: team-wide default (0 = alerts off). Each browser can override it with the "Min agents" box.
+   - TARGET_OVERRIDES: different minimums for certain EST hours, e.g. { from: '00:00', to: '06:00', min: 0 } for closed hours.
+     Ranges may cross midnight (from '22:00' to '06:00'). */
+const DEFAULT_MIN_AGENTS = 0;
+const TARGET_OVERRIDES = [
+  // { from: '00:00', to: '06:00', min: 0 },
+];
+const TARGET_KEY = 'ditsc_min_agents';
+
 const SUP_CLASSES = {
   MANILYN: 'row-manilyn', ANMHECA: 'row-anmheca', REMMO: 'row-remmo',
   CHRISTOPHER: 'row-christopher', MICHAEL: 'row-michael'
@@ -800,6 +838,8 @@ const sortState = {
 const $ = id => document.getElementById(id);
 const pad = n => String(n).padStart(2, '0');
 const up = s => (s ?? '').toString().trim().toUpperCase();
+/* Compares names ignoring case, extra spaces, commas and word order ("Last, First" = "First Last") */
+const normName = s => up(s).replace(/,/g, ' ').split(/\s+/).filter(Boolean).sort().join(' ');
 const esc = s => String(s ?? '').replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
 const isOff = shift => !shift || up(shift) === 'OFF';
 const ymd = d => `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
@@ -862,7 +902,7 @@ const supClass = name => {
   return k ? SUP_CLASSES[k] : '';
 };
 const recFor = (list, name, date) =>
-  list.find(x => up(x.Name) === up(name) && normalizeDate(x['EST Date']) === date);
+  list.find(x => normName(x.Name) === normName(name) && normalizeDate(x['EST Date']) === date);
 
 function matchType(types, reason, fallback) {
   const r = up(reason);
@@ -940,7 +980,7 @@ function renderStatus() {
   $('statusBanner').hidden = !msgs.length;
   $('statusBanner').innerHTML = '⚠️ ' + msgs.map(esc).join(' · ');
   $('lastUpdated').textContent = lastUpdated
-    ? `Last updated ${lastUpdated.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}` : '';
+    ? `Last updated ${lastUpdated.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', timeZone: 'America/New_York' })} ET` : '';
 }
 
 async function loadAttendance() {
@@ -993,6 +1033,7 @@ function renderAll() {
   buildDailyOverview();
   buildCoverageTimeline();
   buildAnnouncementsTab();
+  renderHighAnnouncements();
 }
 
 function loadSup() {
@@ -1149,7 +1190,7 @@ function runLookup() {
       pto.push({ name: p.Name, reason: p.Reason || 'Leave' });
       return;
     }
-    const co = calledOffList.find(x => up(x.Name) === up(r.Name) && isWithinShift(x, r));
+    const co = calledOffList.find(x => normName(x.Name) === normName(r.Name) && isWithinShift(x, r));
     if (co) {
       calledOff.push({ name: r.Name, reason: co.Reason || 'No Reason Provided' });
       return;
@@ -1195,6 +1236,17 @@ function runLookup() {
   $('upcomingLunchList').innerHTML = upLunches.length ? upLunches.map(x => nameTimeItem('', x)).join('') : emptyItem('#dc3545', '🍽️ No upcoming lunches');
   $('ptoList').innerHTML = groupedBlocks(pto, PTO_TYPES, { ...PTO_OTHER, label: 'Leave' }, true);
   $('calledOffList').innerHTML = groupedBlocks(calledOff, ATT_TYPES, ATT_OTHER, true);
+
+  // staffing target alert + next-2-hours panel (alerts only apply to the whole team)
+  const dip = buildShiftChanges(date, mins, supFilter);
+  const target = supFilter === ALL ? targetFor(time) : 0;
+  const lowNow = target > 0 && w.length < target;
+  $('workingCard').classList.toggle('alert', lowNow);
+  $('workingCard').classList.toggle('warn', !lowNow && !!dip);
+  $('targetNote').textContent = !target ? ''
+    : lowNow ? `⚠️ Below minimum (${w.length}/${target})`
+    : dip ? `⚠️ Dip ahead: ${dip.label} (${dip.count}/${dip.target})`
+    : `✔ Target ${target}`;
 }
 
 /* =====================================================================
@@ -1238,6 +1290,20 @@ function buildAnnouncementsTab() {
       <div style="margin-top:8px;font-size:12px;color:#6c757d">👤 ${esc(a['Posted By'])}</div>
     </div>`;
   }).join('');
+}
+
+/* High-priority banner shown at the top of every tab */
+function renderHighAnnouncements() {
+  const today = ymd(estNow());
+  const high = announcementList.filter(a => {
+    if (!(a['Announcement Title'] || '').trim() || !(a.Priority || '').includes('High')) return false;
+    const s = normalizeDate(a['Start Date']), e = normalizeDate(a['End Date']);
+    return (!s || s <= today) && (!e || e >= today);
+  });
+  const el = $('highAnnouncements');
+  el.hidden = !high.length;
+  el.innerHTML = high.map(a =>
+    `<strong>🔴 ${esc(a['Announcement Title'])}</strong> — ${esc(a['Announcement Message'])}`).join('<br>');
 }
 
 /* =====================================================================
@@ -1312,7 +1378,7 @@ function buildRangeSummary(start, end, leaveLabel) {
   estData.forEach(a => {
     (groups[a.Supervisor || 'Unassigned'] ??= { team: 0, leaveAgents: [], attendanceAgents: [] }).team++;
   });
-  const rosterFor = name => estData.find(a => up(a.Name) === up(name));
+  const rosterFor = name => estData.find(a => normName(a.Name) === normName(name));
   const inRange = d => { if (!d) return false; const x = parseYMD(d); return x >= start && x <= end; };
 
   ptoList.forEach(rec => {
@@ -1362,8 +1428,8 @@ function refreshForecast() {
 function coverageSlots(date) {
   const day = dayName(date);
   const excluded = new Set([
-    ...ptoList.filter(x => normalizeDate(x['EST Date']) === date).map(x => up(x.Name)),
-    ...calledOffList.filter(x => normalizeDate(x['EST Date']) === date).map(x => up(x.Name))
+    ...ptoList.filter(x => normalizeDate(x['EST Date']) === date).map(x => normName(x.Name)),
+    ...calledOffList.filter(x => normalizeDate(x['EST Date']) === date).map(x => normName(x.Name))
   ]);
   const slots = [];
   for (let m = 0; m < 1440; m += 30) {
@@ -1372,7 +1438,7 @@ function coverageSlots(date) {
     estData.forEach(r => {
       if (!getStatus(r, day, time)) return;
       expected++;
-      if (!excluded.has(up(r.Name))) available++;
+      if (!excluded.has(normName(r.Name))) available++;
     });
     slots.push({ time, expected, available });
   }
@@ -1412,7 +1478,7 @@ function buildDailyOverview() {
     card('✅ Present', sets.present.length, '#28a745', bySup(sets.present)) +
     card('📋 Leave', sets.leave.length, '#17a2b8', bySup(sets.leave)) +
     card('🚫 Absenteeism', sets.absent.length, '#dc3545', bySup(sets.absent)) +
-    card('📉 Lowest Coverage', slotText(low), '#ff9800').replace('class="value"', '') +
+    card('📉 Lowest Coverage', slotText(low), (targetFor(low.time) > 0 && low.available < targetFor(low.time)) ? '#dc3545' : '#ff9800').replace('class="value"', '') +
     card('📈 Highest Coverage', slotText(high), '#6f42c1').replace('class="value"', '');
 }
 
@@ -1420,15 +1486,19 @@ function buildCoverageTimeline() {
   const date = $('forecastDate').value;
   if (!date) return;
 
+  let belowCount = 0;
   const cells = coverageSlots(date).map(s => {
-    const ok = s.available >= s.expected;
+    const target = targetFor(s.time);
+    const below = target > 0 && s.available < target;
+    if (below) belowCount++;
+    const ok = s.available >= s.expected && !below;
     const color = ok ? '#2e7d32' : '#c62828';
     return `<div style="padding:8px 10px;border-radius:8px;background:${ok ? '#e8f5e9' : '#ffebee'};color:${color};border-left:4px solid ${color};font-size:13px">
-      <strong>${fmtAMPM(s.time)}</strong> &nbsp;&nbsp; Expected: <strong>${s.expected}</strong> &nbsp;|&nbsp; Actual: <strong>${s.available}</strong></div>`;
+      <strong>${fmtAMPM(s.time)}</strong> &nbsp;&nbsp; Expected: <strong>${s.expected}</strong> &nbsp;|&nbsp; Actual: <strong>${s.available}</strong>${target > 0 ? ` &nbsp;|&nbsp; Min: <strong>${target}</strong>${below ? ' ⚠️' : ''}` : ''}</div>`;
   }).join('');
 
   $('coverageTimelinePanel').innerHTML = `
-    <h3>📈 Full Day Coverage Forecast</h3>
+    <h3>📈 Full Day Coverage Forecast${belowCount ? ` <span style="color:#c62828;font-size:14px">· ⚠️ ${belowCount} interval(s) below minimum</span>` : ''}</h3>
     <div style="display:grid;grid-template-columns:repeat(4,1fr);grid-template-rows:repeat(12,auto);grid-auto-flow:column;gap:10px;margin-top:15px">${cells}</div>`;
 }
 
@@ -1500,15 +1570,19 @@ function buildRosterView() {
       : dir * (start(a[col]) - start(b[col])));
   }
 
-  const cell = (est, ph) => `<td>
+  const todayName = DAYS[estNow().getDay()];
+  [...$('rosterTable').tHead.rows[0].cells].forEach((th, i) =>
+    th.classList.toggle('today-col', i >= 1 && i <= 7 && WEEK[i - 1] === todayName));
+
+  const cell = (est, ph, isToday) => `<td class="${isToday ? 'today-col' : ''}">
     <div class="us">🇺🇸 ${convertShiftRange(est)}</div>
     <div class="ph">🇵🇭 ${convertShiftRange(ph)}</div></td>`;
 
   $('rosterTable').tBodies[0].innerHTML = rows.map(r => {
-    const phRow = phData.find(x => up(x.Name) === up(r.Name));
+    const phRow = phData.find(x => normName(x.Name) === normName(r.Name));
     return `<tr class="${supClass(r.Supervisor)}">
       <td>${esc(r.Name)}</td>
-      ${WEEK.map(d => cell(r[d], phRow?.[d])).join('')}
+      ${WEEK.map(d => cell(r[d], phRow?.[d], d === todayName)).join('')}
       <td>${esc(r.Supervisor)}</td>
     </tr>`;
   }).join('');
@@ -1563,10 +1637,12 @@ function checkMissingAgents() {
     alert('⚠️ Live Mode (EST) must be enabled to ensure the Working list is current before checking for missing agents.');
     return;
   }
-  const pasted = $('agentPaste').value.split('\n').map(up).filter(Boolean);
-  const found = currentWorkingAgents.filter(a => pasted.includes(a));
-  const missing = currentWorkingAgents.filter(a => !pasted.includes(a));
-  const unexpected = pasted.filter(a => !currentWorkingAgents.includes(a));
+  const pasted = $('agentPaste').value.split('\n').map(s => s.trim()).filter(Boolean);
+  const pastedKeys = new Set(pasted.map(normName));
+  const workingKeys = new Set(currentWorkingAgents.map(normName));
+  const found = currentWorkingAgents.filter(a => pastedKeys.has(normName(a)));
+  const missing = currentWorkingAgents.filter(a => !pastedKeys.has(normName(a)));
+  const unexpected = pasted.filter(a => !workingKeys.has(normName(a)));
 
   const list = (arr, style = '') => arr.map(x => `<li ${style}>${esc(toProperCase(x))}</li>`).join('');
   $('foundAgents').innerHTML = list(found, 'class="working"');
@@ -1610,7 +1686,7 @@ function buildScheduleComparison() {
     if (sup !== ALL && n.Supervisor !== sup) return;
     if (selected.length && !selected.includes(n.Name)) return;
 
-    const o = oldData.find(x => up(x.Name) === up(n.Name));
+    const o = oldData.find(x => normName(x.Name) === normName(n.Name));
     if (!o) return;
 
     const changedDays = WEEK.filter(d => (o[d] || '') !== (n[d] || ''));
@@ -1635,6 +1711,96 @@ function buildScheduleComparison() {
 /* =====================================================================
    INIT
    ===================================================================== */
+/* =====================================================================
+   STAFFING TARGETS + SHIFT CHANGES
+   ===================================================================== */
+const getMinTarget = () => {
+  const v = parseInt(document.querySelector('.minTargetInput')?.value);
+  return isNaN(v) ? 0 : Math.max(0, v);
+};
+
+/* Minimum agents for an 'HH:MM' interval */
+function targetFor(time) {
+  const m = tm(time);
+  const o = TARGET_OVERRIDES.find(r => {
+    const f = tm(r.from), t = tm(r.to);
+    return f <= t ? (m >= f && m < t) : (m >= f || m < t);
+  });
+  return o ? o.min : getMinTarget();
+}
+
+function initMinTarget() {
+  let saved = null;
+  try { saved = localStorage.getItem(TARGET_KEY); } catch (e) {}
+  const inputs = document.querySelectorAll('.minTargetInput');
+  inputs.forEach(i => {
+    i.value = saved ?? DEFAULT_MIN_AGENTS;
+    i.addEventListener('input', () => {
+      inputs.forEach(o => { if (o !== i) o.value = i.value; });
+      try { localStorage.setItem(TARGET_KEY, i.value); } catch (e) {}
+      runLookup();
+      refreshForecast();
+    });
+  });
+}
+
+/* Agent's previous / selected / next-day shifts in minutes relative to midnight of `date`
+   (so overnight shifts and windows that cross midnight work). */
+function shiftsAround(r, date) {
+  const base = parseYMD(date), out = [];
+  [-1, 0, 1].forEach(off => {
+    const d = new Date(base);
+    d.setDate(d.getDate() + off);
+    const sh = parseShift(r[DAYS[d.getDay()]]);
+    if (!sh) return;
+    const len = sh[1] <= sh[0] ? sh[1] + 1440 - sh[0] : sh[1] - sh[0];
+    const start = sh[0] + off * 1440;
+    out.push({ start, end: start + len, date: ymd(d) });
+  });
+  return out;
+}
+
+/* Fills the "Next 2 hours" panel. Returns the first upcoming interval below target (or null). */
+function buildShiftChanges(date, mins, supFilter) {
+  const WINDOW = 120;
+  const people = estData
+    .filter(r => supFilter === ALL || r.Supervisor === supFilter)
+    .map(r => ({
+      r,
+      shifts: shiftsAround(r, date).filter(s => !recFor(ptoList, r.Name, s.date) && !recFor(calledOffList, r.Name, s.date))
+    }));
+
+  const coming = [], going = [];
+  people.forEach(({ r, shifts }) => shifts.forEach(s => {
+    if (s.start > mins && s.start <= mins + WINDOW) coming.push({ name: r.Name, t: s.start });
+    if (s.start <= mins && s.end > mins && s.end <= mins + WINDOW) going.push({ name: r.Name, t: s.end });
+  }));
+
+  const fmt = t => fmtAMPM(toHHMM(t)) + (t >= 1440 ? ' (next day)' : '');
+  const li = (x, verb) => `<li><strong>${esc(x.name)}</strong><br><small>${verb} ${fmt(x.t)}</small></li>`;
+  const byTime = (a, b) => a.t - b.t || a.name.localeCompare(b.name);
+
+  $('comingOnList').innerHTML = coming.length
+    ? coming.sort(byTime).map(x => li(x, 'starts')).join('') : emptyItem('#28a745', 'No one starting');
+  $('goingOffList').innerHTML = going.length
+    ? going.sort(byTime).map(x => li(x, 'ends')).join('') : emptyItem('#dc3545', 'No one finishing');
+  $('shiftWindowLabel').textContent = `(${fmtAMPM(toHHMM(mins))} – ${fmtAMPM(toHHMM(mins + WINDOW))})`;
+
+  // projected headcount per half hour
+  const chips = [];
+  let dip = null;
+  const first = Math.floor(mins / 30) * 30;
+  for (let t = first; t <= first + WINDOW; t += 30) {
+    const count = people.filter(p => p.shifts.some(s => s.start <= t && t < s.end)).length;
+    const target = supFilter === ALL ? targetFor(toHHMM(t)) : 0;
+    const bad = target > 0 && count < target;
+    if (bad && t > mins && !dip) dip = { label: fmtAMPM(toHHMM(t)), count, target };
+    chips.push(`<span class="chip${bad ? ' bad' : ''}">${fmtAMPM(toHHMM(t))} · <strong>${count}</strong>${target > 0 ? ` / ${target}` : ''}</span>`);
+  }
+  $('projectionRow').innerHTML = chips.join('');
+  return dip;
+}
+
 function buildIntervalOptions() {
   let html = '';
   for (let m = 0; m < 1440; m += 30) {
@@ -1647,6 +1813,7 @@ function buildIntervalOptions() {
 
 window.addEventListener('load', async () => {
   buildIntervalOptions();
+  initMinTarget();
 
   const today = ymd(estNow());
   ['selectedDate', 'ptoDate', 'calledOffDate', 'scheduleDate', 'supervisorDate', 'forecastDate']
@@ -1680,10 +1847,12 @@ function toast(t) {
   clearTimeout(toast.t); toast.t = setTimeout(() => e.className = '', 2000);
 }
 
-// shorter clock
+// shorter clock (EDT/EST label follows New York time automatically)
 updateClock = () => {
   const n = estNow();
-  $('liveClock').textContent = n.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) + ' · ' + fmtDate(n) + ' EDT';
+  const tz = new Intl.DateTimeFormat('en-US', { timeZone: 'America/New_York', timeZoneName: 'short' })
+    .formatToParts(new Date()).find(p => p.type === 'timeZoneName').value;
+  $('liveClock').textContent = n.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) + ' · ' + fmtDate(n) + ' ' + tz;
 };
 
 // highlight the Live pill
