@@ -199,6 +199,8 @@ tr.roster-off td{background:#f1f2f4;color:#666;font-style:italic}
 .trk-grid th.today{background:#fff3cd;color:#8a6100}
 .trk-grid td.trk-cell{min-width:34px;font-weight:700}
 .trk-grid .trk-sum{background:#fafbfc;font-weight:600;min-width:46px}
+.trk-grid th.sortable{cursor:pointer;user-select:none}
+.trk-grid th.sortable:hover{background:#eef6ff;color:var(--navy)}
 .cal{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:6px}
 .cal-dow{font-size:12px;font-weight:700;color:var(--muted);text-transform:uppercase;text-align:center;padding:4px 0}
 .cal-day{min-height:92px;border-radius:10px;padding:6px 8px;display:flex;flex-direction:column;gap:2px;font-size:12px}
@@ -519,7 +521,7 @@ tr.roster-off td{background:#f1f2f4;color:#666;font-style:italic}
 
 <!-- ============ ATTENDANCE TRACKER ============ -->
 <section class="tab-panel" id="trackerTab" hidden>
-  <div class="view-hint">🗓️ Per-agent attendance for the month: ✔ present, ◐ late / left early (counted by hours worked), ✖ called off, leave or OFF. Click an agent's name in the grid to open their calendar.</div>
+  <div class="view-hint">🗓️ Per-agent attendance for the month: ✔ present, ◐ late / left early (counted by hours worked; marked * when no actual time is submitted yet and a half shift is assumed), ✖ called off, leave or OFF. Click an agent's name in the grid to open their calendar.</div>
   <div class="controls">
     <button type="button" onclick="shiftTrackerMonth(-1)" title="Previous month">‹</button>
     <input type="month" id="trackerMonth" onchange="buildTracker()">
@@ -1786,7 +1788,8 @@ function buildShiftChanges(date, mins, supFilter) {
    Attendance % = hours worked / hours expected (shift length, 11h by default).
    Late / Left early minutes come from the ATTENDANCE TIME tab:
    late = actual login - shift start, left early = shift end - actual logout.
-   Without a time entry, a Running Late / Left Early record counts as a full day worked.
+   Without a time entry, a Running Late / Left Early record counts as a half shift
+   missed (estimated, marked *) until the actual times are submitted.
    ===================================================================== */
 const SHIFT_HOURS_DEFAULT = 11;
 function shiftHours(shift) {
@@ -1805,7 +1808,7 @@ const TRACKER_STATUS = {
 };
 const TRACKER_LEGEND = [
   ['present', '✔ Present (expected day, no record)'], ['upcoming', '○ Upcoming (today / future)'],
-  ['partial', '◐ Late / Left early (worked, partial shift)'],
+  ['partial', '◐ Late / Left early (worked, partial shift; * = estimated half shift)'],
   ['absent', '✖ Called off / NCNS'], ['leave', '🌴 Leave (VL, SL, ...)'], ['off', '– OFF']
 ];
 
@@ -1865,13 +1868,21 @@ function attendanceFor(r, date, today, idx) {
   const rec = idx.att.get(normName(r.Name) + '|' + date);
 
   x.missed = 0;
+  x.estimated = false;
   x.inTime = rec?.loginTime || '';
   x.outTime = rec?.logoutTime || '';
   if (x.kind === 'partial') {
     const p = parseShift(x.shift);
     const inT = parseClock(x.inTime), outT = parseClock(x.outTime);
-    if (p && inT != null)  x.missed += Math.max(0, clockDiff(inT, p[0]));
-    if (p && outT != null) x.missed += Math.max(0, clockDiff(p[1], outT));
+    if (inT == null && outT == null) {
+      // No time submitted yet: assume half the shift was missed
+      x.missed = Math.round(exp * 60 / 2);
+      x.estimated = true;
+    } else {
+      // Actual times submitted: use them
+      if (p && inT != null)  x.missed += Math.max(0, clockDiff(inT, p[0]));
+      if (p && outT != null) x.missed += Math.max(0, clockDiff(p[1], outT));
+    }
   }
 
   x.exp = ['present', 'partial', 'absent'].includes(x.kind) ? exp : 0;      // leave, OFF and upcoming are excluded
@@ -1891,11 +1902,14 @@ function trackerSummary(info) {
 }
 const trackerPct = c => c.pct == null ? '—' : c.pct.toFixed(1) + '%';
 
+/* "120 min missed" or "330 min missed (est. half shift)" */
+const missedText = x => x.missed ? `${x.missed} min missed${x.estimated ? ' (est. half shift)' : ''}` : '';
+
 const trackerTip = x =>
   `${fmtDate(parseYMD(x.date), { weekday: 'short', month: 'short', day: 'numeric' })} · ${x.text}` +
   (x.reason && up(x.reason) !== up(x.text) ? ` (${x.reason})` : '') +
   (x.shift ? ` · ${convertShiftRange(x.shift)}` : '') +
-  (x.missed ? ` · ${x.missed} min missed` : '') +
+  (x.missed ? ` · ${missedText(x)}` : '') +
   (x.inTime ? ` · login ${x.inTime}` : '') + (x.outTime ? ` · logout ${x.outTime}` : '');
 
 function trackerHeaderHtml(r, info) {
@@ -1910,8 +1924,30 @@ function trackerHeaderHtml(r, info) {
   </div>`;
 }
 
+/* % column sort: '' = by name, 'asc' = lowest first, 'desc' = highest first */
+let trackerPctSort = '';
+function toggleTrackerPctSort() {
+  trackerPctSort = trackerPctSort === '' ? 'asc' : trackerPctSort === 'asc' ? 'desc' : '';
+  buildTracker();
+}
+
 function trackerGridHtml(rows, monthOf, days, today) {
   if (!rows.length) return '<div class="empty" style="--c:#6c757d">No agents found</div>';
+
+  if (trackerPctSort) {
+    const dir = trackerPctSort === 'asc' ? 1 : -1;
+    const pctOf = r => trackerSummary(monthOf(r)).pct;
+    rows = rows
+      .map(r => ({ r, p: pctOf(r) }))
+      .sort((a, b) => {
+        if (a.p == null && b.p == null) return a.r.Name.localeCompare(b.r.Name);
+        if (a.p == null) return 1;                 // agents with no % go last
+        if (b.p == null) return -1;
+        return dir * (a.p - b.p) || a.r.Name.localeCompare(b.r.Name);
+      })
+      .map(x => x.r);
+  }
+  const sortArrow = trackerPctSort === 'asc' ? ' ▲' : trackerPctSort === 'desc' ? ' ▼' : ' ↕';
   const dow = 'SMTWTFS';
   const head = days.map(d => {
     const dt = parseYMD(d);
@@ -1920,7 +1956,7 @@ function trackerGridHtml(rows, monthOf, days, today) {
 
   const body = rows.map(r => {
     const info = monthOf(r), c = trackerSummary(info);
-    const cells = info.map(x => `<td class="trk-cell st-${x.kind}" title="${esc(trackerTip(x))}">${esc(x.code)}</td>`).join('');
+    const cells = info.map(x => `<td class="trk-cell st-${x.kind}" title="${esc(trackerTip(x))}">${esc(x.code)}${x.estimated ? '*' : ''}</td>`).join('');
     return `<tr class="${supClass(r.Supervisor)}" style="${supStyle(r.Supervisor)}">
       <td class="trk-name" data-agent="${esc(r.Name)}" title="Open calendar">${esc(r.Name)}</td>
       <td class="trk-sum" title="Expected days">${c.expected}</td>
@@ -1933,7 +1969,7 @@ function trackerGridHtml(rows, monthOf, days, today) {
   }).join('');
 
   return `<div class="panel"><div class="schedule-container"><table class="trk-table trk-grid">
-    <thead><tr><th>👤 Agent</th><th title="Expected days">Exp</th><th title="Present">✔</th><th title="Late / Left early">◐</th><th title="Called off / NCNS">✖</th><th title="Leave">🌴</th><th title="Attendance % (hours)">%</th>${head}</tr></thead>
+    <thead><tr><th>👤 Agent</th><th title="Expected days">Exp</th><th title="Present">✔</th><th title="Late / Left early">◐</th><th title="Called off / NCNS">✖</th><th title="Leave">🌴</th><th class="sortable" onclick="toggleTrackerPctSort()" title="Click to sort by attendance % (lowest first, highest first, then by name)">%${sortArrow}</th>${head}</tr></thead>
     <tbody>${body}</tbody></table></div></div>`;
 }
 
@@ -1943,7 +1979,7 @@ function trackerCalendarHtml(info, today) {
   const cells = info.map(x => {
     const showText = ['absent', 'leave', 'partial'].includes(x.kind) ? x.text : TRACKER_STATUS[x.kind].label;
     const note = x.missed
-      ? `<div class="cal-note">${x.missed} min missed</div>`
+      ? `<div class="cal-note">${missedText(x)}</div>`
       : (x.reason && up(x.reason) !== up(x.text) ? `<div class="cal-note">${esc(x.reason)}</div>` : '');
     return `<div class="cal-day st-${x.kind}${x.date === today ? ' is-today' : ''}" title="${esc(trackerTip(x))}">
       <div class="cal-num">${parseYMD(x.date).getDate()}</div>
@@ -1959,7 +1995,7 @@ function trackerListHtml(info) {
     const sched = x.kind === 'off' ? 'OFF' : `Expected · ${convertShiftRange(x.shift)}`;
     const showText = ['absent', 'leave', 'partial'].includes(x.kind) ? x.text : TRACKER_STATUS[x.kind].label;
     const att = x.kind === 'off' ? '–' : `<span class="trk-chip st-${x.kind}">${x.icon} ${esc(showText)}</span>`;
-    const details = [x.reason, x.missed ? `${x.missed} min missed` : '',
+    const details = [x.reason, missedText(x),
                      x.inTime ? `login ${x.inTime}` : '', x.outTime ? `logout ${x.outTime}` : ''].filter(Boolean).join(' · ');
     return `<tr class="${x.kind === 'off' ? 'roster-off' : ''}">
       <td>${fmtDate(dt, { month: 'long', day: 'numeric' })}</td><td>${DAYS[dt.getDay()]}</td>
