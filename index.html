@@ -1229,8 +1229,72 @@ function buildAnnouncementsTab() {
     $('announcementsList').innerHTML = '<div class="empty" style="--c:#6c757d">📢 No announcements found</div>';
     return;
   }
+   // Most recent 5 announcements
+const recentAnnouncements = rows.slice(0, 5);
 
-  $('announcementsList').innerHTML = rows.map(a => {
+const recentHtml = `
+<div style="margin-bottom:20px">
+  <h3 style="margin-bottom:10px;color:var(--navy)">
+    🆕 Recently Added Announcements
+  </h3>
+
+  <div style="
+    display:flex;
+    gap:12px;
+    overflow-x:auto;
+    padding-bottom:8px;
+  ">
+    ${recentAnnouncements.map(a => {
+      const p = a.Priority || '';
+
+      const [color, icon] =
+        p.includes('High')
+          ? ['#dc3545','🔴']
+          : p.includes('Reminder')
+          ? ['#ff9800','🟡']
+          : ['#28a745','🟢'];
+
+      return `
+      <div style="
+        min-width:320px;
+        background:#fff;
+        border-left:5px solid ${color};
+        border-radius:10px;
+        padding:12px;
+        box-shadow:0 2px 8px rgba(0,0,0,.08);
+      ">
+        <div style="font-weight:700;color:${color}">
+          ${icon} ${esc(a['Announcement Title'])}
+        </div>
+
+        <div style="
+          margin-top:8px;
+          font-size:13px;
+          color:#555;
+          display:-webkit-box;
+          -webkit-line-clamp:3;
+          -webkit-box-orient:vertical;
+          overflow:hidden;
+        ">
+          ${esc(a['Announcement Message'])}
+        </div>
+
+        <div style="
+          margin-top:10px;
+          font-size:11px;
+          color:#6c757d;
+        ">
+          👤 ${esc(a['Posted By'])}
+        </div>
+      </div>`;
+    }).join('')}
+  </div>
+</div>
+`;
+
+  $('announcementsList').innerHTML =
+  recentHtml +
+  rows.map(a => {
     const p = a.Priority || '';
     const [color, icon] = p.includes('High') ? ['#dc3545', '🔴']
                         : p.includes('Reminder') ? ['#ff9800', '🟡'] : ['#28a745', '🟢'];
