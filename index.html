@@ -241,6 +241,7 @@ tr.roster-off td{background:#f1f2f4;color:#666;font-style:italic}
   </div>
 
   <button id="realtimeBtn" onclick="toggleRealtime()">Live Mode</button>
+  <span id="liveClock">--:--:--</span>
 
   <nav class="tabs">
     <div class="dropdown"><button class="tab-btn active" data-tab="lookupTab">Dashboard</button></div>
@@ -274,7 +275,6 @@ tr.roster-off td{background:#f1f2f4;color:#666;font-style:italic}
 
   <div class="live">
     <span id="lastUpdated"></span>
-    <span id="liveClock">--:--:--</span>
   </div>
 </div>
 
@@ -717,6 +717,12 @@ const isOff = shift => !shift || up(shift) === 'OFF';
 const ymd = d => `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
 const fmtDate = (d, opts = { month: 'short', day: 'numeric', year: 'numeric' }) => d.toLocaleDateString('en-US', opts);
 
+/* Announcement timestamp, shown exactly as recorded in the sheet (no timezone conversion) */
+const fmtStamp = v => {
+  const d = new Date(v);
+  return isNaN(d) ? '' : d.toLocaleString('en-US', { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' });
+};
+
 function parseYMD(s) {
   const [y, m, d] = s.split('-').map(Number);
   return new Date(y, m - 1, d);
@@ -1152,13 +1158,16 @@ function runLookup() {
 
   estData.forEach(r0 => {
     const r = rowFor(r0, date);
-       let p = recFor(ptoList, r.Name, date);
-   if (!p) {
-     const prevShift = parseShift(shiftFor(r, addDays(date, -1)));
-     if (prevShift && prevShift[1] < prevShift[0]) {
-       p = recFor(ptoList, r.Name, addDays(date, -1));
-     }
-   }
+
+    /* Leave: look for a PTO record dated today. If none, and yesterday's shift
+       ran overnight, use the PTO dated on yesterday's (shift start) date. */
+    let p = recFor(ptoList, r.Name, date);
+    if (!p) {
+      const prevShift = parseShift(shiftFor(r, addDays(date, -1)));
+      if (prevShift && prevShift[1] < prevShift[0]) {
+        p = recFor(ptoList, r.Name, addDays(date, -1));
+      }
+    }
     if (p && isWithinShift(p, r)) {
       pto.push({ name: p.Name, reason: p.Reason || 'Leave' });
       return;
@@ -1250,13 +1259,14 @@ function buildAnnouncementsTab() {
     const expired = end && end < today;
     const period = (start || end)
       ? `${start ? fmtDate(parseYMD(start)) : '—'} → ${end ? fmtDate(parseYMD(end)) : 'No end date'}` : 'No date range';
+    const stamp = fmtStamp(a.Timestamp);
 
     return `<div class="group" style="--c:${color};${expired ? 'opacity:.6' : ''}">
       <div class="group-title" style="margin-bottom:2px">${icon} ${esc(a['Announcement Title'])}
         ${expired ? '<span style="color:#6c757d;font-weight:400;font-size:12px"> (expired)</span>' : ''}</div>
       <div style="font-size:12px;color:#6c757d;margin-bottom:8px">📅 ${period}</div>
       <div style="white-space:pre-wrap;color:#333">${esc(a['Announcement Message'])}</div>
-      <div style="margin-top:8px;font-size:12px;color:#6c757d">👤 ${esc(a['Posted By'])}</div>
+      <div style="margin-top:8px;font-size:12px;color:#6c757d">👤 ${esc(a['Posted By'])}${stamp ? ` · 🕒 Posted ${stamp}` : ''}</div>
     </div>`;
   }).join('');
 }
@@ -1270,8 +1280,11 @@ function renderHighAnnouncements() {
   });
   const el = $('highAnnouncements');
   el.hidden = !high.length;
-  el.innerHTML = high.map(a =>
-    `<strong>🔴 ${esc(a['Announcement Title'])}</strong> — ${esc(a['Announcement Message'])}`).join('<br>');
+  el.innerHTML = high.map(a => {
+    const ts = fmtStamp(a.Timestamp);
+    return `🔴 ${ts ? `<small style="opacity:.75">${ts}</small> - ` : ''}` +
+           `<strong>${esc(a['Announcement Title'])}</strong> -- ${esc(a['Announcement Message'])}`;
+  }).join('<br>');
 }
 
 /* =====================================================================
