@@ -1161,16 +1161,18 @@ function runLookup() {
   estData.forEach(r0 => {
     const r = rowFor(r0, date);
 
-    /* Leave: look for a PTO record dated today. If none, and yesterday's shift
-       ran overnight, use the PTO dated on yesterday's (shift start) date. */
-    let p = recFor(ptoList, r.Name, date);
-    if (!p) {
-      const prevShift = parseShift(shiftFor(r, addDays(date, -1)));
-      if (prevShift && prevShift[1] < prevShift[0]) {
-        p = recFor(ptoList, r.Name, addDays(date, -1));
-      }
-    }
-    if (p && isWithinShift(p, r)) {
+    /* Leave: check the PTO record dated today AND (if yesterday's shift ran
+       overnight) the one dated yesterday, and use whichever is active right now.
+       Checking both fixes agents showing as Working when a PTO for tonight's
+       shift exists while last night's shift is still running. */
+    const prevShift = parseShift(shiftFor(r, addDays(date, -1)));
+    const overnight = prevShift && prevShift[1] < prevShift[0];
+    const p = [
+      recFor(ptoList, r.Name, date),
+      overnight ? recFor(ptoList, r.Name, addDays(date, -1)) : null
+    ].find(x => x && isWithinShift(x, r));
+
+    if (p) {
       pto.push({ name: p.Name, reason: p.Reason || 'Leave' });
       return;
     }
