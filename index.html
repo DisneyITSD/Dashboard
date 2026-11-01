@@ -1152,15 +1152,13 @@ function runLookup() {
 
   estData.forEach(r0 => {
     const r = rowFor(r0, date);
-    let p = recFor(ptoList, r.Name, date);
-
-if (!p) {
-  const shift = parseShift(shiftFor(r, addDays(date, -1)));
-
-  if (shift && shift[1] < shift[0]) {
-    p = recFor(ptoList, r.Name, addDays(date, -1));
-  }
-}
+       let p = recFor(ptoList, r.Name, date);
+   if (!p) {
+     const prevShift = parseShift(shiftFor(r, addDays(date, -1)));
+     if (prevShift && prevShift[1] < prevShift[0]) {
+       p = recFor(ptoList, r.Name, addDays(date, -1));
+     }
+   }
     if (p && isWithinShift(p, r)) {
       pto.push({ name: p.Name, reason: p.Reason || 'Leave' });
       return;
