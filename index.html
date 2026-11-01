@@ -154,6 +154,7 @@ th:hover::after{opacity:1}
 tbody tr:hover{filter:brightness(.96);transition:.2s}
 tr.sup-row td:first-child::before{content:"";display:inline-block;width:9px;height:9px;border-radius:50%;background:var(--sc);margin-right:8px}
 tr.roster-off td{background:#f1f2f4;color:#666;font-style:italic}
+.flag{width:18px;height:auto;vertical-align:-2px;margin-right:4px;border-radius:2px}
 .us{color:var(--navy);font-weight:bold}
 .ph{color:#14532d;font-weight:bold}
 #scheduleTable td:nth-child(2){font-weight:700}
@@ -703,6 +704,11 @@ const sortState = {
    HELPERS
    ===================================================================== */
 const $ = id => document.getElementById(id);
+/* Flag images: Windows does not draw flag emoji, so use small images instead */
+const FLAG = {
+  us: '<img class="flag" src="https://flagcdn.com/w20/us.png" alt="US">',
+  ph: '<img class="flag" src="https://flagcdn.com/w20/ph.png" alt="PH">'
+};
 const pad = n => String(n).padStart(2, '0');
 const up = s => (s ?? '').toString().trim().toUpperCase();
 const normName = s => up(s).replace(/,/g, ' ').split(/\s+/).filter(Boolean).sort().join(' ');
@@ -1036,8 +1042,8 @@ function updateClock() {
   const t = { hour: '2-digit', minute: '2-digit' }, d = { month: 'short', day: 'numeric' };
 
   $('liveClock').innerHTML =
-    `🇺🇸 ${part('America/New_York', t)} ${tzName} · ${part('America/New_York', d)}<br>` +
-    `🇵🇭 ${part('Asia/Manila', t)} PHT · ${part('Asia/Manila', d)}`;
+    `${FLAG.us}${part('America/New_York', t)} ${tzName} · ${part('America/New_York', d)}<br>` +
+    `${FLAG.ph}${part('Asia/Manila', t)} PHT · ${part('Asia/Manila', d)}`;
 }
 
 /* =====================================================================
@@ -1229,72 +1235,8 @@ function buildAnnouncementsTab() {
     $('announcementsList').innerHTML = '<div class="empty" style="--c:#6c757d">📢 No announcements found</div>';
     return;
   }
-   // Most recent 5 announcements
-const recentAnnouncements = rows.slice(0, 5);
 
-const recentHtml = `
-<div style="margin-bottom:20px">
-  <h3 style="margin-bottom:10px;color:var(--navy)">
-    🆕 Recently Added Announcements
-  </h3>
-
-  <div style="
-    display:flex;
-    gap:12px;
-    overflow-x:auto;
-    padding-bottom:8px;
-  ">
-    ${recentAnnouncements.map(a => {
-      const p = a.Priority || '';
-
-      const [color, icon] =
-        p.includes('High')
-          ? ['#dc3545','🔴']
-          : p.includes('Reminder')
-          ? ['#ff9800','🟡']
-          : ['#28a745','🟢'];
-
-      return `
-      <div style="
-        min-width:320px;
-        background:#fff;
-        border-left:5px solid ${color};
-        border-radius:10px;
-        padding:12px;
-        box-shadow:0 2px 8px rgba(0,0,0,.08);
-      ">
-        <div style="font-weight:700;color:${color}">
-          ${icon} ${esc(a['Announcement Title'])}
-        </div>
-
-        <div style="
-          margin-top:8px;
-          font-size:13px;
-          color:#555;
-          display:-webkit-box;
-          -webkit-line-clamp:3;
-          -webkit-box-orient:vertical;
-          overflow:hidden;
-        ">
-          ${esc(a['Announcement Message'])}
-        </div>
-
-        <div style="
-          margin-top:10px;
-          font-size:11px;
-          color:#6c757d;
-        ">
-          👤 ${esc(a['Posted By'])}
-        </div>
-      </div>`;
-    }).join('')}
-  </div>
-</div>
-`;
-
-  $('announcementsList').innerHTML =
-  recentHtml +
-  rows.map(a => {
+  $('announcementsList').innerHTML = rows.map(a => {
     const p = a.Priority || '';
     const [color, icon] = p.includes('High') ? ['#dc3545', '🔴']
                         : p.includes('Reminder') ? ['#ff9800', '🟡'] : ['#28a745', '🟢'];
@@ -1596,8 +1538,8 @@ function buildRosterView() {
     th.classList.toggle('today-col', i >= 1 && i <= 7 && WEEK[i - 1] === todayName));
 
   const cell = (est, ph, isToday) => `<td class="${isToday ? 'today-col' : ''}">
-    <div class="us">🇺🇸 ${convertShiftRange(est)}</div>
-    <div class="ph">🇵🇭 ${convertShiftRange(ph)}</div></td>`;
+    <div class="us">${FLAG.us}${convertShiftRange(est)}</div>
+    <div class="ph">${FLAG.ph}${convertShiftRange(ph)}</div></td>`;
 
   $('rosterTable').tBodies[0].innerHTML = rows.map(r => {
     const phRow = phData.find(x => normName(x.Name) === normName(r.Name));
