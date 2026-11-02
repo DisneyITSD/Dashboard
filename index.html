@@ -146,7 +146,7 @@ select:disabled,input:disabled{background:#f1f3f5;color:var(--gray);cursor:not-a
 /* ---------- Tables ---------- */
 table{width:100%;border-collapse:collapse}
 th,td{padding:8px;border:0;border-bottom:1px solid var(--line)}
-th{background:#fff;color:var(--muted);font-size:12px;text-transform:uppercase;letter-spacing:.04em;cursor:pointer;transition:.2s}
+th{text-align:left;background:#fff;color:var(--muted);font-size:12px;text-transform:uppercase;letter-spacing:.04em;cursor:pointer;transition:.2s}
 th::after{content:' \2195';opacity:0;font-size:11px;transition:.2s}
 th:hover::after{opacity:1}
 .schedule-container{height:calc(100vh - 220px);overflow:auto;width:100%;border:1px solid var(--border);border-radius:8px}
@@ -163,6 +163,9 @@ tr.roster-off td{background:#f1f2f4;color:#666;font-style:italic}
 #rosterTable th.today-col::before{content:'\25CF '}
 #lateTable th{cursor:default}
 #lateTable th::after{content:none}
+#qaTable th{cursor:default}
+#qaTable th::after{content:none}
+#qaTable td.qa-score{font-weight:700;white-space:nowrap}
 
 /* ---------- Missing Agent Checker ---------- */
 .missing-layout{align-items:flex-start;gap:20px}
@@ -175,7 +178,7 @@ tr.roster-off td{background:#f1f2f4;color:#666;font-style:italic}
 #toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:#0f2a4d;color:#fff;padding:9px 16px;border-radius:999px;opacity:0;pointer-events:none;transition:.25s;z-index:99}
 #toast.show{opacity:1}
 
-/* ---------- Attendance tracker ---------- */
+/* ---------- Attendance (Scorecard) ---------- */
 .st-present{background:#e8f5e9;color:#2e7d32}
 .st-upcoming{background:#e3f2fd;color:#1565c0}
 .st-absent{background:#ffebee;color:#c62828}
@@ -257,7 +260,11 @@ tr.roster-off td{background:#f1f2f4;color:#666;font-style:italic}
         <a href="#" data-tab="ptoTab">Leaves</a>
         <a href="#" data-tab="calledOffTab">Absenteeism</a>
         <a href="#" data-tab="lateTab">Late / Left early</a>
-        <a href="#" data-tab="trackerTab">Attendance tracker</a>
+      </div></div>
+    <div class="dropdown"><button class="tab-btn">Scorecard ▾</button>
+      <div class="dropdown-content">
+        <a href="#" data-tab="trackerTab">Attendance</a>
+        <a href="#" data-tab="qaTab">Quality Assurance</a>
       </div></div>
     <div class="dropdown"><button class="tab-btn">Reports ▾</button>
       <div class="dropdown-content">
@@ -519,7 +526,7 @@ tr.roster-off td{background:#f1f2f4;color:#666;font-style:italic}
   </div>
 </section>
 
-<!-- ============ ATTENDANCE TRACKER ============ -->
+<!-- ============ SCORECARD: ATTENDANCE ============ -->
 <section class="tab-panel" id="trackerTab" hidden>
   <div class="view-hint">🗓️ Per-agent attendance for the month: ✔ present (once the shift has finished), ◐ late / left early (counted by hours worked; marked * when no actual time is submitted yet and a half shift is assumed), ✖ called off, leave or OFF. Click an agent's name in the grid to open their calendar.</div>
   <div class="controls">
@@ -538,6 +545,35 @@ tr.roster-off td{background:#f1f2f4;color:#666;font-style:italic}
   </div>
   <div class="trk-legend" id="trackerLegend"></div>
   <div id="trackerBody"></div>
+</section>
+
+<!-- ============ SCORECARD: QUALITY ASSURANCE ============ -->
+<section class="tab-panel" id="qaTab" hidden>
+  <div class="view-hint">✅ Quality Assurance scores by analyst, call date and ticket.</div>
+  <div class="controls">
+    <label style="display:flex;align-items:center;gap:6px;font-weight:600">From <input type="date" id="qaFrom" onchange="buildQA()"></label>
+    <label style="display:flex;align-items:center;gap:6px;font-weight:600">To <input type="date" id="qaTo" onchange="buildQA()"></label>
+    <select id="qaSupervisor" onchange="buildQA()"><option>All Supervisors</option></select>
+    <select id="qaAgent" onchange="buildQA()"><option>All Agents</option></select>
+    <button onclick="$('qaFrom').value='';$('qaTo').value='';buildQA()">All Dates</button>
+    <input type="text" id="qaSearch" placeholder="🔍 Search analyst or ticket..." onkeyup="buildQA()" style="width:280px">
+    <button class="blue" onclick="refreshAttendanceData(true)">↻ Refresh</button>
+  </div>
+  <div class="daily-summary">
+    <div class="summary-box">📋 Records: <span id="qaCount">0</span></div>
+    <div class="summary-box">📊 Average score: <span id="qaAvg">—</span></div>
+  </div>
+  <div class="panel">
+    <div class="schedule-container">
+      <table id="qaTable">
+        <thead><tr>
+          <th>👤 Analyst Name</th><th>⭐ Score</th><th>🎫 Ticket Number</th>
+          <th>📅 Call Date</th><th>🧑‍💼 Supervisor</th>
+        </tr></thead>
+        <tbody></tbody>
+      </table>
+    </div>
+  </div>
 </section>
 
 <!-- ============ MISSING AGENT CHECKER ============ -->
@@ -590,7 +626,7 @@ tr.roster-off td{background:#f1f2f4;color:#666;font-style:italic}
 </section>
 
 <section class="tab-panel" id="attendanceTimeFormTab" hidden>
-  <div class="view-hint">⏱️ Submit the actual login or logout time for agents who were running late or left early (used by the Attendance tracker only).</div>
+  <div class="view-hint">⏱️ Submit the actual login or logout time for agents who were running late or left early (used by the Scorecard › Attendance page only).</div>
   <div class="note amber" style="padding:15px;box-shadow:var(--shadow)">
     <h3 style="color:#b26a00">⚠️ Double-check before submitting</h3>
     <p style="margin:0">
@@ -640,6 +676,7 @@ const URLS = {
   calledOff: sheetUrl(2139820898),
   attTime: sheetUrl(417537234),            // "ATTENDANCE TIME" tab: Name | EST Date | Type | Actual Time
   announcements: sheetUrl(6259028),
+  qa: sheetUrl(337356668),                 // "QA" tab
   daily: `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv&headers=1&gid=1383082920`          // "Schedule By Date" tab
 };
 
@@ -671,7 +708,7 @@ const SUP_COLORS = {
 };
 
 /* Leave / attendance reason types. Array index doubles as sort order.
-   partial:true = the agent worked part of the shift (counted by hours in the Attendance tracker). */
+   partial:true = the agent worked part of the shift (counted by hours in the Scorecard > Attendance page). */
 const PTO_TYPES = [
   { keys: ['VACATION'],                       icon: '🌴', color: '#17a2b8', label: 'Vacation Leave', code: 'VL' },
   { keys: ['MATERNITY', 'MAT LEAVE', 'LOA'],  icon: '🤱', color: '#9c27b0', label: 'Maternity Leave', code: 'ML' },
@@ -690,7 +727,7 @@ const ATT_OTHER = { code: 'CO', icon: '🚫', color: '#dc3545', label: 'Called O
    STATE
    ===================================================================== */
 let estData = [], phData = [];
-let ptoList = [], calledOffList = [], announcementList = [], attTimeList = [];
+let ptoList = [], calledOffList = [], announcementList = [], attTimeList = [], qaList = [];
 let dailyMap = new Map();
 let currentWorkingAgents = [];
 let realtimeMode = false, realtimeTimer = null;
@@ -969,6 +1006,22 @@ async function loadDaily() {
   renderStatus();
 }
 
+/* QA tab: Analyst Name | Supervisor | CallDate | TicketNumber | Notes | Score | ... */
+async function loadQA() {
+  try {
+    const res = await fetch(URLS.qa);
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    const parsed = Papa.parse(await res.text(), { header: true, skipEmptyLines: 'greedy' });
+    if (!parsed.meta.fields?.includes('Analyst Name'))
+      throw new Error('no "Analyst Name" column - check the gid and that the sheet is shared');
+    qaList = parsed.data.filter(r => String(r['Analyst Name'] ?? '').trim());
+    loadErrors.qa = '';
+  } catch (err) {
+    loadErrors.qa = `Couldn't load the QA tab (${err.message})`;
+  }
+  renderStatus();
+}
+
 const addDays = (dateStr, n) => { const d = parseYMD(dateStr); d.setDate(d.getDate() + n); return ymd(d); };
 const dailyFor = (r, date) => dailyMap.get(normName(r.Name) + '|' + date);
 
@@ -982,11 +1035,11 @@ function rowFor(r, date) {
 }
 
 async function refreshAttendanceData(notify = false) {
-  await Promise.all([loadAttendance(), loadSchedules(), loadDaily()]);
+  await Promise.all([loadAttendance(), loadSchedules(), loadDaily(), loadQA()]);
   renderAll();
-  if (notify) toast(loadErrors.attendance || loadErrors.schedules || loadErrors.daily
+  if (notify) toast(loadErrors.attendance || loadErrors.schedules || loadErrors.daily || loadErrors.qa
     ? '⚠️ Refresh failed - see the banner at the top.'
-    : '✅ Schedules, PTO and Attendance refreshed');
+    : '✅ Schedules, PTO, Attendance and QA refreshed');
 }
 
 const TAB_RENDERERS = {
@@ -997,6 +1050,7 @@ const TAB_RENDERERS = {
   calledOffTab: () => buildRecordTable('att'),
   lateTab: buildLateTable,
   trackerTab: buildTracker,
+  qaTab: buildQA,
   supervisorTab: buildSupervisorSummary,
   forecastTab: refreshForecast,
   announcementsTab: buildAnnouncementsTab
@@ -1676,6 +1730,68 @@ function buildLateTable() {
 }
 
 /* =====================================================================
+   QUALITY ASSURANCE (QA tab)
+   Columns shown: Analyst Name | Score | Ticket Number | Call Date | Supervisor
+   ===================================================================== */
+/* Score as a percentage number: "95%", "95", or 0.95 all become 95 */
+const qaPct = v => {
+  const s = String(v ?? '').trim();
+  const n = parseFloat(s.replace('%', ''));
+  if (isNaN(n)) return null;
+  return (!s.includes('%') && n <= 1) ? n * 100 : n;
+};
+const QA_ALL_AGENTS = 'All Agents';
+
+function buildQA() {
+  const all = qaList.map(x => ({
+    analyst: String(x['Analyst Name'] ?? '').trim(),
+    supervisor: String(x.Supervisor ?? '').trim(),
+    date: normalizeDate(x.CallDate),
+    ticket: String(x.TicketNumber ?? '').trim(),
+    score: qaPct(x.Score)
+  }));
+
+  /* Supervisor list comes from the QA tab; the agent list follows the supervisor filter */
+  const supSel = $('qaSupervisor'), prevSup = supSel.value;
+  const sups = [...new Set(all.map(x => x.supervisor).filter(Boolean))].sort();
+  supSel.innerHTML = `<option>${ALL}</option>` + sups.map(s => `<option>${esc(s)}</option>`).join('');
+  if (sups.includes(prevSup)) supSel.value = prevSup;
+  const sup = supSel.value;
+
+  const agentSel = $('qaAgent'), prevAgent = agentSel.value;
+  const names = [...new Set(all.filter(x => sup === ALL || x.supervisor === sup).map(x => x.analyst))].sort();
+  agentSel.innerHTML = `<option>${QA_ALL_AGENTS}</option>` + names.map(n => `<option>${esc(n)}</option>`).join('');
+  if (names.includes(prevAgent)) agentSel.value = prevAgent;
+  const agent = agentSel.value;
+
+  const from = $('qaFrom').value, to = $('qaTo').value, q = up($('qaSearch').value);
+
+  const rows = all
+    .filter(x =>
+      (sup === ALL || x.supervisor === sup) &&
+      (agent === QA_ALL_AGENTS || x.analyst === agent) &&
+      (!from || (x.date && x.date >= from)) &&
+      (!to || (x.date && x.date <= to)) &&
+      (!q || up(`${x.analyst} ${x.ticket}`).includes(q)))
+    .sort((a, b) => b.date.localeCompare(a.date) || a.analyst.localeCompare(b.analyst));
+
+  $('qaTable').tBodies[0].innerHTML = rows.length ? rows.map(x => `
+    <tr class="${supClass(x.supervisor)}" style="${supStyle(x.supervisor)}">
+      <td>${esc(x.analyst)}</td>
+      <td class="qa-score">${x.score == null ? '—' : x.score.toFixed(1) + '%'}</td>
+      <td>${esc(x.ticket) || '—'}</td>
+      <td>${x.date ? fmtDate(parseYMD(x.date), { month: 'short', day: 'numeric', year: 'numeric' }) : '—'}</td>
+      <td>${esc(x.supervisor)}</td>
+    </tr>`).join('')
+    : '<tr><td colspan="5">No QA records found</td></tr>';
+
+  const scored = rows.filter(x => x.score != null);
+  $('qaCount').textContent = rows.length;
+  $('qaAvg').textContent = scored.length
+    ? (scored.reduce((s, x) => s + x.score, 0) / scored.length).toFixed(1) + '%' : '—';
+}
+
+/* =====================================================================
    MISSING AGENT CHECKER
    ===================================================================== */
 const toProperCase = name => name.toLowerCase().replace(/\b\w/g, c => c.toUpperCase());
@@ -1784,7 +1900,7 @@ function buildShiftChanges(date, mins, supFilter) {
 }
 
 /* =====================================================================
-   ATTENDANCE TRACKER
+   SCORECARD > ATTENDANCE
    Every scheduled day of the month is classified for each agent:
    OFF > Leave (PTO record) > Late / Left early (worked part of the shift)
    > Called off / NCNS > Present (shift finished) or Upcoming (shift not finished yet).
@@ -2171,7 +2287,7 @@ window.addEventListener('load', async () => {
     .forEach(id => $(id).value = today);
   $('trackerMonth').value = today.slice(0, 7);
 
-  await Promise.all([loadSchedules(), loadAttendance(), loadDaily()]);
+  await Promise.all([loadSchedules(), loadAttendance(), loadDaily(), loadQA()]);
   renderAll();
 
   updateClock();
