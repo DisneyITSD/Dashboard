@@ -175,6 +175,7 @@ tr.roster-off td{background:#f1f2f4;color:#666;font-style:italic}
 #agentPaste{width:100%;height:180px;resize:vertical;border:1px solid var(--border);border-radius:8px;padding:10px}
 
 /* ---------- Toast ---------- */
+.panels li small.ph-time,.shift-panel li small.ph-time{color:#14532d!important;font-weight:600;opacity:1}
 #toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:#0f2a4d;color:#fff;padding:9px 16px;border-radius:999px;opacity:0;pointer-events:none;transition:.25s;z-index:99}
 #toast.show{opacity:1}
 
@@ -812,6 +813,24 @@ function parseShift(shift) {
   return (st == null || en == null) ? null : [st, en];
 }
 
+/* EST (America/New_York, DST-aware) clock minutes on a date -> Philippine time, AM/PM */
+function nyOffsetMs(ms) {
+  const p = new Intl.DateTimeFormat('en-US', { timeZone: 'America/New_York', hourCycle: 'h23',
+    year: 'numeric', month: 'numeric', day: 'numeric', hour: 'numeric', minute: 'numeric' }).formatToParts(new Date(ms));
+  const g = t => +p.find(x => x.type === t).value;
+  return Date.UTC(g('year'), g('month') - 1, g('day'), g('hour'), g('minute')) - ms;
+}
+function phTime(date, mins) {
+  const [y, m, d] = date.split('-').map(Number);
+  const local = Date.UTC(y, m - 1, d, 0, mins);
+  let utc = local + 5 * 3600000;
+  utc = local - nyOffsetMs(utc);
+  utc = local - nyOffsetMs(utc);
+  return new Intl.DateTimeFormat('en-US', { timeZone: 'Asia/Manila', hour: '2-digit', minute: '2-digit', hour12: true })
+    .format(new Date(utc)).replace(/\s/g, ' ');
+}
+const phRange = (date, start, dur) => `${phTime(date, start)} - ${phTime(date, start + dur)}`;
+
 function supColor(name) {
   const n = up(name);
   if (!n) return '';
@@ -834,7 +853,8 @@ function matchType(types, reason, fallback) {
 const badge = t => `<span style="color:${t.color};font-weight:bold">${t.icon} ${esc(t.label)}</span>`;
 
 const emptyItem = (color, text) => `<li class="empty" style="--c:${color}">${text}</li>`;
-const nameTimeItem = (cls, x) => `<li class="${cls}"><strong>${esc(x.name)}</strong><br><small>${x.time}</small></li>`;
+const phLine = ph => ph ? `<br><small class="ph-time">${FLAG.ph}${ph} PH</small>` : '';
+const nameTimeItem = (cls, x) => `<li class="${cls}"><strong>${esc(x.name)}</strong><br><small>${x.time} EST</small>${phLine(x.ph)}</li>`;
 const uniqueSupervisors = () => [...new Set(estData.map(x => x.Supervisor).filter(Boolean))];
 
 function toggleDetails(card) {
@@ -1244,17 +1264,17 @@ function runLookup() {
 
     [r['Break 1'], r['Break 2'], r['Break 3']].forEach(br => {
       const bt = tm(br);
-      if (bt != null && bt > mins && bt <= mins + 30) upBreaks.push({ name: r.Name, time: fmtAMPM(toHHMM(bt)) });
+      if (bt != null && bt > mins && bt <= mins + 30) upBreaks.push({ name: r.Name, time: fmtAMPM(toHHMM(bt)), ph: phTime(date, bt) });
     });
     const lt = tm(r['Lunch']);
-    if (lt != null && lt > mins && lt <= mins + 30) upLunches.push({ name: r.Name, time: fmtAMPM(toHHMM(lt)) });
+    if (lt != null && lt > mins && lt <= mins + 30) upLunches.push({ name: r.Name, time: fmtAMPM(toHHMM(lt)), ph: phTime(date, lt) });
 
     w.push({ name: r.Name, type: st.toLowerCase() });
     if (st === 'Break') {
       const bt = [r['Break 1'], r['Break 2'], r['Break 3']].find(x => { const t = tm(x); return t != null && mins >= t && mins < t + 15; });
-      b.push({ name: r.Name, time: formatTimeRange(bt, 15) });
+      b.push({ name: r.Name, time: formatTimeRange(bt, 15), ph: phRange(date, tm(bt), 15) });
     }
-    if (st === 'Lunch') l.push({ name: r.Name, time: formatTimeRange(r['Lunch'], 60) });
+    if (st === 'Lunch') l.push({ name: r.Name, time: formatTimeRange(r['Lunch'], 60), ph: phRange(date, tm(r['Lunch']), 60) });
   });
 
   const total = w.length + pto.length + calledOff.length;
@@ -1877,7 +1897,7 @@ function buildShiftChanges(date, mins, supFilter) {
   }));
 
   const fmt = t => fmtAMPM(toHHMM(t)) + (t >= 1440 ? ' (next day)' : '');
-  const li = (x, verb) => `<li><strong>${esc(x.name)}</strong><br><small>${verb} ${fmt(x.t)}</small></li>`;
+  const li = (x, verb) => `<li><strong>${esc(x.name)}</strong><br><small>${verb} ${fmt(x.t)} EST</small>${phLine(phTime(date, x.t))}</li>`;
   const byTime = (a, b) => a.t - b.t || a.name.localeCompare(b.name);
 
   $('comingOnList').innerHTML = coming.length
