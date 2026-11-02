@@ -521,7 +521,7 @@ tr.roster-off td{background:#f1f2f4;color:#666;font-style:italic}
 
 <!-- ============ ATTENDANCE TRACKER ============ -->
 <section class="tab-panel" id="trackerTab" hidden>
-  <div class="view-hint">🗓️ Per-agent attendance for the month: ✔ present, ◐ late / left early (counted by hours worked; marked * when no actual time is submitted yet and a half shift is assumed), ✖ called off, leave or OFF. Click an agent's name in the grid to open their calendar.</div>
+  <div class="view-hint">🗓️ Per-agent attendance for the month: ✔ present (once the shift has finished), ◐ late / left early (counted by hours worked; marked * when no actual time is submitted yet and a half shift is assumed), ✖ called off, leave or OFF. Click an agent's name in the grid to open their calendar.</div>
   <div class="controls">
     <button type="button" onclick="shiftTrackerMonth(-1)" title="Previous month">‹</button>
     <input type="month" id="trackerMonth" onchange="buildTracker()">
@@ -534,6 +534,7 @@ tr.roster-off td{background:#f1f2f4;color:#666;font-style:italic}
     <select id="trackerSupervisor" onchange="buildTracker()"><option>All Supervisors</option></select>
     <select id="trackerAgent" onchange="buildTracker()"></select>
     <input type="text" id="trackerSearch" placeholder="🔍 Search Agent..." onkeyup="buildTracker()">
+    <button type="button" class="blue" id="trackerDownloadBtn" onclick="downloadTracker()">⬇ Download CSV</button>
   </div>
   <div class="trk-legend" id="trackerLegend"></div>
   <div id="trackerBody"></div>
@@ -1786,7 +1787,8 @@ function buildShiftChanges(date, mins, supFilter) {
    ATTENDANCE TRACKER
    Every scheduled day of the month is classified for each agent:
    OFF > Leave (PTO record) > Late / Left early (worked part of the shift)
-   > Called off / NCNS > Present (day passed) or Upcoming (today / future).
+   > Called off / NCNS > Present (shift finished) or Upcoming (shift not finished yet).
+   A day turns Present as soon as the shift end time (EST) has passed.
    Attendance % = hours worked / hours expected (shift length, 11h by default).
    Late / Left early minutes come from the ATTENDANCE TIME tab:
    late = actual login - shift start, left early = shift end - actual logout.
@@ -1800,6 +1802,18 @@ function shiftHours(shift) {
   return (p[1] <= p[0] ? p[1] + 1440 - p[0] : p[1] - p[0]) / 60;
 }
 
+/* True once the shift's end time has passed (EST). Handles overnight shifts.
+   Falls back to "the date has passed" when the shift can't be read. */
+function shiftEnded(shift, date, today) {
+  const p = parseShift(shift);
+  if (!p) return date < today;
+  const base = parseYMD(date).getTime();
+  const start = base + p[0] * 60000;
+  let end = base + p[1] * 60000;
+  if (end <= start) end += 86400000;          // overnight shift ends the next day
+  return estNow().getTime() >= end;
+}
+
 const TRACKER_STATUS = {
   present:  { icon: '✔', label: 'Present' },
   upcoming: { icon: '○', label: 'Upcoming' },
@@ -1809,7 +1823,7 @@ const TRACKER_STATUS = {
   off:      { icon: '–', label: 'OFF' }
 };
 const TRACKER_LEGEND = [
-  ['present', '✔ Present (expected day, no record)'], ['upcoming', '○ Upcoming (today / future)'],
+  ['present', '✔ Present (shift finished, no record)'], ['upcoming', '○ Upcoming (shift not finished yet)'],
   ['partial', '◐ Late / Left early (worked, partial shift; * = estimated half shift)'],
   ['absent', '✖ Called off / NCNS'], ['leave', '🌴 Leave (VL, SL, ...)'], ['off', '– OFF']
 ];
@@ -1858,7 +1872,7 @@ function attendanceBase(r, date, today, idx) {
     return { kind: 'off', date, shift: '', text: 'OFF', code: '–', icon: '–', reason: '' };
   }
 
-  const kind = date < today ? 'present' : 'upcoming';
+  const kind = shiftEnded(shift, date, today) ? 'present' : 'upcoming';
   const s = TRACKER_STATUS[kind];
   return { kind, date, shift, text: s.label, code: s.icon, icon: s.icon, reason: '' };
 }
@@ -2021,6 +2035,7 @@ function buildTracker() {
   const days = Array.from({ length: new Date(y, m, 0).getDate() }, (_, i) => ymd(new Date(y, m - 1, i + 1)));
   const today = ymd(estNow());
   const view = $('trackerView').value;
+  $('trackerDownloadBtn').hidden = view !== 'grid';      // Download CSV is for the grid view only
   const sup = $('trackerSupervisor').value;
   const q = up($('trackerSearch').value);
 
@@ -2045,6 +2060,54 @@ function buildTracker() {
   if (!agent) { body.innerHTML = '<div class="empty" style="--c:#6c757d">No agents found</div>'; return; }
   const info = monthOf(agent);
   body.innerHTML = trackerHeaderHtml(agent, info) + (view === 'calendar' ? trackerCalendarHtml(info, today) : trackerListHtml(info));
+}
+
+/* Download the attendance grid as CSV (respects month, supervisor and search filters) */
+function downloadTracker() {
+  const ym = $('trackerMonth').value;
+  if (!ym || !estData.length) return toast('Nothing to download yet');
+
+  const [y, m] = ym.split('-').map(Number);
+  const days = Array.from({ length: new Date(y, m, 0).getDate() }, (_, i) => ymd(new Date(y, m - 1, i + 1)));
+  const today = ymd(estNow());
+  const sup = $('trackerSupervisor').value;
+  const q = up($('trackerSearch').value);
+
+  const idx = { pto: indexRecords(ptoList), att: indexAttendance(calledOffList, attTimeList) };
+  const roster = estData
+    .filter(r => (sup === ALL || r.Supervisor === sup) && (!q || up(r.Name).includes(q)))
+    .sort((a, b) => a.Name.localeCompare(b.Name));
+
+  const cellText = x => x.kind === 'present' ? 'P'
+                      : x.kind === 'upcoming' ? 'U'
+                      : x.kind === 'off' ? 'OFF'
+                      : x.code + (x.estimated ? '*' : '');
+  const csvCell = v => `"${String(v ?? '').replace(/"/g, '""')}"`;
+
+  const rows = [[
+    'Agent', 'Supervisor', 'Expected days', 'Present', 'Late/Left early', 'Called off', 'Leave',
+    'Attendance %', 'Hours worked', 'Hours expected',
+    ...days.map(d => { const dt = parseYMD(d); return `${dt.getDate()} (${DAYS[dt.getDay()].slice(0, 3)})`; })
+  ]];
+
+  roster.forEach(r => {
+    const info = days.map(d => attendanceFor(r, d, today, idx)), c = trackerSummary(info);
+    rows.push([r.Name, r.Supervisor, c.expected, c.present, c.partial, c.absent, c.leave,
+               trackerPct(c), c.hoursWorked.toFixed(1), c.hoursExp.toFixed(1), ...info.map(cellText)]);
+  });
+  rows.push([]);
+  rows.push(['P = Present, U = Upcoming, LATE / LE = Late / Left early (* = estimated half shift), NCNS / CO = Called off, VL / SL / ML / BRV = Leave, OFF = Off']);
+
+  const filename = `attendance-tracker-${ym}.csv`;
+  const csv = '\uFEFF' + rows.map(r => r.map(csvCell).join(',')).join('\r\n');   // BOM keeps Excel happy with UTF-8
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(new Blob([csv], { type: 'text/csv;charset=utf-8' }));
+  a.download = filename;
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  URL.revokeObjectURL(a.href);
+  toast('⬇ Downloaded ' + filename);
 }
 
 function shiftTrackerMonth(delta) {
