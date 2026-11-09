@@ -247,6 +247,9 @@ tr.roster-off td{background:#f1f2f4;color:#666;font-style:italic}
 #mcsTable th{white-space:normal;text-align:center;vertical-align:bottom}
 #mcsTable td{text-align:center;white-space:nowrap}
 #mcsTable td:first-child{text-align:left;font-weight:600}
+#mcsTable th:first-child,#mcsTable td:first-child{position:sticky;left:0;background:#fff;box-shadow:1px 0 0 var(--line)}
+#mcsTable th:first-child{z-index:12}
+#mcsTable td:first-child{z-index:5}
 
 /* Performance Stack Ranking: colour coding, trends, podium */
 #metricTable td.sc-good{background:#e8f5e9;color:#2e7d32;font-weight:600}
@@ -2324,9 +2327,12 @@ function buildMetric() {
    Only the columns listed in MCS_COLS are shown, whatever else the sheet holds.
    Headers are matched by name (ignoring case, spaces and punctuation), so column order in the sheet doesn't matter.
    ===================================================================== */
-const MCS_COLS = ['Agent Name', 'Supervisor', 'Calls Handled', 'Tickets Opened', 'AHT',
-  'Activity Code - Restroom - Instances', 'Restroom Total Time', 'QA', 'Refused Calls', 'Working Rate', 'Occupancy',
-  'Attendance Current Month CO/LE/RL Points', 'PTO Used', 'Compliance', 'Misroutes', 'FCR Count (First Contact Resolution)'];
+const MCS_COLS = ['Agent Name', 'Calls Handled', 'Tickets Opened', 'ATT', 'ATT (Outbound)',
+  'Wrap Up Time - Instances', 'Wrap Up Time - Total Time', 'Wrap Up Time - Avg / Call',
+  'Extended Wrap up Time - Instances', 'Extended Wrap up Time - Total Time', 'Extended Wrap up Time - Avg / Call',
+  'AHT', 'Activity Code - Restroom - Instances', 'Restroom Total Time', 'Outbound Calls', 'QA', 'Refused Calls',
+  'Working Rate', 'Occupancy', 'Attendance Current Month CO/LE/RL Points', 'PTO Used', 'Compliance', 'Misroutes',
+  'FCR Count (First Contact Resolution)'];
 const mcsKey = s => String(s ?? '').toLowerCase().replace(/[^a-z0-9]/g, '');
 let mcsHeads = [], mcsRows = [], mcsCols = [], mcsMissing = [], mcsI = { month: -1, agent: -1, sup: -1 };
 
