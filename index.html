@@ -124,6 +124,11 @@ a.tab-btn{display:inline-block;padding:8px 12px;border-radius:8px;text-decoratio
 #breakList{background:#fff3cd}
 #lunchList{background:#f8d7da}
 #breakList:empty,#lunchList:empty{background:none}
+#workingList li.sup-h{display:flex;align-items:center;justify-content:space-between;background:none;color:var(--navy);border-left:0;border-bottom:2px solid var(--sc);font-size:13px;font-weight:700;padding:3px 3px 3px 0;margin:12px 0 4px}
+#workingList li.sup-h::before{content:"";width:9px;height:9px;border-radius:50%;background:var(--sc);margin-right:7px;flex:none}
+li.sup-h span{flex:1}
+li.sup-h small{color:var(--muted);font-weight:600}
+li.sup-h:first-child{margin-top:0}
 #upcomingBreakList li,#upcomingLunchList li{background:#f8fafc;padding:6px 8px;font-size:14px;color:#111}
 #upcomingBreakList li strong,#upcomingLunchList li strong{font-weight:700}
 #upcomingBreakList li small,#upcomingLunchList li small{font-size:12px;color:#333}
@@ -1353,6 +1358,15 @@ function groupedBlocks(items, types, fallback, useReasonAsHeader) {
   }).join('');
 }
 
+/* Groups dashboard list items under a heading per supervisor (heading shows the supervisor's colour and head-count) */
+function bySup(items, render) {
+  const g = {};
+  items.forEach(x => (g[x.sup || 'Unassigned'] ??= []).push(x));
+  return Object.keys(g).sort((a, b) => a.localeCompare(b)).map(s =>
+    `<li class="sup-h" style="--sc:${supColor(s) || '#6c757d'}"><span>${esc(s)}</span><small>${g[s].length}</small></li>` +
+    g[s].map(render).join('')).join('');
+}
+
 function runLookup() {
   const date = $('selectedDate').value;
   if (!date) return;
@@ -1392,17 +1406,17 @@ function runLookup() {
 
     [r['Break 1'], r['Break 2'], r['Break 3']].forEach(br => {
       const bt = tm(br);
-      if (bt != null && bt > mins && bt <= mins + 30) upBreaks.push({ name: r.Name, time: fmtAMPM(toHHMM(bt)), ph: phTime(date, bt) });
+      if (bt != null && bt > mins && bt <= mins + 30) upBreaks.push({ name: r.Name, sup: r.Supervisor, time: fmtAMPM(toHHMM(bt)), ph: phTime(date, bt) });
     });
     const lt = tm(r['Lunch']);
-    if (lt != null && lt > mins && lt <= mins + 30) upLunches.push({ name: r.Name, time: fmtAMPM(toHHMM(lt)), ph: phTime(date, lt) });
+    if (lt != null && lt > mins && lt <= mins + 30) upLunches.push({ name: r.Name, sup: r.Supervisor, time: fmtAMPM(toHHMM(lt)), ph: phTime(date, lt) });
 
-    w.push({ name: r.Name, type: st.toLowerCase() });
+    w.push({ name: r.Name, sup: r.Supervisor, type: st.toLowerCase() });
     if (st === 'Break') {
       const bt = [r['Break 1'], r['Break 2'], r['Break 3']].find(x => { const t = tm(x); return t != null && mins >= t && mins < t + 15; });
-      b.push({ name: r.Name, time: formatTimeRange(bt, 15), ph: phRange(date, tm(bt), 15) });
+      b.push({ name: r.Name, sup: r.Supervisor, time: formatTimeRange(bt, 15), ph: phRange(date, tm(bt), 15) });
     }
-    if (st === 'Lunch') l.push({ name: r.Name, time: formatTimeRange(r['Lunch'], 60), ph: phRange(date, tm(r['Lunch']), 60) });
+    if (st === 'Lunch') l.push({ name: r.Name, sup: r.Supervisor, time: formatTimeRange(r['Lunch'], 60), ph: phRange(date, tm(r['Lunch']), 60) });
   });
 
   const total = w.length + pto.length + calledOff.length;
@@ -1416,7 +1430,7 @@ function runLookup() {
   w.sort((x, y) => order[x.type] - order[y.type] || x.name.localeCompare(y.name));
   currentWorkingAgents = w.map(x => up(x.name));
 
-  $('workingList').innerHTML = w.map(x => `<li class="${x.type}">${esc(x.name)}</li>`).join('');
+  $('workingList').innerHTML = bySup(w, x => `<li class="${x.type}">${esc(x.name)}</li>`);
   $('breakList').innerHTML = b.length ? b.map(x => nameTimeItem('break', x)).join('') : emptyItem('#ff9800', '☕ No ongoing breaks');
   $('lunchList').innerHTML = l.length ? l.map(x => nameTimeItem('lunch', x)).join('') : emptyItem('#dc3545', '🍽️ No ongoing lunches');
   $('upcomingBreakList').innerHTML = upBreaks.length ? upBreaks.map(x => nameTimeItem('', x)).join('') : emptyItem('#ff9800', '☕ No upcoming breaks');
