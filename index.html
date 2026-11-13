@@ -1166,7 +1166,7 @@ const DISPUTE_NEEDS_APPROVAL = true;
 const URLS = {
   pto: sheetUrl(1297010746),
   calledOff: sheetUrl(2139820898),
-  loli: LOLI_GID ? sheetUrl(LOLI_GID) : `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv&sheet=${encodeURIComponent('LOLI Actual')}`,   // "LOLI Actual" tab: Agent Name | Work Date | Scheduled Shift | Actual First Login | Login Status | Actual Final Logout | Minutes Late | Minutes Early | Attendance Result
+  loli: LOLI_GID ? sheetUrl(LOLI_GID) : `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv&sheet=${encodeURIComponent('LOLI Actual')}`,   // "LOLI Actual" tab: Agent Name | Work Date | Scheduled Shift | Actual First Login | Actual Final Logout | Total Logged-in Hours | Hours Short
   attTime: sheetUrl(417537234),            // "ATTENDANCE TIME" tab: Name | EST Date | Type | Actual Time
   announcements: sheetUrl(6259028),
   qa: scheduleUrl(337356668),              // "QA" tab (&headers=1 forces row 1 to be read as the header)
@@ -3208,8 +3208,10 @@ function parseLoliClock(v) {
 function buildLoliIndex(rows) {
   const m = new Map();
   /* Columns are found from the header row. Current layout of the tab:
-     Agent Name | Work Date | Scheduled Shift | Actual First Login | Login Status | Actual Final Logout | Minutes Late | Minutes Early | Attendance Result
-     (the older layout, Agent Name | Date | Min of Login | Max of Logout, still works) */
+     Agent Name | Work Date | Scheduled Shift | Actual First Login | Actual Final Logout | Total Logged-in Hours | Hours Short
+     Login Status / Minutes Late / Minutes Early / Attendance Result are optional: when they are missing, late / early minutes
+     are worked out from the actual times vs the scheduled shift.
+     (older layouts, incl. Agent Name | Date | Min of Login | Max of Logout, still work) */
   let c = { name: 1, date: 2, login: 3, logout: 4, shift: -1, late: -1, early: -1, status: -1, result: -1, hours: -1, short: -1 };
   loliInfo.workDate = false;
   const h = rows.findIndex(r => r.some(x => /^agent name$/i.test(clean(x))));
