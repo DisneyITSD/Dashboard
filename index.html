@@ -80,7 +80,6 @@ a.tab-btn{display:inline-block;padding:8px 12px;border-radius:8px;text-decoratio
 .card:hover{transform:none;box-shadow:0 2px 8px rgba(0,0,0,.08)}
 .card .details{margin-top:10px;padding-top:10px;border-top:1px solid var(--border);font-size:12px;text-align:left}
 .value{font-size:40px;font-weight:700;color:var(--navy)}
-#supervisorSummaryCards,
 #dailyOverviewCards{display:grid;grid-template-columns:none;grid-auto-flow:column;grid-auto-columns:minmax(0,1fr);gap:10px;align-items:start}
 
 /* ---------- Dashboard stat cards ---------- */
@@ -210,6 +209,16 @@ tr.roster-off td{background:#f1f2f4;color:#666;font-style:italic}
 .trk-grid thead th:first-child{z-index:12}
 .trk-grid td.trk-name{cursor:pointer;font-weight:600;color:var(--navy)}
 .trk-grid td.trk-name:hover{text-decoration:underline}
+.trk-grid td.trk-agent{font-weight:600;color:var(--navy)}
+.trk-grid td.trk-sum.st-present{background:#e8f5e9;color:#2e7d32}
+.trk-grid td.trk-sum.st-partial{background:#fff3e0;color:#e65100}
+.trk-grid td.trk-sum.st-absent{background:#ffebee;color:#c62828}
+.trk-grid tr.trk-total td{font-weight:700;background:#eef2f7;border-bottom:2px solid var(--line)}
+.trk-grid tr.trk-total td:first-child{background:#eef2f7;color:var(--navy)}
+.trk-grid tr.trk-total td small{font-weight:600;color:var(--muted)}
+.trk-grid tr.trk-total td.st-present{background:#e8f5e9;color:#2e7d32}
+.trk-grid tr.trk-total td.st-partial{background:#fff3e0;color:#e65100}
+.trk-grid tr.trk-total td.st-absent{background:#ffebee;color:#c62828}
 .trk-grid th.today{background:#fff3cd;color:#8a6100}
 .trk-grid td.trk-cell{min-width:34px;font-weight:700}
 .trk-grid .trk-sum{background:#fafbfc;font-weight:600;min-width:46px}
@@ -291,7 +300,6 @@ tr.grp-head:hover{filter:brightness(.97)}
   .two-col{grid-template-columns:1fr}
 }
 @media(max-width:900px){
-  #supervisorSummaryCards,
   #dailyOverviewCards{grid-auto-columns:minmax(200px,1fr);overflow-x:auto;padding-bottom:6px}
 }
 @media(max-width:768px){
@@ -308,72 +316,355 @@ tr.grp-head:hover{filter:brightness(.97)}
   .schedule-container{height:calc(100vh - 150px)}
 }
 </style>
+<script>(function(){try{var m=localStorage.getItem('ditsc_theme')||'system';document.documentElement.dataset.theme=(m==='dark'||(m==='system'&&matchMedia('(prefers-color-scheme: dark)').matches))?'dark':'light'}catch(e){}})()</script>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style id="theme-v2">
+/* =====================================================================
+   THEME v3 - flat "report" look. Overrides the base styles above.
+   ===================================================================== */
+:root{--surface:#fff;--ink:#111827;--navy:#1d3557;--blue:#2f5bea;--green:#16a34a;--orange:#d97706;--red:#dc2626;--muted:#6b7280;--line:#e5e7eb;--border:#d9dde4;--paper:#f6f7f9;--side:236px;--shadow:none}
+*{scrollbar-width:thin;scrollbar-color:#c9ced8 transparent}
+body{font-family:"IBM Plex Sans","Segoe UI",system-ui,sans-serif;background:var(--paper);color:var(--ink);font-size:14px;font-variant-numeric:tabular-nums;-webkit-font-smoothing:antialiased}
+.app{display:flex;min-height:100vh}.main{flex:1;min-width:0}
+.main .tab-panel{padding:0 36px 48px;max-width:1700px}
+
+/* Dashboard announcements strip */
+.dash-ann{margin:14px 0 4px;border:1px solid var(--line);border-radius:12px;background:var(--surface);overflow:hidden}
+.dash-ann-head{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:10px 14px;font-weight:600;font-size:14px}
+.dash-ann-head a{font-size:12px;font-weight:500;color:var(--blue);cursor:pointer;text-decoration:none}
+.dash-ann-row{display:grid;grid-template-columns:96px minmax(0,1fr) auto;align-items:center;gap:12px;padding:9px 14px;border-top:1px solid var(--line);font-size:13px}
+.dash-ann-row .t{font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.dash-ann-row .d{color:var(--muted);font-size:12px;white-space:nowrap}
+.dash-ann-pill{justify-self:start;padding:2px 10px;border-radius:999px;font-size:11.5px;font-weight:600;color:var(--c);background:color-mix(in srgb,var(--c) 14%,transparent);border:1px solid color-mix(in srgb,var(--c) 35%,transparent)}
+.dash-ann-empty{padding:9px 14px;border-top:1px solid var(--line);font-size:13px;color:var(--muted)}
+@media(max-width:700px){.dash-ann-row{grid-template-columns:auto minmax(0,1fr);row-gap:2px}.dash-ann-row .d{grid-column:1 / -1}.dash-ann-row .t{white-space:normal}}
+
+/* Sidebar: light, quiet */
+.side{position:sticky;top:0;height:100vh;width:var(--side);flex:none;display:flex;flex-direction:column;padding:20px 10px 14px;background:var(--surface);border-right:1px solid var(--line);color:#374151;overflow-y:auto;z-index:70}
+.side .brand{padding:0 10px 16px;margin-bottom:4px;display:flex;align-items:center;gap:10px}
+.side .logo{height:38px;background:#0e2746;border-radius:8px;padding:4px}
+.side .title{font-size:13.5px;font-weight:600;color:var(--ink);line-height:1.25}
+.side .subtitle{font-size:11px;color:var(--muted);margin-top:2px}
+.side .tabs{display:flex;flex-direction:column;gap:1px;flex:1}
+.nav-label{font-size:12px;font-weight:600;color:#9ca3af;padding:18px 12px 6px}
+.side a.tab-btn{display:block;padding:7px 12px;border-radius:8px;color:#4b5563;font-size:14px;font-weight:500;opacity:1}
+.side a.tab-btn:hover{background:#f3f4f6;color:var(--ink);transform:none}
+.side a.tab-btn.active{background:#eaf0ff;color:#1e40af;font-weight:600}
+
+/* Page header */
+.page-head{display:flex;align-items:center;flex-wrap:wrap;gap:12px;padding:30px 36px 18px;margin-bottom:6px;border-bottom:1px solid var(--line);background:var(--surface)}
+.page-head h1{margin:0;font-size:28px;font-weight:600;letter-spacing:-.02em;line-height:1.1}
+.page-head .crumb{font-size:13px;color:var(--muted);margin-bottom:4px}.page-head .crumb:empty{display:none}
+.main .tab-panel:first-of-type{padding-top:0}
+.head-tools{margin-left:auto;display:flex;align-items:center;gap:14px}
+.head-clock{display:flex;flex-direction:column;align-items:flex-end;gap:2px}
+.page-head #liveClock{display:block;border:0;border-radius:10px;background:#f3f4f6;padding:7px 12px;font-size:12px;line-height:1.55;color:#374151;text-align:left}
+.page-head #lastUpdated{display:none}
+.page-head #refreshBtn{margin:0;padding:8px 18px;border-radius:999px;border:1px solid var(--blue);background:var(--blue);color:#fff;font-weight:600;white-space:nowrap}
+.page-head #refreshBtn:hover{background:#2449c4}
+.controls button[onclick*="refreshAttendanceData"]{display:none}
+.page-head #realtimeBtn{margin:0;padding:8px 18px;border-radius:999px;border:1px solid var(--border);background:var(--surface);color:var(--ink);font-weight:600;white-space:nowrap}
+.page-head #realtimeBtn:hover{background:#f3f4f6}
+.page-head #realtimeBtn.on{background:#dcfce7;border-color:#86efac;color:#166534}
+.menu-btn{display:none;padding:8px 12px;background:var(--surface);border:1px solid var(--border);color:var(--ink);font-size:18px;line-height:1;border-radius:10px}
+.scrim{display:none}
+.view-hint{margin:18px 0 14px;max-width:100ch;font-size:13.5px;line-height:1.55;color:var(--muted)}
+.main #statusBanner,.main #highAnnouncements{margin:14px 36px 0!important}
+.note{padding:11px 16px;border:0;border-left:3px solid;border-radius:6px;font-size:13.5px}
+.note.red{background:#fef2f2;border-color:var(--red);color:#7f1d1d}.note.amber{background:#fffbeb;border-color:var(--orange);color:#78350f}.note.green{background:#f0fdf4;border-color:var(--green);color:#14532d}
+.range-banner{background:none;border:0;border-left:3px solid var(--blue);border-radius:0;padding:2px 12px;color:var(--ink);font-weight:600}
+
+/* Filter row: flat, pill inputs, no box */
+select,input,button{padding:7px 16px;border-radius:999px;font-size:13.5px}
+select,input:not([type=checkbox]){min-height:36px;border:1px solid var(--border);background:var(--surface);color:var(--ink)}
+select:focus,input:focus{outline:0;border-color:var(--blue);box-shadow:0 0 0 3px rgba(47,91,234,.14)}
+.controls{gap:8px 10px;padding:0 0 16px;margin-bottom:18px;background:none;border:0;border-bottom:1px solid var(--line);border-radius:0;box-shadow:none}
+.controls button{min-height:36px;background:var(--ink);color:#fff;font-weight:600}
+.controls button:hover{background:#000;transform:none}
+.controls button.blue,.controls button[title]{background:var(--surface);color:var(--ink);border:1px solid var(--border)}
+.controls button.blue:hover,.controls button[title]:hover{background:#f3f4f6}
+.controls .msel-btn{color:var(--ink);font-weight:500}
+.msel-panel{border-radius:14px;box-shadow:0 12px 32px -10px rgba(17,24,39,.3)}
+
+/* Counters: plain inline figures */
+.daily-summary{gap:28px;margin:0 0 20px}
+.summary-box{display:flex;align-items:baseline;gap:8px;padding:0;background:none;border:0;box-shadow:none;font-size:13.5px;font-weight:500;color:var(--muted)}
+.summary-box span{margin:0;font-size:24px;font-weight:600;color:var(--ink)}
+
+/* KPI strip: one connected band */
+.stats{display:grid;gap:0;margin:0 0 24px;background:var(--surface);border:1px solid var(--line);border-radius:12px;overflow:hidden}
+.stats .card{padding:18px 20px;min-height:0;text-align:left;background:var(--surface);border:0;border-right:1px solid var(--line);border-radius:0;box-shadow:none;position:relative}
+.stats .card:last-child{border-right:0}
+.stats .card::before{content:"";position:absolute;left:20px;top:0;width:28px;height:3px;background:var(--c)}
+.stats .card h3{margin:2px 0 8px;font-size:13px;font-weight:500;color:var(--muted)}
+.stats .card .value{font-size:36px;font-weight:600;line-height:1;letter-spacing:-.02em;color:var(--ink)}
+.stats .card .pct{margin:8px 0 0;text-align:left;font-size:12.5px;font-weight:600;color:var(--c)}
+.stats .card:hover{transform:none;box-shadow:none;background:#fafbfc}
+.stats .card.alert{background:#fff7f7;animation:none}.stats .card.warn{background:#fffcf5}
+.sum-cards.stats{grid-template-columns:repeat(4,minmax(0,1fr))}
+.sum-cards .card{border-bottom:1px solid var(--line)}.sum-cards .card .pct{color:var(--muted);font-weight:500}
+.sum-cards .card .value{color:var(--c)}
+.card{padding:16px 18px;text-align:left;background:var(--surface);border:1px solid var(--line);border-top:3px solid var(--c,var(--blue));border-radius:12px;box-shadow:none}
+.card h3{margin:0 0 8px;font-size:15px;font-weight:600}
+.card hr{border:0;border-top:1px solid var(--line);margin:10px 0}
+.card .details{border-top:1px solid var(--line);line-height:1.6}
+#dailyOverviewCards .card .value{font-size:30px;color:var(--c)}
+#dailyOverviewCards{grid-auto-flow:row;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:14px}
+
+/* Panels */
+.panel{padding:18px 20px;background:var(--surface);border:1px solid var(--line);border-radius:12px;box-shadow:none}
+.panel h3{padding-bottom:10px;font-size:15px;font-weight:600;color:var(--ink);text-transform:none;letter-spacing:0;border-bottom:1px solid var(--line)}
+.panel h4{font-size:13px;font-weight:600;color:var(--muted)}
+.panel>.schedule-container{border:0;border-radius:0}
+.sum-h{display:flex;align-items:center;gap:10px;margin:32px 0 12px;font-size:17px;font-weight:600;color:var(--ink)}
+.sum-h::before{content:"";width:4px;height:18px;border-radius:2px;background:var(--blue)}
+.sum-grid3{gap:14px}
+
+/* Dashboard: five lanes in one board */
+.panels{gap:0;background:var(--surface);border:1px solid var(--line);border-radius:12px;overflow:hidden}
+.panels .panel{height:calc(100vh - 380px);min-height:420px;padding:0 14px 14px;border:0;border-right:1px solid var(--line);border-radius:0;background:var(--surface)}
+.panels .panel:last-child{border-right:0}
+.panels .panel h3{margin:0 -14px 12px;padding:14px 14px 10px;font-size:14px;font-weight:600;color:var(--ink);border-bottom:3px solid var(--lane,#9ca3af)}
+.panels .panel:nth-child(1){--lane:#16a34a}.panels .panel:nth-child(2){--lane:#d97706}.panels .panel:nth-child(3){--lane:#dc2626}.panels .panel:nth-child(4){--lane:#0891b2}.panels .panel:nth-child(5){--lane:#7f1d1d}
+#breakList,#workingList li.break{background:#fffbeb;border-radius:6px}
+#lunchList,#workingList li.lunch{background:#fef2f2;border-radius:6px}
+.group{border:1px solid var(--line);border-left:4px solid var(--c);border-radius:10px;box-shadow:none}
+.pod{display:flex;flex-direction:column;align-items:flex-start;text-align:left;padding:16px 18px;border:1px solid var(--line);border-top:1px solid var(--line);border-left:4px solid var(--c);border-radius:12px;box-shadow:none}
+.pod .ps{font-weight:600}.podium{gap:14px;margin-bottom:20px}
+
+/* Tables: open rows, dots instead of colour fills */
+.schedule-container{height:calc(100vh - 330px);background:var(--surface);border:1px solid var(--line);border-radius:12px}
+th{padding:11px 14px;background:var(--surface);color:var(--muted);font-size:12.5px;font-weight:600;text-transform:none;letter-spacing:0;border-bottom:1px solid var(--ink)}
+td{padding:11px 14px;font-size:13.5px}
+tbody tr:hover{filter:none;background:#f9fafb}
+tr.roster-off td{background:#fafafa;color:#9ca3af}
+td.sc-good,td.sc-mid,td.sc-low{background:transparent!important;font-weight:600}
+td.sc-good{color:#15803d!important}td.sc-mid{color:#b45309!important}td.sc-low{color:#b91c1c!important}
+td.sc-good::before,td.sc-mid::before,td.sc-low::before{content:"";display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:7px;background:currentColor}
+#metricTable tr.grp-head td:first-child,#mcsTable tr.grp-head td:first-child,#qaTable tr.grp-head td:first-child{background:#f3f6fd}
+.trk-chip{font-weight:600}
+
+@media(max-width:1100px){.sum-cards.stats{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:900px){
+  .side{position:fixed;left:0;top:0;transform:translateX(-100%);transition:transform .22s ease;box-shadow:0 0 40px rgba(0,0,0,.3)}
+  body.nav-open .side{transform:none}
+  body.nav-open .scrim{display:block;position:fixed;inset:0;background:rgba(17,24,39,.4);z-index:65}
+  .menu-btn{display:block;align-self:center}
+  .page-head{position:sticky;top:0;z-index:40;padding:calc(12px + env(safe-area-inset-top,0px)) 16px 12px}
+  .page-head h1{font-size:20px}  .main .tab-panel{padding:0 16px 32px}
+  .main #statusBanner,.main #highAnnouncements{margin:12px 16px 0!important}
+  .panels{grid-template-columns:1fr 1fr}.panels .panel{border-bottom:1px solid var(--line)}
+  .schedule-container{height:calc(100vh - 250px)}
+}
+@media(max-width:700px){.stats{grid-template-columns:repeat(2,minmax(0,1fr))}.panels{grid-template-columns:1fr}}
+/* Dashboard lanes grow to fit their lists (no inner scrolling; the page scrolls instead) */
+.panels .panel{height:auto;max-height:none;overflow-y:visible}
+@media(max-width:700px){.panels .panel{height:auto}}
+
+/* Working list: collapsible supervisor groups */
+#workingList{border-left:0}
+#workingList li.sup-h{cursor:pointer;user-select:none;border-radius:6px 6px 0 0}
+#workingList li.sup-h:hover{background:rgba(127,127,127,.1)}
+#workingList li.sup-h:focus-visible{outline:2px solid var(--blue);outline-offset:1px}
+#workingList li.sup-h::after{content:"";flex:none;width:6px;height:6px;margin-left:10px;border-right:2px solid var(--muted);border-bottom:2px solid var(--muted);transform:rotate(45deg) translateY(-2px);transition:transform .15s}
+#workingList li.sup-h.collapsed::after{transform:rotate(-45deg)}
+.panels .panel h3.wl-head{display:flex;align-items:center;justify-content:space-between;gap:8px;line-height:inherit}
+.wl-toggle{flex:none;display:grid;place-items:center;width:22px;height:22px;margin:-4px 0;padding:0;border-radius:6px;border:1px solid var(--line);background:var(--surface);color:var(--muted);cursor:pointer;line-height:0}
+.wl-toggle svg{width:14px;height:14px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.wl-toggle:hover{background:rgba(127,127,127,.12)}
+.wl-toggle:focus-visible{outline:2px solid var(--blue);outline-offset:1px}
+#ssCards{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:14px;margin:0 0 18px}
+#ssCards .card .ss-line{display:flex;justify-content:space-between;gap:10px;padding:3px 0;font-size:13.5px}
+#ssCards .card .ss-line b{font-weight:700}
+#ssCards .card .ss-sub{font-size:12px;color:var(--muted);margin:0 0 6px}
+#ssTable th{cursor:pointer;user-select:none}
+#ssCards .ss-good{color:#15803d}#ssCards .ss-mid{color:#b45309}#ssCards .ss-low{color:#b91c1c}
+html[data-theme=dark] #ssCards .ss-good{color:#4ade80}html[data-theme=dark] #ssCards .ss-mid{color:#fbbf24}html[data-theme=dark] #ssCards .ss-low{color:#f87171}
+.lc-grid{display:grid;grid-template-columns:repeat(4,1fr);grid-template-rows:repeat(12,auto);grid-auto-flow:column;gap:10px;margin-top:15px}
+.lc-cell{padding:8px 10px;border-radius:8px;border-left:4px solid var(--c);background:var(--bg);color:var(--c);font-size:13px;min-width:0}
+.lc-cell small{display:block;margin-top:3px;font-size:11.5px;font-weight:500;line-height:1.35;overflow-wrap:anywhere}
+.lc-0{--c:#757575;--bg:#f1f2f4}.lc-1{--c:#1565c0;--bg:#e3f2fd}.lc-peak{--c:#e65100;--bg:#fff3e0}
+html[data-theme=dark] .lc-0{--c:#9ca3af;--bg:#1b2331}html[data-theme=dark] .lc-1{--c:#93c5fd;--bg:#16263d}html[data-theme=dark] .lc-peak{--c:#fdba74;--bg:#3a2a12}
+@media(max-width:900px){.lc-grid{grid-template-columns:repeat(2,1fr);grid-template-rows:none;grid-auto-flow:row}}
+@media(max-width:560px){.lc-grid{grid-template-columns:1fr}}
+/* Hide / show the side menu (desktop; phones keep the ☰ button) */
+.side-toggle{display:none}
+@media(min-width:901px){
+  .side-toggle{display:grid;place-items:center;position:fixed;top:26px;left:calc(var(--side) - 13px);width:26px;height:26px;padding:0;border-radius:50%;border:1px solid var(--border);background:var(--surface);color:var(--muted);font-size:16px;line-height:1;cursor:pointer;z-index:80;box-shadow:0 1px 3px rgba(0,0,0,.12)}
+  .side-toggle:hover{color:var(--ink);background:#f3f4f6;transform:none}
+  .side-toggle:focus-visible{outline:2px solid var(--blue);outline-offset:2px}
+  body.nav-hidden .side{display:none}
+  body.nav-hidden .side-toggle{left:8px}
+}
+html[data-theme=dark] .side-toggle:hover{background:#1e2735}
+.page-head #refreshBtn{width:36px;height:36px;padding:0;display:grid;place-items:center;font-size:18px;line-height:1}
+
+/* Agent file: single calendar view with an agent summary strip */
+#rosterView,#rosterTab .daily-summary,#rosterLegend{display:none}
+.agent-sum{display:grid;grid-template-columns:minmax(210px,auto) minmax(210px,auto) 1fr;background:var(--surface);border:1px solid var(--line);border-radius:12px;margin-bottom:18px;overflow:hidden}
+.agent-sum>div{padding:18px 22px;border-right:1px solid var(--line)}
+.agent-sum>div:last-child{border-right:0}
+.as-name{font-size:20px;font-weight:600;line-height:1.2}
+.as-sup{margin-top:5px;font-size:13px;color:var(--muted)}
+.as-pct{font-size:40px;font-weight:600;line-height:1;letter-spacing:-.02em}
+.as-lbl{margin-top:6px;font-size:13px;font-weight:500;color:var(--muted)}
+.as-sub{margin-top:6px;font-size:12.5px;color:var(--muted)}
+.as-brk{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}
+.brk-tile{padding:12px 14px;border:1px solid var(--line);border-radius:10px;background:#f6f8fc}
+.brk-tile.lunch{background:#fff7ed;border-color:#fde3c4}
+.brk-name{font-size:13px;font-weight:600;color:var(--muted)}
+.brk-main{margin-top:5px;font-size:16px;font-weight:600;line-height:1.3}
+.brk-alt{margin-top:4px;font-size:12px;color:var(--muted)}
+@media(max-width:1250px){.agent-sum{grid-template-columns:1fr 1fr}.as-brk{grid-column:1/-1;border-top:1px solid var(--line)}.agent-sum>div:nth-child(2){border-right:0}}
+@media(max-width:600px){.agent-sum{grid-template-columns:1fr}.agent-sum>div{border-right:0}.as-brk{grid-template-columns:1fr 1fr}}
+
+/* ---------- Theme switch + dark mode ---------- */
+.theme-seg{display:inline-flex;padding:3px;border:1px solid var(--border);border-radius:999px;background:var(--surface)}
+.theme-seg button{padding:5px 12px;border-radius:999px;background:transparent;color:var(--muted);font-size:12.5px;font-weight:600}
+.theme-seg button:hover{color:var(--ink);background:transparent}
+.theme-seg button.on{background:var(--ink);color:var(--surface)}
+html[data-theme=dark]{color-scheme:dark;--ink:#e6eaf2;--muted:#9aa5b6;--line:#2a3547;--border:#3a465a;--paper:#0e131b;--surface:#161d29;--navy:#a9c1ee;--blue:#5b83ff}
+html[data-theme=dark] body{background:var(--paper);color:var(--ink)}
+html[data-theme=dark] .side a.tab-btn{color:#aab4c4}
+html[data-theme=dark] .side a.tab-btn:hover{background:#1e2735;color:#fff}
+html[data-theme=dark] .side a.tab-btn.active{background:#1f3160;color:#c7d6ff}
+html[data-theme=dark] .nav-label{color:#6f7b8f}
+html[data-theme=dark] .page-head #liveClock{background:#1d2635;color:#cfd7e4}
+html[data-theme=dark] .page-head #realtimeBtn:hover{background:#1f2837}
+html[data-theme=dark] .page-head #realtimeBtn.on{background:#12301f;border-color:#2f7a4b;color:#86efac}
+html[data-theme=dark] .controls button{background:#3b66f0;color:#fff}
+html[data-theme=dark] .controls button:hover{background:#2f56d8}
+html[data-theme=dark] .controls button.blue,html[data-theme=dark] .controls button[title]{background:var(--surface);color:var(--ink);border:1px solid var(--border)}
+html[data-theme=dark] .controls button.blue:hover,html[data-theme=dark] .controls button[title]:hover{background:#1f2837}
+html[data-theme=dark] .controls .msel-btn{background:var(--surface);color:var(--ink);border:1px solid var(--border)}
+html[data-theme=dark] .controls .msel-btn:hover{background:#1f2837}
+html[data-theme=dark] select:disabled,html[data-theme=dark] input:disabled{background:#1b2433;color:#6f7b8f}
+html[data-theme=dark] .msel-panel{background:var(--surface);box-shadow:0 12px 32px -10px rgba(0,0,0,.6)}
+html[data-theme=dark] .msel-panel label:hover{background:#1f2837}
+html[data-theme=dark] iframe{background:#fff}
+html[data-theme=dark] .group,html[data-theme=dark] .pod{background:var(--surface)}
+html[data-theme=dark] .empty{background:#1b2331;color:var(--muted)}
+html[data-theme=dark] .note.red{background:#2c1517;color:#fca5a5}
+html[data-theme=dark] .note.amber{background:#2b2111;color:#fcd34d}
+html[data-theme=dark] .note.green{background:#12261b;color:#86efac}
+html[data-theme=dark] .stats .card:hover{background:#1b2331}
+html[data-theme=dark] .stats .card.alert{background:#2c1517}
+html[data-theme=dark] .stats .card.warn{background:#2b2111}
+html[data-theme=dark] .card[style*="background:#fff"]{background:var(--surface)!important}
+html[data-theme=dark] .card[style*="background:#fff5f5"]{background:#2c1517!important}
+html[data-theme=dark] #breakList,html[data-theme=dark] #workingList li.break{background:#2b2111}
+html[data-theme=dark] #workingList li.break{color:#fbbf24}
+html[data-theme=dark] #lunchList,html[data-theme=dark] #workingList li.lunch{background:#2c1517}
+html[data-theme=dark] #workingList li.lunch{color:#f87171}
+html[data-theme=dark] #upcomingBreakList li,html[data-theme=dark] #upcomingLunchList li{background:#1b2331;color:var(--ink)}
+html[data-theme=dark] #upcomingBreakList li small,html[data-theme=dark] #upcomingLunchList li small{color:var(--muted)}
+html[data-theme=dark] .panels li small.ph-time,html[data-theme=dark] .shift-panel li small.ph-time{color:#4ade80!important}
+html[data-theme=dark] .chip{background:#1b2740;border-color:#2c3c5c;color:#bcd0f5}
+html[data-theme=dark] .chip.bad{background:#2c1517;border-color:#7f1d1d;color:#fca5a5}
+html[data-theme=dark] tbody tr:hover{background:#1b2331}
+html[data-theme=dark] tr.roster-off td{background:#131a25;color:#6f7b8f}
+html[data-theme=dark] td.sc-good{color:#4ade80!important}
+html[data-theme=dark] td.sc-mid{color:#fbbf24!important}
+html[data-theme=dark] td.sc-low{color:#f87171!important}
+html[data-theme=dark] .trk-grid th:first-child,html[data-theme=dark] .trk-grid td:first-child,html[data-theme=dark] #mcsTable th:first-child,html[data-theme=dark] #mcsTable td:first-child{background:var(--surface)}
+html[data-theme=dark] .trk-grid .trk-sum{background:#1b2331}
+html[data-theme=dark] .trk-grid tr.trk-total td,html[data-theme=dark] .trk-grid tr.trk-total td:first-child{background:#222c3d}
+html[data-theme=dark] .trk-grid td.trk-sum.st-present{background:#12301b;color:#86efac}
+html[data-theme=dark] .trk-grid td.trk-sum.st-partial{background:#3a2a12;color:#fdba74}
+html[data-theme=dark] .trk-grid td.trk-sum.st-absent{background:#3b1519;color:#fca5a5}
+html[data-theme=dark] .trk-grid tr.trk-total td.st-present{background:#12301b;color:#86efac}
+html[data-theme=dark] .trk-grid tr.trk-total td.st-partial{background:#3a2a12;color:#fdba74}
+html[data-theme=dark] .trk-grid tr.trk-total td.st-absent{background:#3b1519;color:#fca5a5}
+html[data-theme=dark] .trk-grid th.today{background:#3a2e12;color:#fcd34d}
+html[data-theme=dark] .trk-grid th.sortable:hover{background:#1f2a40;color:#c7d6ff}
+html[data-theme=dark] #metricTable tr.grp-head td:first-child,html[data-theme=dark] #mcsTable tr.grp-head td:first-child,html[data-theme=dark] #qaTable tr.grp-head td:first-child{background:#18233a;color:#c7d6ff}
+html[data-theme=dark] #qaTable tr.qa-month td:first-child{background:#141b27}
+html[data-theme=dark] #qaTable tr.qa-audit td:first-child{color:#aab4c4}
+html[data-theme=dark] .st-present{background:#12301f;color:#6ee7a0}
+html[data-theme=dark] .st-upcoming{background:#12263f;color:#8ab4ff}
+html[data-theme=dark] .st-absent{background:#3a1717;color:#fca5a5}
+html[data-theme=dark] .st-partial{background:#3a2a10;color:#fdba74}
+html[data-theme=dark] .st-leave{background:#0f2f33;color:#67e8f9}
+html[data-theme=dark] .st-off{background:#1f2735;color:#8b95a5}
+html[data-theme=dark] .trk-chip.info{background:#1d2a45;color:#bcd0f5}
+html[data-theme=dark] .brk-tile{background:#1b2331}
+html[data-theme=dark] .brk-tile.lunch{background:#2b2111;border-color:#4a3a18}
+html[data-theme=dark] #coverageTimelinePanel [style*="background:#e8f5e9"]{background:#12301f!important;color:#6ee7a0!important;border-left-color:#4ade80!important}
+html[data-theme=dark] #coverageTimelinePanel [style*="background:#ffebee"]{background:#2c1517!important;color:#fca5a5!important;border-left-color:#f87171!important}
+html[data-theme=dark] [style*="color:#333"]{color:var(--ink)!important}
+html[data-theme=dark] [style*="color:#6c757d"]{color:var(--muted)!important}
+html[data-theme=dark] .panels .panel h3{background:var(--surface);color:var(--ink)}
+html[data-theme=dark] .break{background:#2b2111;color:#fbbf24}
+html[data-theme=dark] .lunch{background:#2c1517;color:#f87171}
+html[data-theme=dark] #workingList li.sup-h{color:var(--ink)}
+</style>
 </head>
 
 <body>
 
-<div class="bar">
+<div class="app">
+<div class="scrim" onclick="document.body.classList.remove('nav-open')"></div>
+<button type="button" class="side-toggle" id="sideToggle" aria-label="Hide menu" title="Hide menu">‹</button>
+<aside class="side">
   <div class="brand">
-    <img src="logo.gif" class="logo" alt="Logo">
+    <img src="logo.gif" class="logo" alt="Logo" onerror="this.style.display='none'">
     <div><div class="title">DITSC L1 English – Phone</div><div class="subtitle">One Team. One Goal. Endless Magic.</div></div>
   </div>
-
-  <button id="realtimeBtn" onclick="toggleRealtime()">Live Mode</button>
-  <span id="liveClock">--:--:--</span>
-
   <nav class="tabs">
-    <div class="dropdown"><a class="tab-btn active" href="#lookupTab" data-tab="lookupTab">Dashboard</a></div>
-    <div class="dropdown"><button class="tab-btn">Schedule ▾</button>
-      <div class="dropdown-content">
-        <a href="#scheduleTab" data-tab="scheduleTab">Daily view</a>
-        <a href="#rosterTab" data-tab="rosterTab">Monthly view</a>
-        <a href="#teamTab" data-tab="teamTab">Team roster</a>
-      </div></div>
-    <div class="dropdown"><button class="tab-btn">Attendance ▾</button>
-      <div class="dropdown-content">
-        <a href="#ptoTab" data-tab="ptoTab">Leaves</a>
-        <a href="#calledOffTab" data-tab="calledOffTab">Absenteeism</a>
-        <a href="#lateTab" data-tab="lateTab">Late / Left early</a>
-      </div></div>
-    <div class="dropdown"><button class="tab-btn">Scorecard ▾</button>
-      <div class="dropdown-content">
-        <a href="#trackerTab" data-tab="trackerTab">Attendance</a>
-        <a href="#qaTab" data-tab="qaTab">Quality Assurance</a>
-        <a href="#metricTab" data-tab="metricTab">Performance Stack Ranking</a>
-        <a href="#mcsTab" data-tab="mcsTab">Overall Metric Scorecard</a>
-      </div></div>
-    <div class="dropdown"><button class="tab-btn">Reports ▾</button>
-      <div class="dropdown-content">
-        <a href="#supervisorTab" data-tab="supervisorTab">Supervisor summary</a>
-        <a href="#forecastTab" data-tab="forecastTab">Coverage forecast</a>
-      </div></div>
-    <div class="dropdown"><a class="tab-btn" href="#announcementsTab" data-tab="announcementsTab">Announcements</a></div>
-    <div class="dropdown"><a class="tab-btn" href="#missingTab" data-tab="missingTab">Missing Agent Checker</a></div>
-    <div class="dropdown"><button class="tab-btn">+ Submit ▾</button>
-      <div class="dropdown-content">
-        <a href="#attendanceFormTab" data-tab="attendanceFormTab">Attendance form</a>
-        <a href="#attendanceTimeFormTab" data-tab="attendanceTimeFormTab">Late / Left early time form</a>
-        <a href="#ptoFormTab" data-tab="ptoFormTab">PTO update form</a>
-        <a href="#announcementFormTab" data-tab="announcementFormTab">Announcement form</a>
-      </div></div>
+    <div class="nav-label">Overview</div>
+    <a class="tab-btn" href="#lookupTab" data-tab="lookupTab">Dashboard</a>
+    <a class="tab-btn" href="#announcementsTab" data-tab="announcementsTab">Announcements</a>
+    <div class="nav-label">Schedule</div>
+    <a class="tab-btn" href="#scheduleTab" data-tab="scheduleTab">Daily view</a>
+    <a class="tab-btn" href="#rosterTab" data-tab="rosterTab">Monthly view</a>
+    <a class="tab-btn" href="#teamTab" data-tab="teamTab">Team roster</a>
+    <div class="nav-label">Attendance</div>
+    <a class="tab-btn" href="#ptoTab" data-tab="ptoTab">Leaves</a>
+    <a class="tab-btn" href="#calledOffTab" data-tab="calledOffTab">Absenteeism</a>
+    <a class="tab-btn" href="#lateTab" data-tab="lateTab">Late / Left early</a>
+    <div class="nav-label">Scorecard</div>
+    <a class="tab-btn" href="#scoreSumTab" data-tab="scoreSumTab">Summary</a>
+    <a class="tab-btn" href="#trackerTab" data-tab="trackerTab">Attendance</a>
+    <a class="tab-btn" href="#qaTab" data-tab="qaTab">Quality Assurance</a>
+    <a class="tab-btn" href="#metricTab" data-tab="metricTab">Performance Stack Ranking</a>
+    <a class="tab-btn" href="#mcsTab" data-tab="mcsTab">Overall Metric Scorecard</a>
+    <div class="nav-label">Shift Coverage</div>
+    <a class="tab-btn" href="#forecastTab" data-tab="forecastTab">Daily Intervals</a>
+    <a class="tab-btn" href="#lunchTab" data-tab="lunchTab">Lunch Concurrency</a>
+    <a class="tab-btn" href="#missingTab" data-tab="missingTab">Missing Agent Checker</a>
+    <div class="nav-label">Submit</div>
+    <a class="tab-btn" href="#attendanceFormTab" data-tab="attendanceFormTab">Attendance form</a>
+    <a class="tab-btn" href="#attendanceTimeFormTab" data-tab="attendanceTimeFormTab">Late / Left early time form</a>
+    <a class="tab-btn" href="#disputeFormTab" data-tab="disputeFormTab">Log-in / Log-out dispute form</a>
+    <a class="tab-btn" href="#ptoFormTab" data-tab="ptoFormTab">PTO update form</a>
+    <a class="tab-btn" href="#announcementFormTab" data-tab="announcementFormTab">Announcement form</a>
   </nav>
-
-  <div class="live">
-    <span id="lastUpdated"></span>
+</aside>
+<main class="main">
+<header class="page-head">
+  <button class="menu-btn" aria-label="Open menu" onclick="document.body.classList.add('nav-open')">☰</button>
+  <div><div class="crumb" id="pageCrumb"></div><h1 id="pageTitle"></h1></div>
+  <div class="head-tools">
+    <button id="refreshBtn" onclick="refreshAttendanceData(true)" title="Refresh data" aria-label="Refresh data">↻</button>
+    <button id="realtimeBtn" onclick="toggleRealtime()">Live Mode</button>
+    <div class="head-clock"><span id="liveClock">--:--:--</span><span id="lastUpdated"></span></div>
+    <div class="theme-seg" role="group" aria-label="Color theme"><button data-mode="light">Light</button><button data-mode="dark">Dark</button><button data-mode="system">System</button></div>
   </div>
-</div>
+</header>
 
 <div id="statusBanner" class="note red" hidden></div>
-<div id="highAnnouncements" class="note red" style="margin:10px 16px 0;white-space:pre-wrap" hidden></div>
+<div id="highAnnouncements" class="note red" style="white-space:pre-wrap" hidden></div>
 
 <!-- ============ DASHBOARD ============ -->
 <section class="tab-panel" id="lookupTab">
+  <div class="dash-ann" id="dashAnnouncements"></div>
   <div class="controls">
     <input type="date" id="selectedDate">
     <select id="interval"></select>
     <select id="supervisor"><option>All Supervisors</option></select>
     <label style="display:flex;align-items:center;gap:6px;font-weight:600">🎯 Min agents <input type="number" min="0" class="minTargetInput"></label>
     <button id="showStaffingBtn" onclick="runLookup()">Show Staffing</button>
+    <button type="button" class="blue" data-tab="missingTab" title="Open the Missing Agent Checker">🔎 Missing Agent Checker</button>
     <button class="blue" onclick="refreshAttendanceData(true)">↻ Refresh Attendance</button>
   </div>
 
@@ -386,7 +677,8 @@ tr.grp-head:hover{filter:brightness(.97)}
   </div>
 
   <div class="panels">
-    <div class="panel"><h3>👷 Working</h3><ul id="workingList"></ul></div>
+    <div class="panel"><h3 class="wl-head"><span>👷 Working</span><button type="button" class="wl-toggle" id="workingToggleAll" aria-label="Collapse all" title="Collapse all"></button></h3>
+      <ul id="workingList"></ul></div>
     <div class="panel">
       <h3>☕ Break</h3>
       <ul id="breakList"></ul>
@@ -417,32 +709,25 @@ tr.grp-head:hover{filter:brightness(.97)}
   </div>
 </section>
 
-<!-- ============ SUPERVISOR SUMMARY ============ -->
-<section class="tab-panel" id="supervisorTab" hidden>
-  <div class="view-hint">📈 Full-day supervisor staffing summary including Scheduled, Leave, Absenteeism, OFF and Coverage.</div>
-  <div class="controls">
-    <input type="date" id="supervisorDate">
-    <select id="summaryView">
-      <option value="daily">Daily</option>
-      <option value="mtd">Month To Date</option>
-      <option value="weekly">Weekly</option>
-    </select>
-    <button onclick="buildSupervisorSummary()">Show Summary</button>
-  </div>
-  <div id="summaryDateRange" class="range-banner" style="margin-top:10px"></div>
-  <div class="cards" id="supervisorSummaryCards"></div>
-</section>
-
 <!-- ============ COVERAGE FORECAST ============ -->
 <section class="tab-panel" id="forecastTab" hidden>
-  <div class="view-hint">📊 Full-day staffing coverage forecast.</div>
+  <div class="view-hint">📊 Full-day staffing coverage by 30-minute interval.</div>
   <div class="controls">
     <input type="date" id="forecastDate">
-    <label style="display:flex;align-items:center;gap:6px;font-weight:600">🎯 Min agents <input type="number" min="0" class="minTargetInput"></label>
-    <button onclick="refreshForecast()">Show Forecast</button>
+    <label style="display:flex;align-items:center;gap:6px;font-weight:600">🎯 Min agents <input type="number" min="0" class="minTargetInput" id="fcMinInput"></label>
+    <label style="display:flex;align-items:center;gap:6px;font-weight:600">⚠️ Alert when below expected by <input type="number" min="1" class="minTargetInput" id="fcGapInput"></label>
   </div>
   <div id="dailyOverviewCards" class="cards" style="margin:15px 0"></div>
   <div id="coverageTimelinePanel" class="panel"></div>
+</section>
+
+<!-- ============ LUNCH CONCURRENCY ============ -->
+<section class="tab-panel" id="lunchTab" hidden>
+  <div class="view-hint">🍽️ Lunch Concurrency: how many agents are on lunch (60 minutes) in each 30-minute interval. Leave and called-off shifts are not counted.</div>
+  <div class="controls">
+    <input type="date" id="lunchDate" onchange="buildLunchConcurrency()">
+  </div>
+  <div id="lunchConcurrencyPanel" class="panel"></div>
 </section>
 
 <!-- ============ ANNOUNCEMENTS ============ -->
@@ -509,7 +794,7 @@ tr.grp-head:hover{filter:brightness(.97)}
 
 <!-- ============ MONTHLY ROSTER ============ -->
 <section class="tab-panel" id="rosterTab" hidden>
-  <div class="view-hint">📊 Monthly schedule per agent, built from the weekly roster plus the "Schedule By Date" tab. Colours show each day's attendance (same rules as Scorecard › Attendance). A purple outline 🔁 marks days changed from the weekly roster. Hover a cell for details.</div>
+  <div class="view-hint">📊 Monthly schedule per agent, built from the weekly roster plus the "Schedule By Date" tab. Colours show each day's attendance (same rules as Scorecard › Attendance). A purple outline 🔁 marks days changed from the weekly roster. Log-in / log-out times show in each calendar box; hover a grid cell for details.</div>
   <div class="controls">
     <button type="button" onclick="shiftRosterMonth(-1)" title="Previous month">‹</button>
     <input type="month" id="rosterMonth" onchange="buildRosterView()">
@@ -597,7 +882,6 @@ tr.grp-head:hover{filter:brightness(.97)}
   <div class="controls">
     <input type="date" id="lateDate" onchange="buildLateTable()">
     <select id="lateSupervisor" onchange="buildLateTable()"><option>All Supervisors</option></select>
-    <button onclick="buildLateTable()">Show</button>
     <button onclick="$('lateDate').value='';buildLateTable()">All Dates</button>
     <input type="text" id="lateSearch" placeholder="🔍 Search Agent..." onkeyup="buildLateTable()">
     <button class="blue" data-tab="attendanceTimeFormTab">+ Submit Time</button>
@@ -620,19 +904,34 @@ tr.grp-head:hover{filter:brightness(.97)}
   </div>
 </section>
 
+<!-- ============ SCORECARD: SUMMARY ============ -->
+<section class="tab-panel" id="scoreSumTab" hidden>
+  <div class="view-hint">📋 One-page scorecard for the month: Attendance %, Quality Assurance average and Performance Stack Ranking total, rolled up per team and listed per agent. Click a column title to sort.</div>
+  <div class="controls">
+    <button type="button" onclick="shiftScoreSumMonth(-1)" title="Previous month">‹</button>
+    <input type="month" id="ssMonth" onchange="buildScoreSummary()">
+    <button type="button" onclick="shiftScoreSumMonth(1)" title="Next month">›</button>
+    <select id="ssSupervisor" onchange="buildScoreSummary()"><option>All Supervisors</option></select>
+    <select id="ssAgent" onchange="buildScoreSummary()"><option value="">All Agents</option></select>
+    <input type="text" id="ssSearch" placeholder="🔍 Search Agent..." onkeyup="buildScoreSummary()">
+  </div>
+  <div class="trk-legend" id="ssLegend"></div>
+  <div id="ssCards"></div>
+  <div class="panel">
+    <div class="schedule-container">
+      <table id="ssTable" class="nosort"><thead></thead><tbody></tbody></table>
+    </div>
+  </div>
+</section>
+
 <!-- ============ SCORECARD: ATTENDANCE ============ -->
 <section class="tab-panel" id="trackerTab" hidden>
-  <div class="view-hint">🗓️ Per-agent attendance for the month: ✔ present (once the shift has finished), ◐ late / left early (counted by hours worked; marked * when no actual time is submitted yet and a half shift is assumed), ✖ called off, leave or OFF. Click an agent's name in the grid to open their calendar.</div>
+  <div class="view-hint">🗓️ Per-agent attendance for the month: ✔ present (once the shift has finished), ◐ late / left early (counted by hours worked; marked * when no actual time is submitted yet and a half shift is assumed), ✖ called off, leave or OFF. The Team total row at the top adds up the agents shown for the month.</div>
   <div class="controls">
     <button type="button" onclick="shiftTrackerMonth(-1)" title="Previous month">‹</button>
     <input type="month" id="trackerMonth" onchange="buildTracker()">
     <button type="button" onclick="shiftTrackerMonth(1)" title="Next month">›</button>
-    <select id="trackerView" onchange="buildTracker()">
-      <option value="grid">All agents (grid)</option>
-      <option value="calendar">Agent calendar</option>
-    </select>
     <select id="trackerSupervisor" onchange="buildTracker()"><option>All Supervisors</option></select>
-    <select id="trackerAgent" onchange="buildTracker()"></select>
     <input type="text" id="trackerSearch" placeholder="🔍 Search Agent..." onkeyup="buildTracker()">
     <button type="button" class="blue" id="trackerDownloadBtn" onclick="downloadTracker()">⬇ Download CSV</button>
   </div>
@@ -649,6 +948,7 @@ tr.grp-head:hover{filter:brightness(.97)}
       <div class="msel-panel" id="qaMonthPanel" hidden></div>
     </div>
     <select id="qaSupervisor" onchange="buildQA()"><option>All Supervisors</option></select>
+    <select id="qaAgent" onchange="buildQA()"><option value="">All Agents</option></select>
     <input type="text" id="qaSearch" placeholder="🔍 Search analyst or ticket..." onkeyup="buildQA()" style="width:280px">
     <button class="blue" onclick="refreshAttendanceData(true)">↻ Refresh</button>
   </div>
@@ -678,6 +978,7 @@ tr.grp-head:hover{filter:brightness(.97)}
       <div class="msel-panel" id="metricMonthPanel" hidden></div>
     </div>
     <select id="metricSupervisor" onchange="buildMetric()"><option>All Supervisors</option></select>
+    <select id="metricAgent" onchange="buildMetric()"><option value="">All Agents</option></select>
     <input type="text" id="metricSearch" placeholder="🔍 Search Agent..." onkeyup="buildMetric()">
     <button class="blue" onclick="refreshAttendanceData(true)">↻ Refresh</button>
   </div>
@@ -704,6 +1005,7 @@ tr.grp-head:hover{filter:brightness(.97)}
       <div class="msel-panel" id="mcsMonthPanel" hidden></div>
     </div>
     <select id="mcsSupervisor" onchange="buildMcs()"><option>All Supervisors</option></select>
+    <select id="mcsAgent" onchange="buildMcs()"><option value="">All Agents</option></select>
     <input type="text" id="mcsSearch" placeholder="🔍 Search Agent..." onkeyup="buildMcs()">
     <button class="blue" onclick="refreshAttendanceData(true)">↻ Refresh</button>
   </div>
@@ -780,6 +1082,19 @@ tr.grp-head:hover{filter:brightness(.97)}
   </div>
 </section>
 
+<section class="tab-panel" id="disputeFormTab" hidden>
+  <div class="view-hint">🛠️ Supervisors: dispute a late log-in or early log-out (e.g. computer / system issues). Once <b>Approved</b> (may take up to 24 hours to update), the disputed time replaces the actual time in Scorecard › Attendance and Schedule › Monthly view.</div>
+  <div class="note amber" style="padding:15px;box-shadow:var(--shadow)">
+    <h3 style="color:#b26a00">⚠️ Before submitting</h3>
+    <p style="margin:0">
+      Use the <b>shift start date</b> (EST) and enter times in <b>EST</b> with the correct <b>AM/PM</b>.
+      Fill in only the time you are disputing: the <b>log-in</b> time, the <b>log-out</b> time, or both. Always add a short reason.
+      Submitting again for the same agent and date replaces the earlier dispute. A dispute stays <b>pending</b> until it is approved.
+    </p>
+  </div>
+  <div class="panel" id="disputeFormBox"></div>
+</section>
+
 <section class="tab-panel" id="ptoFormTab" hidden>
   <div class="view-hint">🏖️ Submit PTO updates directly from the dashboard.</div>
   <div class="note green" style="padding:15px;box-shadow:var(--shadow)">
@@ -806,6 +1121,9 @@ tr.grp-head:hover{filter:brightness(.97)}
 </section>
 
 
+</main>
+</div>
+
 <script>
 /* =====================================================================
    CONFIG
@@ -813,9 +1131,18 @@ tr.grp-head:hover{filter:brightness(.97)}
 const SHEET_ID = '13whMJorFWHuylEfFDwbB30yobPtQ_G3EfAZtv040kQE';
 const sheetUrl = gid => `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv&gid=${gid}`;
 const scheduleUrl = gid => sheetUrl(gid) + '&headers=1';
+/* Paste the number after "gid=" from the LOLI Actual tab's address bar here (most reliable). Empty = find the tab by its name. */
+const LOLI_GID = '74611449';
+/* Log-in / log-out dispute form: paste the Google Form's "embedded" link (…/viewform?embedded=true) and the gid of the
+   form's response tab here (see the setup steps shown on the Dispute form page). Empty = feature stays off. */
+const DISPUTE_FORM_URL = 'https://docs.google.com/forms/d/e/1FAIpQLSeOJQdLCQ_J3s3BkxfyMYpLzJrx3krf24jFzWXZUwxF0RCSUQ/viewform?embedded=true';
+const DISPUTE_GID = '1843274746';
+/* true = a dispute only counts once the manager types "Approved" in the response tab's "Approval Status" column */
+const DISPUTE_NEEDS_APPROVAL = true;
 const URLS = {
   pto: sheetUrl(1297010746),
   calledOff: sheetUrl(2139820898),
+  loli: LOLI_GID ? sheetUrl(LOLI_GID) : `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv&sheet=${encodeURIComponent('LOLI Actual')}`,   // "LOLI Actual" tab: Agent Name | Work Date | Scheduled Shift | Actual First Login | Login Status | Actual Final Logout | Minutes Late | Minutes Early | Attendance Result
   attTime: sheetUrl(417537234),            // "ATTENDANCE TIME" tab: Name | EST Date | Type | Actual Time
   announcements: sheetUrl(6259028),
   qa: scheduleUrl(337356668),              // "QA" tab (&headers=1 forces row 1 to be read as the header)
@@ -858,6 +1185,10 @@ const ATT_OTHER = { code: 'CO', icon: '🚫', color: '#dc3545', label: 'Called O
    ===================================================================== */
 let estData = [], phData = [];
 let ptoList = [], calledOffList = [], announcementList = [], attTimeList = [], qaList = [];
+let disputeIdx = new Map();   // normalized agent + '|' + EST shift date -> { login, logout, reason }
+let disputeInfo = { rows: 0, pending: 0, rejected: 0, noStatus: false, error: '' };
+let loliInfo = { rows: 0, agents: 0, error: '', sample: '', workDate: false };
+let loliIdx = new Map();     // normalized agent name -> [{date, login, logout}] from the "LOLI Actual" tab
 let dailyMap = new Map();
 let currentWorkingAgents = [];
 let realtimeMode = false, realtimeTimer = null;
@@ -1017,6 +1348,7 @@ function showTab(id) {
   const trigger = document.querySelector(`.tabs [data-tab="${id}"]`);
   trigger?.closest('.dropdown')?.querySelector('.tab-btn')?.classList.add('active');
 
+  setPageHead(id);
   TAB_RENDERERS[id]?.();
 }
 
@@ -1074,12 +1406,23 @@ const loadSheet = async url =>
 
 async function loadAttendance() {
   try {
-    [ptoList, calledOffList, announcementList, attTimeList] = await Promise.all([
+    let loliRows, disputeRows;
+    disputeInfo = { rows: 0, pending: 0, rejected: 0, noStatus: false, error: '' };
+    loliInfo = { rows: 0, agents: 0, error: '', sample: '', workDate: false };
+    [ptoList, calledOffList, announcementList, attTimeList, loliRows, disputeRows] = await Promise.all([
       loadSheet(URLS.pto),
       loadSheet(URLS.calledOff),
       fetchCSV(URLS.announcements),
-      loadSheet(URLS.attTime).catch(() => [])      // if this tab fails, everything else keeps working
+      loadSheet(URLS.attTime).catch(() => []),      // if this tab fails, everything else keeps working
+      fetchCSV(URLS.loli, { raw: true }).catch(e => { loliInfo.error = e.message; return []; }),
+      DISPUTE_GID ? fetchCSV(sheetUrl(DISPUTE_GID), { raw: true }).catch(e => { disputeInfo.error = e.message; return []; }) : Promise.resolve([])
     ]);
+    disputeIdx = buildDisputeIndex(disputeRows);
+    loadErrors.dispute = disputeInfo.error ? `Couldn't load the dispute form responses (${disputeInfo.error}) - check DISPUTE_GID and sharing`
+                       : disputeInfo.noStatus ? 'Disputes need approval but the response tab has no "Approval Status" column - add it next to the form columns' : '';
+    loliIdx = buildLoliIndex(loliRows);
+    loadErrors.loli = loliInfo.error ? `Couldn't load the "LOLI Actual" tab (${loliInfo.error}) - check the tab name and sharing`
+                    : !loliInfo.rows ? 'The "LOLI Actual" tab was read but no log-in rows were found (' + loliInfo.sample + ') - the tab name may not be matching; set LOLI_GID in the code' : '';
     loadErrors.attendance = '';
     lastUpdated = new Date();
   } catch (err) {
@@ -1201,25 +1544,27 @@ const TAB_RENDERERS = {
   ptoTab: () => buildRecordTable('pto'),
   calledOffTab: () => buildRecordTable('att'),
   lateTab: buildLateTable,
+  scoreSumTab: buildScoreSummary,
   trackerTab: buildTracker,
   qaTab: buildQA,
   metricTab: buildMetric,
   mcsTab: buildMcs,
-  supervisorTab: buildSupervisorSummary,
   forecastTab: refreshForecast,
+  lunchTab: buildLunchConcurrency,
   announcementsTab: buildAnnouncementsTab
 };
 
 function renderAll() {
   loadSup();
   renderHighAnnouncements();
+  renderDashAnnouncements();
   runLookup();
   if (activeTab !== 'lookupTab') TAB_RENDERERS[activeTab]?.();
 }
 
 function loadSup() {
   const options = `<option>${ALL}</option>` + uniqueSupervisors().map(s => `<option>${esc(s)}</option>`).join('');
-  ['supervisor', 'scheduleSupervisor', 'ptoSupervisor', 'calledOffSupervisor', 'lateSupervisor', 'rosterSupervisor', 'trackerSupervisor', 'teamSupervisor']
+  ['supervisor', 'scheduleSupervisor', 'ptoSupervisor', 'calledOffSupervisor', 'lateSupervisor', 'rosterSupervisor', 'trackerSupervisor', 'teamSupervisor', 'ssSupervisor']
     .forEach(id => {
       const el = $(id), prev = el.value;
       el.innerHTML = options;
@@ -1246,7 +1591,7 @@ function toggleRealtime() {
 
 function updateRealtime() {
   const now = estNow(), today = ymd(now);
-  ['selectedDate', 'ptoDate', 'calledOffDate', 'scheduleDate', 'supervisorDate'].forEach(id => $(id).value = today);
+  ['selectedDate', 'ptoDate', 'calledOffDate', 'scheduleDate'].forEach(id => $(id).value = today);
   $('interval').value = `${pad(now.getHours())}:${now.getMinutes() >= 30 ? '30' : '00'}`;
   renderAll();
 }
@@ -1510,6 +1855,31 @@ function buildAnnouncementsTab() {
   }).join('');
 }
 
+/* Dashboard strip: active announcements with only Priority, Title and Start - End date */
+function renderDashAnnouncements() {
+  const el = $('dashAnnouncements');
+  if (!el) return;
+  const today = ymd(estNow());
+  const rank = p => p.includes('High') ? 0 : p.includes('Reminder') ? 1 : 2;
+  const list = announcementList.filter(a => {
+    if (!(a['Announcement Title'] || '').trim()) return false;
+    const st = normalizeDate(a['Start Date']), en = normalizeDate(a['End Date']);
+    return (!st || st <= today) && (!en || en >= today);
+  }).sort((a, b) => rank(a.Priority || '') - rank(b.Priority || '') || new Date(b.Timestamp) - new Date(a.Timestamp));
+  const fd = v => v ? parseYMD(v).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : '';
+  const rows = list.map(a => {
+    const p = a.Priority || '', r = rank(p);
+    const [label, color] = r === 0 ? ['High', '#dc2626'] : r === 1 ? ['Reminder', '#d97706'] : ['Normal', '#16a34a'];
+    const st = normalizeDate(a['Start Date']), en = normalizeDate(a['End Date']);
+    const when = st || en ? `${fd(st) || '—'} → ${en ? fd(en) : 'No end date'}` : 'No date range';
+    return `<div class="dash-ann-row"><span class="dash-ann-pill" style="--c:${color}">${label}</span>` +
+           `<span class="t" title="${esc(a['Announcement Title'])}">${esc(a['Announcement Title'])}</span><span class="d">📅 ${when}</span></div>`;
+  }).join('');
+  el.innerHTML = `<div class="dash-ann-head"><span>📢 Announcements${list.length ? ` <span style="color:var(--muted);font-weight:500">(${list.length})</span>` : ''}</span>` +
+                 `<a data-tab="announcementsTab">View all →</a></div>` + (rows || '<div class="dash-ann-empty">No active announcements</div>');
+  el.querySelectorAll('[data-tab]').forEach(x => x.addEventListener('click', () => document.querySelector(`.tab-btn[data-tab="announcementsTab"]`)?.click()));
+}
+
 function renderHighAnnouncements() {
   const today = ymd(estNow());
   const high = announcementList.filter(a => {
@@ -1524,112 +1894,6 @@ function renderHighAnnouncements() {
     return `🔴 ${ts ? `<small style="opacity:.75">${ts}</small> - ` : ''}` +
            `<strong>${esc(a['Announcement Title'])}</strong> -- ${esc(a['Announcement Message'])}`;
   }).join('<br>');
-}
-
-/* =====================================================================
-   SUPERVISOR SUMMARY
-   ===================================================================== */
-function buildSupervisorSummary() {
-  const date = $('supervisorDate').value;
-  if (!date) return;
-  const view = $('summaryView').value;
-  const end = parseYMD(date);
-
-  if (view === 'daily') {
-    $('summaryDateRange').innerHTML = `📅 Daily Summary: ${fmtDate(end)}`;
-    return buildDailySummary(date);
-  }
-  const start = view === 'mtd'
-    ? new Date(end.getFullYear(), end.getMonth(), 1)
-    : new Date(end.getFullYear(), end.getMonth(), end.getDate() - 6);
-  const label = view === 'mtd' ? 'Month To Date' : 'Weekly Summary';
-  $('summaryDateRange').innerHTML = `📅 ${label}: ${fmtDate(start)} - ${fmtDate(end)}`;
-  buildRangeSummary(start, end, view === 'mtd' ? 'Vacation Leave Days' : 'Vacation Days');
-}
-
-function buildDailySummary(date) {
-  const groups = {};
-  dayInfo(date).forEach(({ r, scheduled, leave, absent }) => {
-    const g = groups[r.Supervisor || 'Unassigned'] ??= { team: 0, scheduled: [], leave: [], absent: [], off: [] };
-    g.team++;
-    if (!scheduled) return g.off.push(r.Name);
-    g.scheduled.push(r.Name);
-    if (leave) g.leave.push(r.Name);
-    else if (absent) g.absent.push(r.Name);
-  });
-
-  const section = (label, arr) => `<strong>${label} (${arr.length})</strong><br>${arr.map(esc).join('<br>')}`;
-
-  $('supervisorSummaryCards').innerHTML = Object.entries(groups)
-    .sort((a, b) => (b[1].absent.length > 0) - (a[1].absent.length > 0) || a[0].localeCompare(b[0]))
-    .map(([name, g]) => {
-      const coverage = g.scheduled.length
-        ? (((g.scheduled.length - g.leave.length - g.absent.length) / g.scheduled.length) * 100).toFixed(1) : 0;
-      const bad = g.absent.length > 0;
-      return `
-        <div class="card" onclick="toggleDetails(this)" style="--c:${bad ? '#dc3545' : '#28a745'};background:${bad ? '#fff5f5' : '#fff'}">
-          <h3>${bad ? '🔴' : '🟢'} 👔 ${esc(name)}</h3>
-          <div>👥 Team Size: ${g.team}</div>
-          <div>📅 Scheduled: ${g.scheduled.length}</div>
-          <div>📋 Leave: ${g.leave.length}</div>
-          <div>🚫 Absenteeism: ${g.absent.length}</div>
-          <div>⚫ OFF: ${g.off.length}</div>
-          <hr>
-          <div>📊 Coverage: <strong>${coverage}%</strong></div>
-          <div class="details" hidden>
-            ${section('📅 Scheduled', g.scheduled)}<hr>${section('📋 Leave', g.leave)}<hr>
-            ${section('🚫 Absenteeism', g.absent)}<hr>${section('⚫ OFF', g.off)}
-          </div>
-        </div>`;
-    }).join('');
-}
-
-function rangeDetailSection(label, items) {
-  const line = x => `${esc(x.name)} — ${fmtDate(parseYMD(x.date))}` + (x.reason ? ` (${esc(x.reason)})` : '');
-  const sorted = [...items].sort((a, b) => a.date.localeCompare(b.date) || a.name.localeCompare(b.name));
-  return `<strong>${label} (${items.length})</strong><br>${sorted.map(line).join('<br>') || '<em>None</em>'}`;
-}
-
-function buildRangeSummary(start, end, leaveLabel) {
-  const groups = {};
-  estData.forEach(a => {
-    (groups[a.Supervisor || 'Unassigned'] ??= { team: 0, leaveAgents: [], attendanceAgents: [] }).team++;
-  });
-  const inRange = d => { if (!d) return false; const x = parseYMD(d); return x >= start && x <= end; };
-
-  ptoList.forEach(rec => {
-    const d = normalizeDate(rec['EST Date']);
-    if (!inRange(d) || !up(rec.Reason).includes('VACATION')) return;
-    const agent = findAgent(rec.Name);
-    if (agent) groups[agent.Supervisor || 'Unassigned'].leaveAgents.push({ name: rec.Name, date: d, reason: rec.Reason });
-  });
-  calledOffList.forEach(rec => {
-    const d = normalizeDate(rec['EST Date']);
-    if (!inRange(d)) return;
-    const agent = findAgent(rec.Name);
-    if (agent) groups[agent.Supervisor || 'Unassigned'].attendanceAgents.push({ name: rec.Name, date: d, reason: rec.Reason || 'No Reason' });
-  });
-
-  $('supervisorSummaryCards').innerHTML = Object.entries(groups)
-    .sort((a, b) => a[0].localeCompare(b[0]))
-    .map(([name, g]) => {
-      const leave = g.leaveAgents.length, attendance = g.attendanceAgents.length;
-      const reliability = g.team ? (((g.team - attendance) / g.team) * 100).toFixed(1) : 100;
-      const bad = attendance > 0;
-      return `
-        <div class="card" onclick="toggleDetails(this)" style="--c:${bad ? '#dc3545' : '#28a745'}">
-          <h3>${bad ? '🔴' : '🟢'} 👔 ${esc(name)}</h3>
-          <div>👥 Team Size: ${g.team}</div>
-          <div>🌴 ${leaveLabel}: ${leave}</div>
-          <div>🚫 Attendance Incidents: ${attendance}</div>
-          <hr>
-          <div>📊 Reliability Rate: <strong>${reliability}%</strong></div>
-          <div class="details" hidden>
-            ${rangeDetailSection('🌴 ' + leaveLabel, g.leaveAgents)}<hr>
-            ${rangeDetailSection('🚫 Attendance Incidents', g.attendanceAgents)}
-          </div>
-        </div>`;
-    }).join('');
 }
 
 /* =====================================================================
@@ -1718,7 +1982,7 @@ function buildDailyOverview() {
     card('✅ Present', sets.present.length, '#28a745', bySup(sets.present)) +
     card('📋 Leave', sets.leave.length, '#17a2b8', bySup(sets.leave)) +
     card('🚫 Absenteeism', sets.absent.length, '#dc3545', bySup(sets.absent)) +
-    card('📉 Lowest Coverage', slotText(low), (targetFor(low.time) > 0 && low.available < targetFor(low.time)) ? '#dc3545' : '#ff9800').replace('class="value"', '') +
+    card('📉 Lowest Coverage', slotText(low), (fcMin() > 0 && low.available < fcMin()) ? '#dc3545' : '#ff9800').replace('class="value"', '') +
     card('📈 Highest Coverage', slotText(high), '#6f42c1').replace('class="value"', '');
 }
 
@@ -1727,19 +1991,69 @@ function buildCoverageTimeline() {
   if (!date) return;
 
   let belowCount = 0;
+  const flagged = [];
   const cells = coverageSlots(date).map(s => {
-    const target = targetFor(s.time);
+    const target = fcMin();
     const below = target > 0 && s.available < target;
-    if (below) belowCount++;
-    const ok = s.available >= s.expected && !below;
-    const color = ok ? '#2e7d32' : '#c62828';
-    return `<div style="padding:8px 10px;border-radius:8px;background:${ok ? '#e8f5e9' : '#ffebee'};color:${color};border-left:4px solid ${color};font-size:13px">
-      <strong>${fmtAMPM(s.time)}</strong> &nbsp;&nbsp; Expected: <strong>${s.expected}</strong> &nbsp;|&nbsp; Actual: <strong>${s.available}</strong>${target > 0 ? ` &nbsp;|&nbsp; Min: <strong>${target}</strong>${below ? ' ⚠️' : ''}` : ''}</div>`;
+    const short = s.expected - s.available >= fcGap();   /* actual lower than expected by the set gap */
+    const reasons = [];
+    if (short) reasons.push(`${s.expected - s.available} below expected`);
+    if (below) reasons.push(`below minimum of ${target}`);
+    const flag = short || below;               /* highlight only problem intervals */
+    if (flag) { belowCount++; flagged.push(`<strong>${fmtAMPM(s.time)}</strong> (${reasons.join(' + ')})`); }
+    const style = flag
+      ? 'background:#ffebee;color:#c62828;border:1px solid #e57373;border-left:4px solid #c62828'
+      : 'background:transparent;border:1px solid var(--border);border-left:4px solid var(--border)';
+    return `<div style="padding:8px 10px;border-radius:8px;${style};font-size:13px">
+      <strong>${fmtAMPM(s.time)}</strong> &nbsp;&nbsp; Expected: <strong>${s.expected}</strong> &nbsp;|&nbsp; Actual: <strong>${s.available}</strong></div>`;
   }).join('');
 
   $('coverageTimelinePanel').innerHTML = `
-    <h3>📈 Full Day Coverage Forecast${belowCount ? ` <span style="color:#c62828;font-size:14px">· ⚠️ ${belowCount} interval(s) below minimum</span>` : ''}</h3>
+    <h3>📈 Full Day Coverage Forecast${belowCount ? ` <span style="color:#c62828;font-size:14px">· ⚠️ ${belowCount} interval(s) flagged red</span>` : ''}</h3>
+    ${belowCount ? `<div style="color:#c62828;font-size:13px;margin-top:6px;line-height:1.7">Note: an interval turns red when Actual is ${fcGap()} or more below Expected, or when Actual is below the minimum of ${fcMin()} agents.</div>` : ''}
     <div style="display:grid;grid-template-columns:repeat(4,1fr);grid-template-rows:repeat(12,auto);grid-auto-flow:column;gap:10px;margin-top:15px">${cells}</div>`;
+}
+
+/* Lunch Concurrency: how many agents are on lunch (60 min) in each 30-minute interval.
+   An agent counts in every interval their lunch overlaps; leave and Called Off / NCNS shifts are left out. */
+function lunchSlots(date) {
+  const people = estData.map(r => ({
+    r,
+    shifts: shiftsAround(r, date).map(s => ({ ...s, out: coverageGaps(r, s).out }))
+  }));
+  /* Each agent's lunch as minutes on this date's timeline (overnight shifts: after-midnight lunches land in the next day) */
+  const lunches = [];
+  people.forEach(({ r, shifts }) => shifts.forEach(s => {
+    if (s.out) return;
+    const lt = tm(rowFor(r, s.date)['Lunch']);
+    if (lt == null) return;
+    const at = [lt - 1440, lt, lt + 1440].find(x => x >= s.start && x < s.end);
+    if (at != null) lunches.push({ name: r.Name, start: at, end: at + 60 });
+  }));
+  const slots = [];
+  for (let m = 0; m < 1440; m += 30) {
+    const names = lunches.filter(l => l.start < m + 30 && l.end > m).map(l => l.name).sort((a, b) => a.localeCompare(b));
+    slots.push({ time: toHHMM(m), count: names.length, names });
+  }
+  return { slots, total: lunches.filter(l => l.end > 0 && l.start < 1440).length };
+}
+
+function buildLunchConcurrency() {
+  const date = $('lunchDate').value;
+  if (!date) return;
+  const { slots, total } = lunchSlots(date);
+  const peak = Math.max(0, ...slots.map(s => s.count));
+  const peakTimes = peak ? slots.filter(s => s.count === peak).map(s => fmtAMPM(s.time)) : [];
+
+  const cells = slots.map(s => {
+    const cls = !s.count ? 'lc-0' : s.count === peak ? 'lc-peak' : 'lc-1';
+    return `<div class="lc-cell ${cls}">
+      <strong>${fmtAMPM(s.time)}</strong> &nbsp;&nbsp; On lunch: <strong>${s.count}</strong>${s.count === peak && peak ? ' 🔺' : ''}</div>`;
+  }).join('');
+
+  $('lunchConcurrencyPanel').innerHTML = `
+    <h3>🍽️ Lunch Concurrency${peak ? ` <span style="color:var(--muted);font-size:14px;font-weight:500">· Peak: ${peak} at ${peakTimes.slice(0, 3).join(', ')}${peakTimes.length > 3 ? '…' : ''} · ${total} lunch${total === 1 ? '' : 'es'} scheduled</span>` : ''}</h3>
+    <div class="lc-grid">${cells}</div>`;
 }
 
 /* =====================================================================
@@ -1821,16 +2135,28 @@ function rosterCalendarHtml({ r, cells }, today, ph) {
     const changed = c.shiftChg || c.supChg;
     if (changed) chg++;
     const time = !p ? 'OFF' : ph ? phRange(c.estDate || c.date, p[0], len) + ' PH' : convertShiftRange(c.shift) + ' EST';
-    return `<div class="cal-day st-${a.kind}${changed ? ' chg-out' : ''}${c.date === today ? ' is-today' : ''}" title="${esc(ph && c.estDate ? `PH ${fmtDate(parseYMD(c.date))} · EST shift date ${fmtDate(parseYMD(c.estDate))} · ${a.text}` + (a.missed ? ' · ' + missedText(a) : '') : trackerTip(a))}">
+    return `<div class="cal-day st-${a.kind}${changed ? ' chg-out' : ''}${c.date === today ? ' is-today' : ''}">
       <div class="cal-num">${parseYMD(c.date).getDate()}</div>
       <div class="cal-status">${c.shiftChg ? '🔁 ' : ''}${time}</div>
       ${a.kind === 'off' ? '' : `<div class="cal-status" style="font-size:11px">${a.icon} ${esc(a.text)}</div>`}
       ${a.missed ? `<div class="cal-note">${esc(missedText(a))}</div>` : ''}
+      ${a.inTime || a.outTime ? `<div class="cal-note">⏰ In: ${esc(a.inTime || '—')}${a.inDisputed ? ' (disputed)' : ''}</div><div class="cal-note">↘️ Out: ${esc(a.outTime || '—')}${a.outDisputed ? ' (disputed)' : ''}</div>` : ''}
+      ${a.loggedHrs != null ? `<div class="cal-note">⏱ ${fmtHrs(a.loggedHrs)} hrs logged</div>` : ''}
       ${c.shiftChg ? `<div class="cal-note">Was ${isOff(c.base) ? 'OFF' : convertShiftRange(c.base)}</div>` : ''}
       ${c.supChg ? `<div class="cal-note">Supervisor: ${esc(c.sup)}</div>` : ''}</div>`;
   }).join('');
-  const head = trackerHeaderHtml(r, cells.map(c => c.att))
-    .replace(/<\/div>\s*$/, `<span class="trk-chip info" style="box-shadow:inset 0 0 0 2px #7c4dff">🔁 Changed: ${chg}</span></div>`);
+  const sm = trackerSummary(cells.map(c => c.att)), nowD = ymd(estNow());
+  const tile = (label, v, dur, cls) => {
+    const s = tm(v); if (s == null) return '';
+    const est = formatTimeRange(v, dur), phr = phRange(nowD, s, dur);
+    return `<div class="brk-tile ${cls}"><div class="brk-name">${label} · ${dur} min</div><div class="brk-main">${ph ? phr : est}</div><div class="brk-alt">${ph ? est + ' EST' : phr + ' PH'}</div></div>`;
+  };
+  const head = `<div class="agent-sum">
+    <div><div class="as-name">${esc(r.Name)}</div><div class="as-sup">${esc(r.Supervisor || 'Unassigned')}</div></div>
+    <div><div class="as-pct" style="color:${sm.pct == null ? 'inherit' : sm.pct >= 95 ? '#16a34a' : sm.pct >= 91 ? '#d97706' : '#dc2626'}">${trackerPct(sm)}</div><div class="as-lbl">Attendance this month</div>
+      <div class="as-sub">${sm.hoursWorked.toFixed(1)} / ${sm.hoursExp.toFixed(1)} hrs · ✔ ${sm.present} · ◐ ${sm.partial} · ✖ ${sm.absent} · 🌴 ${sm.leave}${chg ? ' · 🔁 ' + chg + ' changed' : ''}</div></div>
+    <div class="as-brk">${tile('Break 1', r['Break 1'], 15, '')}${tile('Lunch', r['Lunch'], 60, 'lunch')}${tile('Break 2', r['Break 2'], 15, '')}${tile('Break 3', r['Break 3'], 15, '')}</div>
+  </div>`;
   return `${head}<div class="panel"><div class="cal">${dows}${'<div></div>'.repeat(lead)}${days}</div></div>`;
 }
 
@@ -1922,9 +2248,7 @@ function buildRosterView() {
       const p = parseShift(c.shift), off = !p;
       const len = p ? (p[1] <= p[0] ? p[1] + 1440 - p[0] : p[1] - p[0]) : 0;
       const text = off ? 'OFF' : ph ? `${short12(phHHMM(c.estDate || c.date, p[0]))}-${short12(phHHMM(c.estDate || c.date, p[1]))}` : `${short12(toHHMM(p[0]))}-${short12(toHHMM(p[1]))}`;
-      const tip = `${ph && c.estDate ? 'PH ' : ''}${fmtDate(parseYMD(c.date))}${ph && c.estDate ? ' (EST shift date ' + fmtDate(parseYMD(c.estDate)) + ')' : ''} · ` + (off ? 'OFF' : `${convertShiftRange(c.shift)} EST · ${phRange(c.estDate || c.date, p[0], len)} PH`) +
-        (c.shiftChg ? ` · CHANGED (weekly roster: ${isOff(c.base) ? 'OFF' : convertShiftRange(c.base)})` : '') +
-        (c.supChg ? ` · supervisor: ${c.sup}` : '') + ` · ${c.att.text}` + (c.att.missed ? ` · ${missedText(c.att)}` : '');
+      const tip = actualTip(c.att);
       const a = c.att, mark = a.kind === 'present' ? '✔' : a.kind === 'upcoming' ? '○' : a.kind === 'off' ? '' : a.code + (a.estimated ? '*' : '');
       return `<td class="trk-cell rcell st-${a.kind}${c.shiftChg ? ' chg-out' : ''}" title="${esc(tip)}">${text}${mark ? `<small>${esc(mark)}</small>` : ''}</td>`;
     }).join('');
@@ -2144,6 +2468,16 @@ function initQa() {
   });
 }
 
+/* Agent dropdown for the Scorecard pages: lists the agents in the current month / supervisor selection,
+   keeps the pick while it is still valid, and returns the chosen name ('' = all agents) */
+function fillAgentSelect(selId, names) {
+  const sel = $(selId), prev = sel.value;
+  const list = [...new Map(names.filter(Boolean).map(n => [normName(n), String(n).trim()])).values()].sort((a, b) => a.localeCompare(b));
+  sel.innerHTML = '<option value="">All Agents</option>' + list.map(n => `<option value="${esc(n)}">${esc(n)}</option>`).join('');
+  if (list.includes(prev)) sel.value = prev;
+  return sel.value;
+}
+
 /* Quality Assurance: ranked like the Performance Stack Ranking.
    Tick one or more months (or Year to date). Each agent is one row (average score, audits, latest call);
    open it to see the audits, or - with several months ticked - the months, and open a month to see its audits. */
@@ -2169,9 +2503,10 @@ function buildQA() {
   supSel.innerHTML = `<option>${ALL}</option>` + sups.map(s => `<option>${esc(s)}</option>`).join('');
   if (sups.includes(prevSup)) supSel.value = prevSup;
   const sup = supSel.value, q = up($('qaSearch').value);
+  const ag = fillAgentSelect('qaAgent', picked.filter(x => sup === ALL || x.supervisor === sup).map(x => x.analyst));
 
   const rows = picked
-    .filter(x => (sup === ALL || x.supervisor === sup) && (!q || up(`${x.analyst} ${x.ticket}`).includes(q)))
+    .filter(x => (sup === ALL || x.supervisor === sup) && (!ag || normName(x.analyst) === normName(ag)) && (!q || up(`${x.analyst} ${x.ticket}`).includes(q)))
     .sort((a, b) => b.date.localeCompare(a.date) || a.analyst.localeCompare(b.analyst));
 
   const avgOf = list => {
@@ -2403,8 +2738,9 @@ function buildMetric() {
   supSel.innerHTML = `<option>${ALL}</option>` + sups.map(s => `<option>${esc(s)}</option>`).join('');
   if (sups.includes(prevSup)) supSel.value = prevSup;
   const sup = supSel.value, q = up($('metricSearch').value);
+  const ag = fillAgentSelect('metricAgent', data.filter(r => sup === ALL || supOf(r) === sup).map(r => r[I.agent]));
 
-  const rows = data.filter(r => (sup === ALL || supOf(r) === sup) && (!q || up(r[I.agent]).includes(q)));
+  const rows = data.filter(r => (sup === ALL || supOf(r) === sup) && (!ag || normName(r[I.agent]) === normName(ag)) && (!q || up(r[I.agent]).includes(q)));
   const maxOf = metricHeads.map((_, i) => metricMax(i));
 
   /* Top 3 podium (always by TOTAL, whatever column the table is sorted by) */
@@ -2637,8 +2973,9 @@ function buildMcs() {
   supSel.innerHTML = `<option>${ALL}</option>` + sups.map(s => `<option>${esc(s)}</option>`).join('');
   if (sups.includes(prevSup)) supSel.value = prevSup;
   const sup = supSel.value, q = up($('mcsSearch').value);
+  const ag = fillAgentSelect('mcsAgent', (view === 'agent' ? picked : inMonth).filter(r => sup === ALL || supOf(r) === sup).map(r => r[I.agent]));
 
-  const rows = (view === 'agent' ? picked : inMonth).filter(r => (sup === ALL || supOf(r) === sup) && (!q || up(r[I.agent]).includes(q)));
+  const rows = (view === 'agent' ? picked : inMonth).filter(r => (sup === ALL || supOf(r) === sup) && (!ag || normName(r[I.agent]) === normName(ag)) && (!q || up(r[I.agent]).includes(q)));
 
   table.classList.toggle('nosort', view === 'agent');
   if (view === 'agent') {
@@ -2713,15 +3050,30 @@ function checkMissingAgents() {
    STAFFING TARGETS + SHIFT CHANGES
    ===================================================================== */
 const getMinTarget = () => {
-  const v = parseInt(document.querySelector('.minTargetInput')?.value);
+  const v = parseInt(document.querySelector('.minTargetInput:not(#fcMinInput):not(#fcGapInput)')?.value);
   return isNaN(v) ? 0 : Math.max(0, v);
 };
 const targetFor = getMinTarget;
 
+/* Daily Intervals has its own settings (separate from the dashboard) */
+const FC_MIN_KEY = 'ditsc_fc_min_agents', FC_GAP_KEY = 'ditsc_fc_gap_v3';
+const fcNum = (id, def) => { const v = parseInt($(id)?.value); return isNaN(v) ? def : Math.max(0, v); };
+const fcMin = () => fcNum('fcMinInput', 7);
+const fcGap = () => Math.max(1, fcNum('fcGapInput', 5));
+function initForecastSettings() {
+  $('forecastDate')?.addEventListener('change', refreshForecast);
+  [['fcMinInput', FC_MIN_KEY, 7], ['fcGapInput', FC_GAP_KEY, 5]].forEach(([id, key, def]) => {
+    const el = $(id); if (!el) return;
+    let saved = null; try { saved = localStorage.getItem(key); } catch (e) {}
+    el.value = saved ?? def;
+    el.addEventListener('input', () => { try { localStorage.setItem(key, el.value); } catch (e) {} refreshForecast(); });
+  });
+}
+
 function initMinTarget() {
   let saved = null;
   try { saved = localStorage.getItem(TARGET_KEY); } catch (e) {}
-  const inputs = document.querySelectorAll('.minTargetInput');
+  const inputs = document.querySelectorAll('.minTargetInput:not(#fcMinInput):not(#fcGapInput)');
   inputs.forEach(i => {
     i.value = saved ?? 0;
     i.addEventListener('input', () => {
@@ -2799,6 +3151,146 @@ function buildShiftChanges(date, mins, supFilter) {
    missed (estimated, marked *) until the actual times are submitted.
    ===================================================================== */
 const SHIFT_HOURS_DEFAULT = 11;
+
+/* ---------- LOLI Actual tab: actual log-in / log-out per agent per day ----------
+   Times are read as EST clock times (same as the schedule). Up to LOLI_GRACE_MIN minutes
+   late / early is ignored; beyond that the day is counted as Late / Left early and the
+   minutes are deducted from the hours worked. */
+const LOLI_GRACE_MIN = 10;
+const NCNS_AUTO_FROM = '2026-11-01';   // auto-NCNS only applies from this date on; earlier dates are never auto-tagged
+function parseLoliDate(v) {
+  const s = clean(v);
+  if (/^\d{4}-\d{2}-\d{2}/.test(s)) return s.slice(0, 10);
+  const m = s.match(/^(\d{1,2})\D+(\d{1,2})\D+(\d{4})$/);          // "11 6 2026" or "11/6/2026" = month day year
+  return m ? `${m[3]}-${pad(+m[1])}-${pad(+m[2])}` : normalizeDate(s);
+}
+function parseLoliClock(v) {
+  const s = clean(v);
+  const a = parseClock(s);
+  if (a != null) return a;
+  const m = s.match(/(\d{1,2}):(\d{2})(?::\d{2})?\s*([AaPp])?/);     // time buried inside a date-time text
+  if (!m) return null;
+  let h = +m[1];
+  const ap = (m[3] || '').toUpperCase();
+  if (ap === 'P' && h < 12) h += 12;
+  if (ap === 'A' && h === 12) h = 0;
+  return h * 60 + +m[2];
+}
+function buildLoliIndex(rows) {
+  const m = new Map();
+  /* Columns are found from the header row. Current layout of the tab:
+     Agent Name | Work Date | Scheduled Shift | Actual First Login | Login Status | Actual Final Logout | Minutes Late | Minutes Early | Attendance Result
+     (the older layout, Agent Name | Date | Min of Login | Max of Logout, still works) */
+  let c = { name: 1, date: 2, login: 3, logout: 4, shift: -1, late: -1, early: -1, status: -1, result: -1, hours: -1, short: -1 };
+  loliInfo.workDate = false;
+  const h = rows.findIndex(r => r.some(x => /^agent name$/i.test(clean(x))));
+  if (h >= 0) {
+    const f = (re, not) => rows[h].findIndex(x => re.test(clean(x)) && !(not && not.test(clean(x))));
+    const found = { name: f(/^agent name$/i), date: f(/date/i), login: f(/log.?in/i, /status/i), logout: f(/log.?out/i),
+                    shift: f(/scheduled shift/i), late: f(/minutes late/i), early: f(/minutes early/i),
+                    status: f(/login status/i), result: f(/attendance result/i),
+                    hours: f(/logged.?in hours/i), short: f(/hours short/i) };
+    if (found.name >= 0 && found.date >= 0 && found.login >= 0 && found.logout >= 0) {
+      c = found;
+      loliInfo.workDate = /work date/i.test(clean(rows[h][found.date]));     // Work Date = the day the shift STARTS
+    }
+  }
+  const num = v => { const n = parseFloat(clean(v)); return Number.isFinite(n) ? n : null; };
+  const at = (r, i) => i >= 0 ? clean(r[i]) : '';
+  /* "10:04:37" (h:mm:ss) or a plain number of hours -> decimal hours */
+  const hrs = v => {
+    const s = clean(v), m = s.match(/^(\d+):(\d{2})(?::(\d{2}))?$/);
+    if (m) return +m[1] + +m[2] / 60 + (+(m[3] || 0)) / 3600;
+    const x = parseFloat(s); return Number.isFinite(x) ? x : null;
+  };
+  loliInfo.lastDate = ''; loliInfo.names = new Set();
+  let n = 0;
+  rows.forEach((r, ri) => {
+    const name = clean(r[c.name]), date = parseLoliDate(r[c.date]);
+    if (h >= 0 && ri > h && name && /^\d{4}-\d{2}-\d{2}$/.test(date)) {     // every dated row (even a no-login day) tells how far the sheet is updated
+      loliInfo.names.add(normName(name));
+      if (date > loliInfo.lastDate) loliInfo.lastDate = date;
+    }
+    const login = parseLoliClock(r[c.login]), logout = parseLoliClock(r[c.logout]);
+    if (!name || !date || login == null) return;                      // skips the header row, blanks and NO LOGIN days
+    const k = normName(name);
+    if (!m.has(k)) m.set(k, []);
+    m.get(k).push({ date, login, logout, shift: at(r, c.shift), late: c.late >= 0 ? num(r[c.late]) : null,
+                    early: c.early >= 0 ? num(r[c.early]) : null, status: at(r, c.status), result: at(r, c.result),
+                    hours: c.hours >= 0 ? hrs(r[c.hours]) : null, short: c.short >= 0 ? hrs(r[c.short]) : null });
+    n++;
+  });
+  loliInfo.rows = n; loliInfo.agents = m.size;
+  loliInfo.sample = rows.length ? `${rows.length} rows read; first row: ${(rows[0] || []).slice(0, 5).map(x => clean(x).slice(0, 25)).join(' | ')}` : 'the tab came back empty';
+  return m;
+}
+/* Dispute form responses: Timestamp | Supervisor | Agent Name | Shift Date (EST) | Disputed Log-in Time (EST) | Disputed Log-out Time (EST) | Reason.
+   Columns are found by their header words. The latest submission per agent + date wins, field by field. */
+function buildDisputeIndex(rows) {
+  const m = new Map();
+  const h = rows.findIndex(r => r.some(x => /agent/i.test(clean(x))) && r.some(x => /log.?in/i.test(clean(x)) || /log.?out/i.test(clean(x))));
+  if (h < 0) { disputeInfo.rows = 0; return m; }
+  const f = re => rows[h].findIndex(x => re.test(clean(x)));
+  const c = { name: f(/agent/i), date: f(/date/i), login: f(/log.?in/i), logout: f(/log.?out/i), reason: f(/reason/i), status: f(/status|approv/i) };
+  if (DISPUTE_NEEDS_APPROVAL && c.status < 0) disputeInfo.noStatus = true;
+  if (c.name < 0 || c.date < 0) return m;
+  let n = 0;
+  rows.slice(h + 1).forEach(r => {
+    const name = clean(r[c.name]), date = parseLoliDate(r[c.date]);
+    if (!name || !date) return;
+    const login = c.login >= 0 ? parseLoliClock(r[c.login]) : null;
+    const logout = c.logout >= 0 ? parseLoliClock(r[c.logout]) : null;
+    if (login == null && logout == null) return;
+    if (DISPUTE_NEEDS_APPROVAL) {                                     // only rows the manager marked Approved count
+      const st = c.status >= 0 ? up(r[c.status]) : '';
+      if (st !== 'APPROVED') { if (st === 'REJECTED' || st === 'DENIED') disputeInfo.rejected++; else disputeInfo.pending++; return; }
+    }
+    const k = normName(name) + '|' + date, o = m.get(k) || { login: null, logout: null, reason: '' };
+    if (login != null) o.login = login;
+    if (logout != null) o.logout = logout;
+    if (c.reason >= 0 && clean(r[c.reason])) o.reason = clean(r[c.reason]);
+    m.set(k, o);
+    n++;
+  });
+  disputeInfo.rows = n;
+  return m;
+}
+
+/* Dispute form page: the embedded Google Form, or setup steps until its link is pasted into DISPUTE_FORM_URL */
+function renderDisputeForm() {
+  const box = $('disputeFormBox');
+  if (!box) return;
+  box.innerHTML = DISPUTE_FORM_URL
+    ? `<iframe src="${esc(DISPUTE_FORM_URL)}" width="100%" height="1200"></iframe>`
+    : `<div style="padding:8px 4px;line-height:1.7">
+        <h3>🛠️ Set-up needed (one time)</h3>
+        <ol>
+          <li>Create a Google Form with these questions: <b>Supervisor</b>, <b>Agent Name</b> (dropdown), <b>Shift Date (EST)</b> (date), <b>Disputed Log-in Time (EST)</b> (time, optional), <b>Disputed Log-out Time (EST)</b> (time, optional) and <b>Reason</b> (paragraph).</li>
+          <li>In the form's <i>Responses</i> tab, link it to the <b>Dashboard Live Updates</b> sheet. A new tab is created; open it and copy the number after <code>gid=</code> in the address bar.</li>
+          <li>Paste that number into <code>DISPUTE_GID</code> and the form's embed link (Send › &lt;/&gt; Embed) into <code>DISPUTE_FORM_URL</code> at the top of this file's script.</li>
+        </ol></div>`;
+}
+
+/* The agent's LOLI record that belongs to this scheduled shift.
+   With the Work Date layout the record of that exact date is used (a 11:57 PM login for a 12:00 AM shift still belongs
+   to the shift's own date). The older layout falls back to the login closest to the shift start. */
+function loliFor(r, date, shift) {
+  const recs = loliIdx.get(normName(r.Name)), p = parseShift(shift);
+  if (!recs || !p) return null;
+  if (loliInfo.workDate) {
+    const mine = recs.filter(x => x.date === date);
+    if (mine.length < 2) return mine[0] || null;
+    return mine.reduce((a, x) => Math.abs(clockDiff(x.login, p[0])) < Math.abs(clockDiff(a.login, p[0])) ? x : a);
+  }
+  const start = parseYMD(date).getTime() + p[0] * 60000;
+  let best = null, bestD = Infinity;
+  recs.forEach(x => {
+    const d = Math.abs(parseYMD(x.date).getTime() + x.login * 60000 - start) / 60000;
+    if (d < bestD) { bestD = d; best = x; }
+  });
+  return bestD <= 600 ? best : null;
+}
+const loliClock = m => m == null ? '' : fmtAMPM(toHHMM(m));
 function shiftHours(shift) {
   const p = parseShift(shift);
   if (!p) return SHIFT_HOURS_DEFAULT;
@@ -2826,9 +3318,9 @@ const TRACKER_STATUS = {
   off:      { icon: '–', label: 'OFF' }
 };
 const TRACKER_LEGEND = [
-  ['present', '✔ Present (shift finished, no record)'], ['upcoming', '○ Upcoming (shift not finished yet)'],
-  ['partial', '◐ Late / Left early (worked, partial shift; * = estimated half shift)'],
-  ['absent', '✖ Called off / NCNS'], ['leave', '🌴 Leave (VL, SL, ...)'], ['off', '– OFF']
+  ['present', '✔ Present (shift finished; stays Present until the LOLI Actual sheet is updated for that date)'], ['upcoming', '○ Upcoming (shift not finished yet)'],
+  ['partial', `◐ Late / Left early (actual login / logout from LOLI Actual, more than ${LOLI_GRACE_MIN} min off the shift; * = estimated half shift)`],
+  ['absent', '✖ Called off / NCNS (NCNS is tagged automatically from Nov 1, 2026 on, and only when LOLI Actual has data for a later date but nothing for that day)'], ['leave', '🌴 Leave (VL, SL, ...)'], ['off', '– OFF']
 ];
 
 function indexRecords(list) {
@@ -2890,7 +3382,43 @@ function attendanceFor(r, date, today, idx) {
   x.estimated = false;
   x.inTime = rec?.loginTime || '';
   x.outTime = rec?.logoutTime || '';
-  if (x.kind === 'partial') {
+
+  /* Actual log-in / log-out from the LOLI Actual tab (a supervisor-submitted time entry still takes priority) */
+  const p0 = parseShift(x.shift);
+  const eligible = !x.inTime && !x.outTime && p0 && ['present', 'upcoming', 'partial'].includes(x.kind);
+  const loli = eligible ? loliFor(r, date, x.shift) : null;
+  const dsp = eligible ? disputeIdx.get(normName(r.Name) + '|' + date) : null;    // supervisor dispute replaces the actual time
+  const act = loli || dsp ? { login: dsp?.login ?? loli?.login ?? null, logout: dsp?.logout ?? loli?.logout ?? null } : null;
+  if (act) {
+    const ended = shiftEnded(x.shift, date, today);
+    /* Without a dispute, the sheet's own Minutes Late / Minutes Early are used; otherwise they are worked out from the times */
+    const sheet = loli && !dsp ? loli : null;
+    const late = sheet && sheet.late != null ? sheet.late : act.login != null ? Math.max(0, clockDiff(act.login, p0[0])) : 0;
+    const earlyAll = sheet && sheet.early != null ? sheet.early : act.logout != null ? Math.max(0, clockDiff(p0[1], act.logout)) : 0;
+    const early = ended || dsp?.logout != null ? earlyAll : 0;           // a final logout only counts once the shift is over
+    const lateC = late > LOLI_GRACE_MIN ? late : 0, earlyC = early > LOLI_GRACE_MIN ? early : 0;
+    x.actual = true;
+    x.inDisputed = dsp?.login != null;
+    x.outDisputed = dsp?.logout != null;
+    x.disputeReason = dsp?.reason || '';
+    x.inTime = loliClock(act.login);
+    x.outTime = ended || dsp?.logout != null ? loliClock(act.logout) : '';
+    x.missed = lateC + earlyC;
+    if (ended && sheet) {                                               // Total Logged-in Hours from the LOLI Actual tab
+      const lg = sheet.hours != null ? sheet.hours : sheet.short != null ? exp - sheet.short : null;
+      if (lg != null) x.loggedHrs = Math.max(0, Math.min(exp, lg));
+    }
+    if (lateC || earlyC) {
+      const code = lateC && earlyC ? 'L/LE' : lateC ? 'LATE' : 'LE';
+      Object.assign(x, { kind: 'partial', text: lateC && earlyC ? 'Late / Left early' : lateC ? 'Late' : 'Left early', code, icon: TRACKER_STATUS.partial.icon,
+        reason: [lateC ? `Late ${lateC} min` : '', earlyC ? `Left early ${earlyC} min` : ''].filter(Boolean).join(' + ') });
+    } else if (dsp && x.kind === 'partial') {
+      /* A dispute cleared the lateness: count the day as present */
+      const t = TRACKER_STATUS[ended ? 'present' : 'upcoming'];
+      Object.assign(x, { kind: ended ? 'present' : 'upcoming', text: t.label, code: t.icon, icon: t.icon, reason: '' });
+    }
+  }
+  if (x.kind === 'partial' && !x.actual) {
     const p = parseShift(x.shift);
     const inT = parseClock(x.inTime), outT = parseClock(x.outTime);
     if (inT == null && outT == null) {
@@ -2904,8 +3432,17 @@ function attendanceFor(r, date, today, idx) {
     }
   }
 
+  /* Auto NCNS: the shift is over, the agent was expected to work (not OFF / leave / called off) and the LOLI Actual sheet
+     has rows for a LATER date (data pulled in past this day) but holds no log-in for this day. The sheet's last date and anything after it stay Present. */
+  if (x.kind === 'present' && !act && !rec && p0 && loliInfo.lastDate && date >= NCNS_AUTO_FROM && date < loliInfo.lastDate
+      && loliInfo.names && loliInfo.names.has(normName(r.Name)) && !loliFor(r, date, x.shift)) {
+    const t = matchType(ATT_TYPES, 'NCNS', ATT_OTHER);
+    Object.assign(x, { kind: 'absent', text: t.label, code: t.code, icon: t.icon, reason: 'NCNS (no log-in in LOLI Actual)', autoNcns: true });
+  }
+
   x.exp = ['present', 'partial', 'absent'].includes(x.kind) ? exp : 0;      // leave, OFF and upcoming are excluded
-  x.worked = x.kind === 'present' ? exp
+  x.worked = x.loggedHrs != null && ['present', 'partial'].includes(x.kind) ? x.loggedHrs
+           : x.kind === 'present' ? exp
            : x.kind === 'partial' ? Math.max(0, exp - x.missed / 60) : 0;
   return x;
 }
@@ -2924,24 +3461,15 @@ const trackerPct = c => c.pct == null ? '—' : c.pct.toFixed(1) + '%';
 /* "120 min missed" or "330 min missed (est. half shift)" */
 const missedText = x => x.missed ? `${x.missed} min missed${x.estimated ? ' (est. half shift)' : ''}` : '';
 
-const trackerTip = x =>
-  `${fmtDate(parseYMD(x.date))} · ${x.text}` +
-  (x.reason && up(x.reason) !== up(x.text) ? ` (${x.reason})` : '') +
-  (x.shift ? ` · ${convertShiftRange(x.shift)}` : '') +
-  (x.missed ? ` · ${missedText(x)}` : '') +
-  (x.inTime ? ` · login ${x.inTime}` : '') + (x.outTime ? ` · logout ${x.outTime}` : '');
+/* Hover text: only the actual log-in / log-out times (empty when there is no LOLI data for the day) */
+const fmtHrs = h => { const m = Math.round(h * 60); return Math.floor(m / 60) + ':' + String(m % 60).padStart(2, '0'); };
+const actualTip = x => x.autoNcns ? 'NCNS - no log-in / log-out in LOLI Actual' : x.inTime || x.outTime ? `Log-in Time: ${x.inTime || '—'}${x.inDisputed ? ' (disputed)' : ''}\nLog-out Time: ${x.outTime || '—'}${x.outDisputed ? ' (disputed)' : ''}${x.loggedHrs != null ? `\nTotal logged-in: ${fmtHrs(x.loggedHrs)} hrs` : ''}` : '';
 
-function trackerHeaderHtml(r, info) {
-  const c = trackerSummary(info);
-  const chip = (k, label, n) => `<span class="trk-chip st-${k}">${TRACKER_STATUS[k].icon} ${label}: ${n}</span>`;
-  return `<div class="trk-head">
-    <div class="trk-title">${esc(r.Name)} <small>· ${esc(r.Supervisor || 'Unassigned')}</small></div>
-    <span class="trk-chip info">🗓️ Expected days: ${c.expected}</span>
-    ${chip('present', 'Present', c.present)}${chip('partial', 'Late/LE', c.partial)}${chip('absent', 'Called off', c.absent)}${chip('leave', 'Leave', c.leave)}${chip('off', 'OFF', c.off)}
-    <span class="trk-chip info">📊 Attendance: ${trackerPct(c)}</span>
-    <span class="trk-chip info">⏱ Hours: ${c.hoursWorked.toFixed(1)} / ${c.hoursExp.toFixed(1)}</span>
-  </div>`;
-}
+const trackerTip = x => actualTip(x);
+
+/* Team total: adds up every agent shown (counts and hours for the month) */
+const trackerBand = p => p == null ? '' : p >= 95 ? ' st-present' : p >= 91 ? ' st-partial' : ' st-absent';
+const trackerTeamTotal = infos => ({ c: trackerSummary(infos.flat()) });
 
 /* % column sort: '' = by name, 'asc' = lowest first, 'desc' = highest first */
 let trackerPctSort = '';
@@ -2973,44 +3501,42 @@ function trackerGridHtml(rows, monthOf, days, today) {
     return `<th class="${d === today ? 'today' : ''}">${dt.getDate()}<br><small>${dow[dt.getDay()]}</small></th>`;
   }).join('');
 
+  const team = trackerTeamTotal(rows.map(monthOf));
+  const totalRow = `<tr class="trk-total">
+      <td>Σ Team total <small>(${rows.length} agent${rows.length === 1 ? '' : 's'})</small></td>
+      <td class="trk-sum" title="Expected days">${team.c.expected}</td>
+      <td class="trk-sum" title="Present">${team.c.present}</td>
+      <td class="trk-sum" title="Late / Left early">${team.c.partial}</td>
+      <td class="trk-sum" title="Called off / NCNS">${team.c.absent}</td>
+      <td class="trk-sum" title="Leave">${team.c.leave}</td>
+      <td class="trk-sum${trackerBand(team.c.pct)}" title="Team hours worked / hours expected">${trackerPct(team.c)}</td>
+      <td colspan="${days.length}"></td></tr>`;
+
   const body = rows.map(r => {
     const info = monthOf(r), c = trackerSummary(info);
     const cells = info.map(x => `<td class="trk-cell st-${x.kind}" title="${esc(trackerTip(x))}">${esc(x.code)}${x.estimated ? '*' : ''}</td>`).join('');
     return `<tr class="${supClass(r.Supervisor)}" style="${supStyle(r.Supervisor)}">
-      <td class="trk-name" data-agent="${esc(r.Name)}" title="Open calendar">${esc(r.Name)}</td>
+      <td class="trk-agent">${esc(r.Name)}</td>
       <td class="trk-sum" title="Expected days">${c.expected}</td>
       <td class="trk-sum" title="Present">${c.present}</td>
       <td class="trk-sum" title="Late / Left early">${c.partial}</td>
       <td class="trk-sum" title="Called off / NCNS">${c.absent}</td>
       <td class="trk-sum" title="Leave">${c.leave}</td>
-      <td class="trk-sum" title="Hours worked / hours expected">${trackerPct(c)}</td>
+      <td class="trk-sum${trackerBand(c.pct)}" title="Hours worked / hours expected (green 95%+, amber 91-94.9%, red below 91%)">${trackerPct(c)}</td>
       ${cells}</tr>`;
   }).join('');
 
   return `<div class="panel"><div class="schedule-container"><table class="nosort trk-grid">
     <thead><tr><th>👤 Agent</th><th title="Expected days">Exp</th><th title="Present">✔</th><th title="Late / Left early">◐</th><th title="Called off / NCNS">✖</th><th title="Leave">🌴</th><th class="sortable" onclick="toggleTrackerPctSort()" title="Click to sort by attendance % (lowest first, highest first, then by name)">%${sortArrow}</th>${head}</tr></thead>
-    <tbody>${body}</tbody></table></div></div>`;
-}
-
-function trackerCalendarHtml(info, today) {
-  const lead = (parseYMD(info[0].date).getDay() + 6) % 7;
-  const dows = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'].map(d => `<div class="cal-dow">${d}</div>`).join('');
-  const cells = info.map(x => {
-    const showText = ['absent', 'leave', 'partial'].includes(x.kind) ? x.text : TRACKER_STATUS[x.kind].label;
-    const note = x.missed
-      ? `<div class="cal-note">${missedText(x)}</div>`
-      : (x.reason && up(x.reason) !== up(x.text) ? `<div class="cal-note">${esc(x.reason)}</div>` : '');
-    return `<div class="cal-day st-${x.kind}${x.date === today ? ' is-today' : ''}" title="${esc(trackerTip(x))}">
-      <div class="cal-num">${parseYMD(x.date).getDate()}</div>
-      <div class="cal-status">${x.icon} ${esc(showText)}</div>
-      ${x.shift ? `<div class="cal-shift">${convertShiftRange(x.shift)}</div>` : ''}${note}</div>`;
-  }).join('');
-  return `<div class="panel"><div class="cal">${dows}${'<div></div>'.repeat(lead)}${cells}</div></div>`;
+    <tbody>${totalRow}${body}</tbody></table></div></div>`;
 }
 
 function buildTracker() {
   const body = $('trackerBody');
-  $('trackerLegend').innerHTML = TRACKER_LEGEND.map(([k, t]) => `<span class="trk-chip st-${k}">${t}</span>`).join('');
+  const rosterN = estData.filter(r => loliIdx.has(normName(r.Name))).length;
+  $('trackerLegend').innerHTML = TRACKER_LEGEND.map(([k, t]) => `<span class="trk-chip st-${k}">${t}</span>`).join('') +
+    `<span class="trk-chip" title="Log-in / log-out rows read from the LOLI Actual tab">🕘 LOLI Actual: ${loliInfo.rows} rows · ${rosterN} of ${estData.length} agents matched${loliInfo.lastDate ? ' · updated through ' + loliInfo.lastDate : ''}</span>` +
+    (DISPUTE_GID ? `<span class="trk-chip" title="Log-in / log-out disputes from the dispute form">📝 Disputes: ${disputeInfo.rows} applied${DISPUTE_NEEDS_APPROVAL ? ` · ${disputeInfo.pending} pending approval` : ''}</span>` : '');
 
   const ym = $('trackerMonth').value;
   if (!ym || !estData.length) {
@@ -3020,8 +3546,6 @@ function buildTracker() {
   const [y, m] = ym.split('-').map(Number);
   const days = Array.from({ length: new Date(y, m, 0).getDate() }, (_, i) => ymd(new Date(y, m - 1, i + 1)));
   const today = ymd(estNow());
-  const view = $('trackerView').value;
-  $('trackerDownloadBtn').hidden = view !== 'grid';      // Download CSV is for the grid view only
   const sup = $('trackerSupervisor').value;
   const q = up($('trackerSearch').value);
 
@@ -3029,23 +3553,10 @@ function buildTracker() {
     .filter(r => sup === ALL || r.Supervisor === sup)
     .sort((a, b) => a.Name.localeCompare(b.Name));
 
-  const sel = $('trackerAgent'), prev = sel.value;
-  sel.innerHTML = roster.map(r => `<option value="${esc(r.Name)}">${esc(r.Name)}</option>`).join('');
-  if (roster.some(r => r.Name === prev)) sel.value = prev;
-  sel.disabled = view === 'grid';
-  $('trackerSearch').disabled = view !== 'grid';
-
   const idx = { pto: indexRecords(ptoList), att: indexAttendance(calledOffList, attTimeList) };
   const monthOf = r => days.map(date => attendanceFor(r, date, today, idx));
 
-  if (view === 'grid') {
-    body.innerHTML = trackerGridHtml(roster.filter(r => !q || up(r.Name).includes(q)), monthOf, days, today);
-    return;
-  }
-  const agent = roster.find(r => r.Name === sel.value) || roster[0];
-  if (!agent) { body.innerHTML = '<div class="empty" style="--c:#6c757d">No agents found</div>'; return; }
-  const info = monthOf(agent);
-  body.innerHTML = trackerHeaderHtml(agent, info) + trackerCalendarHtml(info, today);
+  body.innerHTML = trackerGridHtml(roster.filter(r => !q || up(r.Name).includes(q)), monthOf, days, today);
 }
 
 /* Download the attendance grid as CSV (respects month, supervisor and search filters) */
@@ -3076,11 +3587,18 @@ function downloadTracker() {
     ...days.map(d => { const dt = parseYMD(d); return `${dt.getDate()} (${DAYS[dt.getDay()].slice(0, 3)})`; })
   ]];
 
+  const infos = [];
   roster.forEach(r => {
     const info = days.map(d => attendanceFor(r, d, today, idx)), c = trackerSummary(info);
+    infos.push(info);
     rows.push([r.Name, r.Supervisor, c.expected, c.present, c.partial, c.absent, c.leave,
                trackerPct(c), c.hoursWorked.toFixed(1), c.hoursExp.toFixed(1), ...info.map(cellText)]);
   });
+  if (infos.length) {
+    const c = trackerTeamTotal(infos).c;
+    rows.push(['Team total (' + infos.length + ' agents)', '', c.expected, c.present, c.partial, c.absent, c.leave,
+               trackerPct(c), c.hoursWorked.toFixed(1), c.hoursExp.toFixed(1)]);
+  }
   rows.push([]);
   rows.push(['P = Present, U = Upcoming, LATE / LE = Late / Left early (* = estimated half shift), NCNS / CO = Called off, VL / SL / ML / BRV = Leave, OFF = Off']);
 
@@ -3103,14 +3621,137 @@ function shiftTrackerMonth(delta) {
   buildTracker();
 }
 
-function initTracker() {
-  $('trackerBody').addEventListener('click', e => {
-    const cell = e.target.closest('[data-agent]');
-    if (!cell) return;
-    $('trackerView').value = 'calendar';
-    $('trackerAgent').value = cell.dataset.agent;
-    buildTracker();
+/* =====================================================================
+   SCORECARD SUMMARY
+   One month, per team (cards) and per agent (table): Attendance %, QA average, Stack Ranking total.
+   ===================================================================== */
+const SS_MON = ['jan', 'feb', 'mar', 'apr', 'may', 'jun', 'jul', 'aug', 'sep', 'oct', 'nov', 'dec'];
+/* Does a Month label from the metric sheet ("October", "Oct 2026", "2026-10", ...) mean the picked yyyy-mm? */
+function ssMonthMatches(label, ym) {
+  const t = String(label || '').trim().toLowerCase();
+  if (!t) return false;
+  const [y, m] = ym.split('-').map(Number);
+  let mm = SS_MON.findIndex(x => t.includes(x)) + 1, yy = (t.match(/\b(20\d{2})\b/) || [])[1];
+  if (!mm) {
+    const iso = t.match(/^(\d{4})[-\/](\d{1,2})/), us = t.match(/^(\d{1,2})[-\/](\d{4})$/);
+    if (iso) { yy = iso[1]; mm = +iso[2]; } else if (us) { mm = +us[1]; yy = us[2]; }
+  }
+  return mm === m && (!yy || +yy === y);
+}
+
+const ssAttBand = v => v == null ? '' : v >= 95 ? ' sc-good' : v >= 91 ? ' sc-mid' : ' sc-low';
+const ssTotBand = v => v == null ? '' : v >= 85 ? ' sc-good' : v >= 60 ? ' sc-mid' : ' sc-low';
+const ssFmt = (v, d = 1, suffix = '%') => v == null ? '—' : v.toFixed(d) + suffix;
+const ssAvg = list => { const n = list.filter(v => v != null); return n.length ? n.reduce((a, b) => a + b, 0) / n.length : null; };
+
+let ssSort = { col: 'name', asc: true };
+function ssSortBy(col) {
+  ssSort = { col, asc: ssSort.col === col ? !ssSort.asc : (col === 'name' || col === 'sup' || col === 'rank') };
+  buildScoreSummary();
+}
+
+function shiftScoreSumMonth(delta) {
+  const [y, m] = ($('ssMonth').value || ymd(estNow()).slice(0, 7)).split('-').map(Number);
+  const d = new Date(y, m - 1 + delta, 1);
+  $('ssMonth').value = `${d.getFullYear()}-${pad(d.getMonth() + 1)}`;
+  buildScoreSummary();
+}
+
+function buildScoreSummary() {
+  const body = $('ssTable').tBodies[0], head = $('ssTable').tHead;
+  const ym = $('ssMonth').value;
+  $('ssLegend').innerHTML =
+    '<span class="trk-chip st-present">Green: on target</span><span class="trk-chip st-partial">Amber: below target</span><span class="trk-chip st-absent">Red: well below</span>' +
+    '<span class="trk-chip info" title="Green >=95% | Amber 91-94.9% | Red below 91%">Attendance: 95% / 91%</span>' +
+    '<span class="trk-chip info" title="Green >=95% | Amber 85-94.9% | Red below 85%">QA: 95% / 85%</span>' +
+    '<span class="trk-chip info" title="Green >=85 pts | Amber 60-84 pts | Red below 60 pts">Stack Ranking total: 85 / 60 pts</span>';
+  if (!ym || !estData.length) {
+    head.innerHTML = '';
+    body.innerHTML = '<tr><td>Pick a month (schedule data must be loaded)</td></tr>';
+    $('ssCards').innerHTML = '';
+    return;
+  }
+
+  /* Attendance: same rules as Scorecard > Attendance (hours worked / hours expected) */
+  const [y, m] = ym.split('-').map(Number);
+  const days = Array.from({ length: new Date(y, m, 0).getDate() }, (_, i) => ymd(new Date(y, m - 1, i + 1)));
+  const today = ymd(estNow());
+  const idx = { pto: indexRecords(ptoList), att: indexAttendance(calledOffList, attTimeList) };
+
+  /* QA: audits whose call date falls in the month */
+  const qaBy = new Map();
+  qaList.forEach(x => {
+    if (normalizeDate(x.CallDate).slice(0, 7) !== ym) return;
+    const sc = qaPct(x.Score), k = normName(x['Analyst Name']);
+    if (!qaBy.has(k)) qaBy.set(k, []);
+    qaBy.get(k).push(sc);
   });
+
+  /* Performance Stack Ranking: the month's total and rank among everyone listed that month */
+  const I = metricIdx, totalBy = new Map();
+  if (I.month >= 0 && I.total >= 0) {
+    metricRows.filter(r => ssMonthMatches(r[I.month], ym)).forEach(r => {
+      const v = metricVal(r[I.total]);
+      if (typeof v === 'number') totalBy.set(normName(r[I.agent]), v);
+    });
+  }
+  const sorted = [...totalBy.values()].sort((a, b) => b - a);
+  const rankOf = v => v == null ? null : sorted.indexOf(v) + 1;
+
+  const supSel = $('ssSupervisor'), sup = supSel.value, q = up($('ssSearch').value);
+  const bySup = estData.filter(r => sup === ALL || r.Supervisor === sup);
+  const ag = fillAgentSelect('ssAgent', bySup.map(r => r.Name));
+
+  const data = bySup
+    .filter(r => (!ag || normName(r.Name) === normName(ag)) && (!q || up(r.Name).includes(q)))
+    .map(r => {
+      const info = days.map(d => attendanceFor(r, d, today, idx)), c = trackerSummary(info);
+      const qs = qaBy.get(normName(r.Name)) || [], total = totalBy.has(normName(r.Name)) ? totalBy.get(normName(r.Name)) : null;
+      return { name: r.Name, sup: r.Supervisor || 'Unassigned', c, att: c.pct, qa: ssAvg(qs), audits: qs.length, qsList: qs, total, rank: rankOf(total) };
+    });
+
+  /* Roll-up cards: one per supervisor, plus an all-teams card when more than one is shown */
+  const rollup = (list, name, color, sub) => {
+    const hrsExp = list.reduce((t, a) => t + a.c.hoursExp, 0), hrsWk = list.reduce((t, a) => t + a.c.hoursWorked, 0);
+    const att = hrsExp ? hrsWk / hrsExp * 100 : null;
+    const qa = ssAvg(list.flatMap(a => a.qsList)), audits = list.reduce((t, a) => t + a.audits, 0);
+    const tot = ssAvg(list.map(a => a.total)), nTot = list.filter(a => a.total != null).length;
+    const line = (label, val, band) => `<div class="ss-line"><span>${label}</span><b class="${band.trim().replace('sc-', 'ss-')}">${val}</b></div>`;
+    return `<div class="card" style="--c:${color}">
+      <h3>${esc(name)}</h3><div class="ss-sub">${sub}</div>
+      ${line('🗓️ Attendance', ssFmt(att), ssAttBand(att))}
+      ${line('✅ QA average', `${ssFmt(qa)} <small style="font-weight:500;color:var(--muted)">(${audits} audits)</small>`, qaBand(qa))}
+      ${line('🏆 Stack Ranking avg', `${ssFmt(tot, 1, ' pts')} <small style="font-weight:500;color:var(--muted)">(${nTot} agents)</small>`, ssTotBand(tot))}
+    </div>`;
+  };
+  const groups = new Map();
+  data.forEach(a => { if (!groups.has(a.sup)) groups.set(a.sup, []); groups.get(a.sup).push(a); });
+  const cards = [...groups.entries()].sort((a, b) => a[0].localeCompare(b[0]))
+    .map(([name, list]) => rollup(list, '👔 ' + name, supColor(name) || '#6c757d', `${list.length} agent${list.length === 1 ? '' : 's'}`));
+  if (groups.size > 1) cards.unshift(rollup(data, '👥 All teams', '#0d6efd', `${data.length} agents`));
+  $('ssCards').innerHTML = data.length ? cards.join('') : '';
+
+  /* Agent table */
+  const cols = [['name', '👤 Agent'], ['sup', '🧑‍💼 Supervisor'], ['att', '🗓️ Attendance'], ['qa', '✅ QA avg'], ['audits', '📋 Audits'], ['total', '🏆 Stack Ranking total'], ['rank', '# Rank']];
+  const arrow = c => ssSort.col === c ? (ssSort.asc ? ' ▲' : ' ▼') : '';
+  head.innerHTML = '<tr>' + cols.map(([k, t]) => `<th onclick="ssSortBy('${k}')">${t}${arrow(k)}</th>`).join('') + '</tr>';
+
+  const dir = ssSort.asc ? 1 : -1;
+  data.sort((a, b) => {
+    const x = a[ssSort.col], y = b[ssSort.col];
+    if (x == null && y == null) return a.name.localeCompare(b.name);
+    if (x == null) return 1;                              // blanks always last
+    if (y == null) return -1;
+    return dir * (typeof x === 'string' ? x.localeCompare(y) : x - y) || a.name.localeCompare(b.name);
+  });
+  body.innerHTML = data.length ? data.map(a => `<tr class="${supClass(a.sup)}" style="${supStyle(a.sup)}">
+    <td>${esc(a.name)}</td><td>${esc(a.sup)}</td>
+    <td class="${ssAttBand(a.att).trim()}" title="Hours worked / hours expected">${ssFmt(a.att)}</td>
+    <td class="${qaBand(a.qa).trim()}" title="${QA_TIP}">${ssFmt(a.qa)}</td>
+    <td>${a.audits || '—'}</td>
+    <td class="${ssTotBand(a.total).trim()}" title="Green: >=85 pts | Amber: 60-84 pts | Red: <60 pts">${ssFmt(a.total, 1, '')}</td>
+    <td>${a.rank ? `${a.rank} <small style="color:var(--muted)">of ${sorted.length}</small>` : '—'}</td></tr>`).join('')
+    : '<tr><td colspan="7">No agents found</td></tr>';
 }
 
 /* =====================================================================
@@ -3148,18 +3789,19 @@ function buildIntervalOptions() {
 
 window.addEventListener('load', async () => {
   buildIntervalOptions();
-  initMinTarget();
+  initMinTarget(); initForecastSettings();
   initMenus();
-  initTracker();
   initMetricMonth();
   initGroupToggle();
   initQa();
   initMcsMonth();
 
   const today = ymd(estNow());
-  ['selectedDate', 'ptoDate', 'calledOffDate', 'scheduleDate', 'supervisorDate', 'forecastDate']
+  ['selectedDate', 'ptoDate', 'calledOffDate', 'scheduleDate', 'forecastDate', 'lunchDate']
     .forEach(id => $(id).value = today);
   $('trackerMonth').value = today.slice(0, 7);
+  $('ssMonth').value = today.slice(0, 7);
+  renderDisputeForm();
 
   await Promise.all([loadSchedules(), loadAttendance(), loadDaily(), loadQA(), loadMetric(), loadMcs()]);
   renderAll();
@@ -3169,6 +3811,154 @@ window.addEventListener('load', async () => {
   setInterval(updateClock, 1000);
   setInterval(() => refreshAttendanceData(false), REFRESH_MS);
 });
+</script>
+<script>
+/* Sidebar: highlight the open page, fill the page header, close the mobile menu */
+function setPageHead(id){
+  const a = document.querySelector('.side [data-tab="' + id + '"]');
+  document.querySelectorAll('.side .tab-btn').forEach(b => b.classList.toggle('active', b === a));
+  if (a) {
+    $('pageTitle').textContent = a.textContent.trim();
+    let n = a; while (n && !n.classList.contains('nav-label')) n = n.previousElementSibling;
+    $('pageCrumb').textContent = n ? n.textContent : '';
+  }
+  document.body.classList.remove('nav-open');
+}
+window.addEventListener('load', () => setPageHead(activeTab));
+/* Theme: light / dark / follow the system */
+(function(){
+  const KEY = 'ditsc_theme', mq = matchMedia('(prefers-color-scheme: dark)'), root = document.documentElement;
+  const get = () => { try { return localStorage.getItem(KEY) || 'system'; } catch (e) { return 'system'; } };
+  const apply = m => {
+    root.dataset.theme = (m === 'dark' || (m === 'system' && mq.matches)) ? 'dark' : 'light';
+    document.querySelectorAll('.theme-seg button').forEach(b => { const on = b.dataset.mode === m; b.classList.toggle('on', on); b.setAttribute('aria-pressed', on); });
+  };
+  document.querySelectorAll('.theme-seg button').forEach(b => b.addEventListener('click', () => {
+    try { localStorage.setItem(KEY, b.dataset.mode); } catch (e) {}
+    apply(b.dataset.mode);
+  }));
+  mq.addEventListener('change', () => { if (get() === 'system') apply('system'); });
+  apply(get());
+})();
+/* Dashboard: collapse / expand each supervisor group in the Working list */
+(function(){
+  const list = document.getElementById('workingList'); if (!list) return;
+  const KEY = 'ditsc_working_groups';
+  let closed = new Set(); try { closed = new Set(JSON.parse(localStorage.getItem(KEY) || '[]')); } catch (e) {}
+  const nameOf = h => (h.querySelector('span')?.textContent || '').trim();
+  function apply() {
+    let cur = null;
+    [...list.children].forEach(li => {
+      if (li.classList.contains('sup-h')) {
+        cur = nameOf(li);
+        const c = closed.has(cur);
+        li.classList.toggle('collapsed', c);
+        li.setAttribute('role', 'button'); li.tabIndex = 0; li.setAttribute('aria-expanded', !c);
+        li.title = c ? 'Show agents' : 'Hide agents';
+      } else li.hidden = cur != null && closed.has(cur);
+    });
+    syncAllBtn();
+  }
+  const save = () => { try { localStorage.setItem(KEY, JSON.stringify([...closed])); } catch (e) {} };
+  const names = () => [...list.querySelectorAll('li.sup-h')].map(nameOf);
+  const allBtn = document.getElementById('workingToggleAll');
+  function syncAllBtn() {
+    if (!allBtn) return;
+    const n = names(), allClosed = n.length > 0 && n.every(x => closed.has(x));
+    const ICON_EXPAND = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 9l5-5 5 5"/><path d="M7 15l5 5 5-5"/></svg>';
+    const ICON_COLLAPSE = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 4l5 5 5-5"/><path d="M7 20l5-5 5 5"/></svg>';
+    allBtn.innerHTML = allClosed ? ICON_EXPAND : ICON_COLLAPSE;
+    allBtn.title = allClosed ? 'Expand all: show the agents under every supervisor' : 'Collapse all: show only each supervisor and their agent count';
+    allBtn.setAttribute('aria-label', allClosed ? 'Expand all' : 'Collapse all');
+    allBtn.disabled = !n.length;
+  }
+  function toggle(h) {
+    const n = nameOf(h); closed.has(n) ? closed.delete(n) : closed.add(n);
+    save();
+    apply();
+  }
+  allBtn?.addEventListener('keydown', e => e.stopPropagation());   // keep Enter / Space on the button itself
+  allBtn?.addEventListener('click', e => {
+    e.stopPropagation();
+    const n = names();
+    if (n.length && n.every(x => closed.has(x))) closed.clear(); else n.forEach(x => closed.add(x));
+    save();
+    apply();
+  });
+  list.addEventListener('click', e => { const h = e.target.closest('li.sup-h'); if (h) toggle(h); });
+  list.addEventListener('keydown', e => { const h = e.target.closest('li.sup-h'); if (h && (e.key === 'Enter' || e.key === ' ')) { e.preventDefault(); toggle(h); } });
+  new MutationObserver(apply).observe(list, { childList: true });
+  apply();
+})();
+/* Theme: light / dark / follow the system */
+(function(){
+  const KEY = 'ditsc_theme', mq = matchMedia('(prefers-color-scheme: dark)'), root = document.documentElement;
+  const get = () => { try { return localStorage.getItem(KEY) || 'system'; } catch (e) { return 'system'; } };
+  const apply = m => {
+    root.dataset.theme = (m === 'dark' || (m === 'system' && mq.matches)) ? 'dark' : 'light';
+    document.querySelectorAll('.theme-seg button').forEach(b => { const on = b.dataset.mode === m; b.classList.toggle('on', on); b.setAttribute('aria-pressed', on); });
+  };
+  document.querySelectorAll('.theme-seg button').forEach(b => b.addEventListener('click', () => {
+    try { localStorage.setItem(KEY, b.dataset.mode); } catch (e) {}
+    apply(b.dataset.mode);
+  }));
+  mq.addEventListener('change', () => { if (get() === 'system') apply('system'); });
+  apply(get());
+})();
+/* Dashboard: collapse / expand the Working list */
+(function(){
+  const list = document.getElementById('workingList'); if (!list) return;
+  const panel = list.closest('.panel'), h = panel.querySelector('h3'), KEY = 'ditsc_working_collapsed';
+  const set = on => { panel.classList.toggle('collapsed', on); h.setAttribute('aria-expanded', !on); h.title = on ? 'Expand Working list' : 'Collapse Working list'; };
+  h.setAttribute('role', 'button'); h.tabIndex = 0;
+  let saved = false; try { saved = localStorage.getItem(KEY) === '1'; } catch (e) {}
+  set(saved);
+  const toggle = () => { const on = !panel.classList.contains('collapsed'); set(on); try { localStorage.setItem(KEY, on ? '1' : '0'); } catch (e) {} };
+  h.addEventListener('click', toggle);
+  h.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); toggle(); } });
+})();
+/* Previous / next day buttons next to every date picker */
+(function(){
+  /* Pickers with no onchange handler are refreshed by their own button, so do that instead */
+  const ACTION = { selectedDate: () => runLookup(), forecastDate: () => refreshForecast() };
+  document.querySelectorAll('input[type="date"]').forEach(inp => {
+    const mk = (dir, glyph, title) => {
+      const b = document.createElement('button');
+      b.type = 'button'; b.textContent = glyph; b.title = title; b.setAttribute('aria-label', title);
+      b.addEventListener('click', () => {
+        if (inp.disabled) return;
+        inp.value = addDays(inp.value || ymd(estNow()), dir);
+        if (ACTION[inp.id]) ACTION[inp.id]();
+        else inp.dispatchEvent(new Event('change', { bubbles: true }));
+      });
+      return b;
+    };
+    const prev = mk(-1, '‹', 'Previous day'), next = mk(1, '›', 'Next day');
+    inp.before(prev); inp.after(next);
+    const sync = () => { prev.disabled = next.disabled = inp.disabled; };
+    new MutationObserver(sync).observe(inp, { attributes: true, attributeFilter: ['disabled'] });
+    sync();
+  });
+})();
+/* Hide / show the side menu */
+(function(){
+  const btn = document.getElementById('sideToggle'); if (!btn) return;
+  const KEY = 'ditsc_nav_hidden';
+  const set = hide => {
+    document.body.classList.toggle('nav-hidden', hide);
+    btn.textContent = hide ? '›' : '‹';
+    btn.title = hide ? 'Show menu' : 'Hide menu';
+    btn.setAttribute('aria-label', btn.title);
+    btn.setAttribute('aria-expanded', !hide);
+  };
+  let saved = false; try { saved = localStorage.getItem(KEY) === '1'; } catch (e) {}
+  set(saved);
+  btn.addEventListener('click', () => {
+    const hide = !document.body.classList.contains('nav-hidden');
+    set(hide);
+    try { localStorage.setItem(KEY, hide ? '1' : '0'); } catch (e) {}
+  });
+})();
 </script>
 </body>
 </html>
