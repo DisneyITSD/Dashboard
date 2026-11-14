@@ -234,6 +234,7 @@ tr.roster-off td{background:#f1f2f4;color:#666;font-style:italic}
 .trk-grid td.trk-name{cursor:pointer;font-weight:600;color:var(--navy)}
 .trk-grid td.trk-name:hover{text-decoration:underline}
 .trk-grid td.trk-agent{font-weight:600;color:var(--navy)}
+.trk-grid td.trk-shift{font-size:11.5px;color:var(--muted);min-width:128px;background:#fafbfc}
 .trk-grid td.trk-sum.st-present{background:#e8f5e9;color:#2e7d32}
 .trk-grid td.trk-sum.st-partial{background:#fff3e0;color:#e65100}
 .trk-grid td.trk-sum.st-absent{background:#ffebee;color:#c62828}
@@ -851,7 +852,7 @@ html[data-theme=dark] .flag-chip.red{background:#4c1d22;color:#fca5a5}
 
 <!-- ============ COVERAGE FORECAST ============ -->
 <section class="tab-panel" id="forecastTab" hidden>
-  <div class="view-hint">📊 Full-day staffing by 30-minute interval: expected vs actual agents for the chosen date. An interval turns red when the actual count is below the minimum, or below expected by the gap you set. Change both numbers above.</div>
+  <div class="view-hint">📊 Full-day staffing by 30-minute interval: expected vs actual agents for the chosen date.<br>An interval turns red when the actual count is below the minimum, or below expected by the gap you set.<br>Change both numbers above.</div>
   <div class="controls">
     <input type="date" id="forecastDate">
     <label style="display:flex;align-items:center;gap:6px;font-weight:600">🎯 Min agents <input type="number" min="0" class="minTargetInput" id="fcMinInput"></label>
@@ -863,7 +864,7 @@ html[data-theme=dark] .flag-chip.red{background:#4c1d22;color:#fca5a5}
 
 <!-- ============ LUNCH CONCURRENCY ============ -->
 <section class="tab-panel" id="lunchTab" hidden>
-  <div class="view-hint">🍽️ How many agents are on lunch (60 minutes) in each 30-minute interval of the chosen date. The busiest interval(s) are marked 🔺. Leave and called-off shifts are not counted.</div>
+  <div class="view-hint">🍽️ How many agents are on lunch (60 minutes) in each 30-minute interval of the chosen date.<br>The busiest interval(s) are marked 🔺.<br>Leave and called-off shifts are not counted.</div>
   <div class="controls">
     <input type="date" id="lunchDate" onchange="buildLunchConcurrency()">
   </div>
@@ -872,7 +873,7 @@ html[data-theme=dark] .flag-chip.red{background:#4c1d22;color:#fca5a5}
 
 <!-- ============ ANNOUNCEMENTS ============ -->
 <section class="tab-panel" id="announcementsTab" hidden>
-  <div class="view-hint">📢 All dashboard announcements, reminders and informational posts. Filter by priority, show active only or include expired, and search. Use + New Announcement to post one.</div>
+  <div class="view-hint">📢 All dashboard announcements, reminders and informational posts.<br>Filter by priority, show active only or include expired, and search.<br>Use + New Announcement to post one.</div>
   <div class="controls">
     <select id="annPriority" onchange="buildAnnouncementsTab()">
       <option value="">All Priorities</option>
@@ -893,7 +894,7 @@ html[data-theme=dark] .flag-chip.red{background:#4c1d22;color:#fca5a5}
 
 <!-- ============ DAILY SCHEDULE ============ -->
 <section class="tab-panel" id="scheduleTab" hidden>
-  <div class="view-hint">📅 Shifts, breaks, lunches and supervisor for each agent on the selected date, in EST or PH time. Filter by supervisor, search an agent, and click a column title to sort.</div>
+  <div class="view-hint">📅 Shifts, breaks, lunches and supervisor for each agent on the selected date, in EST or PH time.<br>Filter by supervisor, search an agent, and click a column title to sort.</div>
   <div class="controls">
     <select id="scheduleTimezone" onchange="buildScheduleView()">
       <option value="EST">EST</option>
@@ -934,7 +935,7 @@ html[data-theme=dark] .flag-chip.red{background:#4c1d22;color:#fca5a5}
 
 <!-- ============ MONTHLY ROSTER ============ -->
 <section class="tab-panel" id="rosterTab" hidden>
-  <div class="view-hint">📊 Monthly calendar for one agent at a time (pick the agent above, ‹ › changes the month), built from the weekly roster plus the "Schedule By Date" tab, in EST or PH time. Colours show each day's attendance (same rules as Performance › Attendance tracker) and the strip on top gives the month's attendance %. A purple outline 🔁 marks days changed from the weekly roster; tick Changed only to list agents with changes. Hover a day to see the actual log-in / log-out times.</div>
+  <div class="view-hint">📊 Monthly calendar for one agent at a time (pick the agent above, ‹ › changes the month), built from the weekly roster plus the "Schedule By Date" tab, in EST or PH time.<br>Colours show each day's attendance (same rules as Performance › Attendance tracker) and the strip on top gives the month's attendance %.<br>A purple outline 🔁 marks days changed from the weekly roster; tick Changed only to list agents with changes.<br>Hover a day to see the actual log-in / log-out times.</div>
   <div class="controls">
     <button type="button" onclick="shiftRosterMonth(-1)" title="Previous month">‹</button>
     <input type="month" id="rosterMonth" onchange="buildRosterView()">
@@ -970,7 +971,7 @@ html[data-theme=dark] .flag-chip.red{background:#4c1d22;color:#fca5a5}
 
 <!-- ============ TEAM ROSTER (agents per supervisor) ============ -->
 <section class="tab-panel" id="teamTab" hidden>
-  <div class="view-hint">👥 Agents grouped under each supervisor, with the headcount per team. Filter by supervisor or search for an agent.</div>
+  <div class="view-hint">👥 Agents grouped under each supervisor, with the headcount per team.<br>Filter by supervisor or search for an agent.</div>
   <div class="controls">
     <select id="teamSupervisor" onchange="buildTeamView()"><option>All Supervisors</option></select>
     <input type="text" id="teamSearch" placeholder="🔍 Search Agent..." onkeyup="buildTeamView()">
@@ -984,7 +985,7 @@ html[data-theme=dark] .flag-chip.red{background:#4c1d22;color:#fca5a5}
 
 <!-- ============ LEAVES ============ -->
 <section class="tab-panel" id="ptoTab" hidden>
-  <div class="view-hint">🏖️ Leave (PTO) records submitted through the PTO update form: agent, date, reason and supervisor. Pick a date or click All Dates, and click a column title to sort.</div>
+  <div class="view-hint">🏖️ Leave (PTO) records submitted through the PTO update form: agent, date, reason and supervisor.<br>Pick a date or click All Dates, and click a column title to sort.</div>
   <div class="controls">
     <input type="date" id="ptoDate" onchange="buildRecordTable('pto')">
     <select id="ptoSupervisor" onchange="buildRecordTable('pto')"><option>All Supervisors</option></select>
@@ -1001,7 +1002,7 @@ html[data-theme=dark] .flag-chip.red{background:#4c1d22;color:#fca5a5}
 
 <!-- ============ ABSENTEEISM ============ -->
 <section class="tab-panel" id="calledOffTab" hidden>
-  <div class="view-hint">🚦 Attendance exceptions submitted through the Attendance form: called off, NCNS, running late and left early, with the reason and supervisor. Pick a date or click All Dates, and click a column title to sort.</div>
+  <div class="view-hint">🚦 Attendance exceptions submitted through the Attendance form: called off, NCNS, running late and left early, with the reason and supervisor.<br>Pick a date or click All Dates, and click a column title to sort.</div>
   <div class="controls">
     <input type="date" id="calledOffDate" onchange="buildRecordTable('att')">
     <select id="calledOffSupervisor" onchange="buildRecordTable('att')"><option>All Supervisors</option></select>
@@ -1018,7 +1019,7 @@ html[data-theme=dark] .flag-chip.red{background:#4c1d22;color:#fca5a5}
 
 <!-- ============ LATE / LEFT EARLY ============ -->
 <section class="tab-panel" id="lateTab" hidden>
-  <div class="view-hint">⏱️ Actual login and logout times submitted through the Late / early time form for agents who ran late or left early. Minutes late and left early are worked out from the agent's shift; a ⚠️ means more than 4 hours or an agent not on the roster, so re-check the AM/PM, date and name.</div>
+  <div class="view-hint">⏱️ Actual login and logout times submitted through the Late / early time form for agents who ran late or left early.<br>Minutes late and left early are worked out from the agent's shift; a ⚠️ means more than 4 hours or an agent not on the roster, so re-check the AM/PM, date and name.</div>
   <div class="controls">
     <input type="date" id="lateDate" onchange="buildLateTable()">
     <select id="lateSupervisor" onchange="buildLateTable()"><option>All Supervisors</option></select>
@@ -1046,7 +1047,7 @@ html[data-theme=dark] .flag-chip.red{background:#4c1d22;color:#fca5a5}
 
 <!-- ============ SCORECARD: SUMMARY ============ -->
 <section class="tab-panel" id="scoreSumTab" hidden>
-  <div class="view-hint">📋 One-page scorecard for the month: Attendance %, Quality Assurance average and Performance Stack Ranking total. It shows today's staffing, top performers, who needs attention, the monthly trend, and every agent in the table at the bottom (click a column title to sort; 🚩 marks agents below target on 2+ measures). Download CSV exports every agent with the full day counts (present, late / left early, called off, leave).</div>
+  <div class="view-hint">📋 One-page scorecard for the month: Attendance %, Quality Assurance average and Performance Stack Ranking total.<br>It shows today's staffing, top performers, who needs attention, the monthly trend, and every agent in the table at the bottom (click a column title to sort; 🚩 marks agents below target on 2+ measures).<br>Download CSV exports every agent with the full day counts (present, late / left early, called off, leave).</div>
   <div class="controls">
     <button type="button" onclick="shiftScoreSumMonth(-1)" title="Previous month">‹</button>
     <input type="month" id="ssMonth" onchange="buildScoreSummary()">
@@ -1083,7 +1084,7 @@ html[data-theme=dark] .flag-chip.red{background:#4c1d22;color:#fca5a5}
 
 <!-- ============ SCORECARD: ATTENDANCE ============ -->
 <section class="tab-panel" id="trackerTab" hidden>
-  <div class="view-hint">🗓️ Per-agent attendance for the month, scored as hours worked ÷ hours expected (leave, OFF and upcoming days are left out). Actual log-in / log-out times come from the LOLI Actual sheet; a time submitted through the Late / early time form takes priority and an approved dispute replaces it. Hover a day to see the times. The legend below explains each status, and the Team total row adds up the agents shown. Click % to sort; Download CSV exports the grid.</div>
+  <div class="view-hint">🗓️ Per-agent attendance for the month, scored as hours worked ÷ hours expected (leave, OFF and upcoming days are left out).<br>Actual log-in / log-out times come from the LOLI Actual sheet; a time submitted through the Late / early time form takes priority and an approved dispute replaces it.<br>Hover a day to see the shift and the times.<br>The Shift column shows each agent's usual shift in EST (🔁 = it changes during the month; hover for the breakdown).<br>The legend below explains each status, and the Team total row adds up the agents shown.<br>Click % to sort; Download CSV exports the grid.</div>
   <div class="controls">
     <button type="button" onclick="shiftTrackerMonth(-1)" title="Previous month">‹</button>
     <input type="month" id="trackerMonth" onchange="buildTracker()">
@@ -1098,7 +1099,7 @@ html[data-theme=dark] .flag-chip.red{background:#4c1d22;color:#fca5a5}
 
 <!-- ============ SCORECARD: QUALITY ASSURANCE ============ -->
 <section class="tab-panel" id="qaTab" hidden>
-  <div class="view-hint">✅ Quality Assurance scores by analyst, ranked by average score. Tick one or more months (or Year to date). Click an agent (▸) to open their audits; with several months ticked, open a month to see its audits. Click a column title to sort.</div>
+  <div class="view-hint">✅ Quality Assurance scores by analyst, ranked by average score.<br>Tick one or more months (or Year to date).<br>Click an agent (▸) to open their audits; with several months ticked, open a month to see its audits.<br>Click a column title to sort.</div>
   <div class="controls">
     <div class="msel" id="qaMonthWrap">
       <button type="button" id="qaMonthBtn" class="msel-btn">Month ▾</button>
@@ -1128,7 +1129,7 @@ html[data-theme=dark] .flag-chip.red{background:#4c1d22;color:#fca5a5}
 
 <!-- ============ SCORECARD: OVERALL METRIC ============ -->
 <section class="tab-panel" id="metricTab" hidden>
-  <div class="view-hint">📊 Performance stack ranking per agent. Tick one or more months (or Year to date): each agent then shows one row with their average, ranked by it. Click an agent (▸) to open their monthly scores. Click a column title to sort.</div>
+  <div class="view-hint">📊 Performance stack ranking per agent.<br>Tick one or more months (or Year to date): each agent then shows one row with their average, ranked by it.<br>Click an agent (▸) to open their monthly scores.<br>Click a column title to sort.</div>
   <div class="controls">
     <div class="msel" id="metricMonthWrap">
       <button type="button" id="metricMonthBtn" class="msel-btn">Month ▾</button>
@@ -1154,7 +1155,7 @@ html[data-theme=dark] .flag-chip.red{background:#4c1d22;color:#fca5a5}
 
 <!-- ============ SCORECARD: METRIC SCORECARD (actual scores) ============ -->
 <section class="tab-panel" id="mcsTab" hidden>
-  <div class="view-hint">📈 Actual scores per agent. Tick one or more months (or Year to date); in the Total row, counts are added up and rates and times are averaged. With several months ticked, each agent shows one row with the Total; click an agent (▸) to open their monthly scores. With one month ticked, click a column title to sort.</div>
+  <div class="view-hint">📈 Actual scores per agent.<br>Tick one or more months (or Year to date); in the Total row, counts are added up and rates and times are averaged.<br>With several months ticked, each agent shows one row with the Total; click an agent (▸) to open their monthly scores.<br>With one month ticked, click a column title to sort.</div>
   <div class="note red" id="mcsNote" hidden></div>
   <div class="controls">
     <div class="msel" id="mcsMonthWrap">
@@ -1178,7 +1179,7 @@ html[data-theme=dark] .flag-chip.red{background:#4c1d22;color:#fca5a5}
 
 <!-- ============ MISSING AGENT CHECKER ============ -->
 <section class="tab-panel" id="missingTab" hidden>
-  <div class="view-hint">🔎 Compare the agents on the CXone dashboard with your Dashboard Working list. Agents on the Working list but not in your pasted list are Missing; agents in your pasted list but not on the Working list are Unexpected.</div>
+  <div class="view-hint">🔎 Compare the agents on the CXone dashboard with your Dashboard Working list.<br>Agents on the Working list but not in your pasted list are Missing; agents in your pasted list but not on the Working list are Unexpected.</div>
   <div class="note red">
     ⚠️ <strong>Live Mode is required.</strong>
     The Missing Agent Checker compares your pasted list against the current Dashboard Working list.
@@ -1207,7 +1208,7 @@ html[data-theme=dark] .flag-chip.red{background:#4c1d22;color:#fca5a5}
 
 <!-- ============ FORMS ============ -->
 <section class="tab-panel" id="attendanceFormTab" hidden>
-  <div class="view-hint">📝 Submit attendance records (called off, NCNS, running late, left early) directly from the dashboard. They appear on Absenteeism and feed the Attendance tracker, Monthly view and Summary.</div>
+  <div class="view-hint">📝 Submit attendance records (called off, NCNS, running late, left early) directly from the dashboard.<br>They appear on Absenteeism and feed the Attendance tracker, Monthly view and Summary.</div>
   <div class="note amber" style="padding:15px;box-shadow:var(--shadow)">
     <h3 style="color:#b26a00">⚠️ Important Reminder</h3>
     <p style="margin:0">
@@ -1226,7 +1227,7 @@ html[data-theme=dark] .flag-chip.red{background:#4c1d22;color:#fca5a5}
 </section>
 
 <section class="tab-panel" id="attendanceTimeFormTab" hidden>
-  <div class="view-hint">⏱️ Submit the actual login or logout time for agents who were running late or left early. It shows on Late / Left early and takes priority over the LOLI Actual time in the Attendance tracker, Monthly view and Summary.</div>
+  <div class="view-hint">⏱️ Submit the actual login or logout time for agents who were running late or left early.<br>It shows on Late / Left early and takes priority over the LOLI Actual time in the Attendance tracker, Monthly view and Summary.</div>
   <div class="note amber" style="padding:15px;box-shadow:var(--shadow)">
     <h3 style="color:#b26a00">⚠️ Double-check before submitting</h3>
     <p style="margin:0">
@@ -1240,7 +1241,7 @@ html[data-theme=dark] .flag-chip.red{background:#4c1d22;color:#fca5a5}
 </section>
 
 <section class="tab-panel" id="disputeFormTab" hidden>
-  <div class="view-hint">🛠️ Supervisors: dispute a late log-in or early log-out (e.g. computer / system issues). Once <b>Approved</b> (may take up to 24 hours to update), the disputed time replaces the actual time in Performance › Attendance tracker, Schedule &amp; coverage › Monthly view and the Summary.</div>
+  <div class="view-hint">🛠️ Supervisors: dispute a late log-in or early log-out (e.g. computer / system issues).<br>Once <b>Approved</b> (may take up to 24 hours to update), the disputed time replaces the actual time in Performance › Attendance tracker, Schedule &amp; coverage › Monthly view and the Summary.</div>
   <div class="note amber" style="padding:15px;box-shadow:var(--shadow)">
     <h3 style="color:#b26a00">⚠️ Before submitting</h3>
     <p style="margin:0">
@@ -1253,7 +1254,7 @@ html[data-theme=dark] .flag-chip.red{background:#4c1d22;color:#fca5a5}
 </section>
 
 <section class="tab-panel" id="ptoFormTab" hidden>
-  <div class="view-hint">🏖️ Submit PTO updates directly from the dashboard. They appear on Leaves and count as leave in the attendance pages.</div>
+  <div class="view-hint">🏖️ Submit PTO updates directly from the dashboard.<br>They appear on Leaves and count as leave in the attendance pages.</div>
   <div class="note green" style="padding:15px;box-shadow:var(--shadow)">
     <h3 style="color:#1b7f3b">📋 PTO Reminder</h3>
     <p style="margin:0">
@@ -1267,7 +1268,7 @@ html[data-theme=dark] .flag-chip.red{background:#4c1d22;color:#fca5a5}
 </section>
 
 <section class="tab-panel" id="announcementFormTab" hidden>
-  <div class="view-hint">📢 Submit dashboard announcements and reminders. They appear on the Dashboard and the Announcements page.</div>
+  <div class="view-hint">📢 Submit dashboard announcements and reminders.<br>They appear on the Dashboard and the Announcements page.</div>
   <div class="panel">
     <iframe
       src="https://docs.google.com/forms/d/e/1FAIpQLSf9x9VTY6x-nX82soQ3P1b5Dfx60PoKll5YVCeXlBa1qK9E1A/viewform?embedded=true"
@@ -3682,7 +3683,7 @@ const missedText = x => x.missed ? `${x.missed} min missed${x.estimated ? ' (est
 const fmtHrs = h => { const m = Math.round(h * 60); return Math.floor(m / 60) + ':' + String(m % 60).padStart(2, '0'); };
 const actualTip = x => x.autoNcns ? 'NCNS - no log-in / log-out in LOLI Actual' : x.inTime || x.outTime ? `Log-in Time: ${x.inTime || '—'}${x.inDisputed ? ' (disputed)' : ''}\nLog-out Time: ${x.outTime || '—'}${x.outDisputed ? ' (disputed)' : ''}${x.loggedHrs != null ? `\nTotal logged-in: ${fmtHrs(x.loggedHrs)} hrs` : ''}` : '';
 
-const trackerTip = x => actualTip(x);
+const trackerTip = x => [x.shift && !isOff(x.shift) ? `Shift: ${convertShiftRange(x.shift)} EST` : '', actualTip(x)].filter(Boolean).join('\n');
 
 /* Team total: adds up every agent shown (counts and hours for the month) */
 const trackerBand = p => p == null ? '' : p >= 95 ? ' st-present' : p >= 91 ? ' st-partial' : ' st-absent';
@@ -3693,6 +3694,19 @@ let trackerPctSort = '';
 function toggleTrackerPctSort() {
   trackerPctSort = trackerPctSort === '' ? 'asc' : trackerPctSort === 'asc' ? 'desc' : '';
   buildTracker();
+}
+
+/* Shift column: the agent's usual shift for the month (most common non-OFF shift, EST) */
+function trackerShiftInfo(info) {
+  const cnt = new Map();
+  info.forEach(x => { if (x.shift && !isOff(x.shift)) cnt.set(x.shift, (cnt.get(x.shift) || 0) + 1); });
+  const list = [...cnt.entries()].sort((a, b) => b[1] - a[1]);
+  if (!list.length) return { text: '—', varies: false, tip: 'No shift this month' };
+  return {
+    text: convertShiftRange(list[0][0]),
+    varies: list.length > 1,
+    tip: list.map(([sh, n]) => `${convertShiftRange(sh)} EST - ${n} day${n === 1 ? '' : 's'}`).join('\n')
+  };
 }
 
 function trackerGridHtml(rows, monthOf, days, today) {
@@ -3720,7 +3734,7 @@ function trackerGridHtml(rows, monthOf, days, today) {
 
   const team = trackerTeamTotal(rows.map(monthOf));
   const totalRow = `<tr class="trk-total">
-      <td>Σ Team total <small>(${rows.length} agent${rows.length === 1 ? '' : 's'})</small></td>
+      <td>Σ Team total <small>(${rows.length} agent${rows.length === 1 ? '' : 's'})</small></td><td></td>
       <td class="trk-sum" title="Expected days">${team.c.expected}</td>
       <td class="trk-sum" title="Present">${team.c.present}</td>
       <td class="trk-sum" title="Late / Left early">${team.c.partial}</td>
@@ -3730,10 +3744,11 @@ function trackerGridHtml(rows, monthOf, days, today) {
       <td colspan="${days.length}"></td></tr>`;
 
   const body = rows.map(r => {
-    const info = monthOf(r), c = trackerSummary(info);
+    const info = monthOf(r), c = trackerSummary(info), sh = trackerShiftInfo(info);
     const cells = info.map(x => `<td class="trk-cell st-${x.kind}" title="${esc(trackerTip(x))}">${esc(x.code)}${x.estimated ? '*' : ''}</td>`).join('');
     return `<tr class="${supClass(r.Supervisor)}" style="${supStyle(r.Supervisor)}">
       <td class="trk-agent">${esc(r.Name)}</td>
+      <td class="trk-shift" title="${esc(sh.tip)}">${esc(sh.text)}${sh.varies ? ' 🔁' : ''}</td>
       <td class="trk-sum" title="Expected days">${c.expected}</td>
       <td class="trk-sum" title="Present">${c.present}</td>
       <td class="trk-sum" title="Late / Left early">${c.partial}</td>
@@ -3744,7 +3759,7 @@ function trackerGridHtml(rows, monthOf, days, today) {
   }).join('');
 
   return `<div class="panel"><div class="schedule-container"><table class="nosort trk-grid">
-    <thead><tr><th>👤 Agent</th><th title="Expected days">Exp</th><th title="Present">✔</th><th title="Late / Left early">◐</th><th title="Called off / NCNS">✖</th><th title="Leave">🌴</th><th class="sortable" onclick="toggleTrackerPctSort()" title="Click to sort by attendance % (lowest first, highest first, then by name)">%${sortArrow}</th>${head}</tr></thead>
+    <thead><tr><th>👤 Agent</th><th title="Usual shift for the month (EST). 🔁 = shift changes during the month">🕒 Shift (EST)</th><th title="Expected days">Exp</th><th title="Present">✔</th><th title="Late / Left early">◐</th><th title="Called off / NCNS">✖</th><th title="Leave">🌴</th><th class="sortable" onclick="toggleTrackerPctSort()" title="Click to sort by attendance % (lowest first, highest first, then by name)">%${sortArrow}</th>${head}</tr></thead>
     <tbody>${totalRow}${body}</tbody></table></div></div>`;
 }
 
@@ -3799,7 +3814,7 @@ function downloadTracker() {
   const csvCell = v => `"${String(v ?? '').replace(/"/g, '""')}"`;
 
   const rows = [[
-    'Agent', 'Supervisor', 'Expected days', 'Present', 'Late/Left early', 'Called off', 'Leave',
+    'Agent', 'Supervisor', 'Shift (EST)', 'Expected days', 'Present', 'Late/Left early', 'Called off', 'Leave',
     'Attendance %', 'Hours worked', 'Hours expected',
     ...days.map(d => { const dt = parseYMD(d); return `${dt.getDate()} (${DAYS[dt.getDay()].slice(0, 3)})`; })
   ]];
@@ -3808,12 +3823,12 @@ function downloadTracker() {
   roster.forEach(r => {
     const info = days.map(d => attendanceFor(r, d, today, idx)), c = trackerSummary(info);
     infos.push(info);
-    rows.push([r.Name, r.Supervisor, c.expected, c.present, c.partial, c.absent, c.leave,
+    rows.push([r.Name, r.Supervisor, trackerShiftInfo(info).text, c.expected, c.present, c.partial, c.absent, c.leave,
                trackerPct(c), c.hoursWorked.toFixed(1), c.hoursExp.toFixed(1), ...info.map(cellText)]);
   });
   if (infos.length) {
     const c = trackerTeamTotal(infos).c;
-    rows.push(['Team total (' + infos.length + ' agents)', '', c.expected, c.present, c.partial, c.absent, c.leave,
+    rows.push(['Team total (' + infos.length + ' agents)', '', '', c.expected, c.present, c.partial, c.absent, c.leave,
                trackerPct(c), c.hoursWorked.toFixed(1), c.hoursExp.toFixed(1)]);
   }
   rows.push([]);
