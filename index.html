@@ -185,6 +185,30 @@ tr.roster-off td{background:#f1f2f4;color:#666;font-style:italic}
 .missing-results .panel{flex:1}
 #agentPaste{width:100%;height:180px;resize:vertical;border:1px solid var(--border);border-radius:8px;padding:10px}
 
+/* ---------- QA audit details pop-up (click a ticket under an analyst) ---------- */
+#qaTable tr.qa-audit{cursor:pointer}
+#qaTable tr.qa-audit:hover td{filter:brightness(.97)}
+#qaTable tr.qa-audit td:first-child{text-decoration:underline dotted;text-underline-offset:3px}
+.qd-back{position:fixed;inset:0;z-index:300;background:rgba(15,23,42,.45);display:flex;align-items:center;justify-content:center;padding:16px}
+.qd-back[hidden]{display:none}
+.qd-card{background:var(--surface,#fff);color:var(--ink,#111827);border:1px solid var(--line,#e5e7eb);border-radius:14px;width:100%;max-width:540px;max-height:86vh;overflow:auto;box-shadow:0 20px 50px rgba(0,0,0,.25)}
+.qd-head{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:14px 18px;border-bottom:1px solid var(--line,#e5e7eb);position:sticky;top:0;background:var(--surface,#fff)}
+.qd-head b{font-size:15px}
+.qd-x{border:0;background:transparent;color:var(--muted,#6b7280);font-size:20px;line-height:1;cursor:pointer;padding:4px 8px;border-radius:8px}
+.qd-x:hover{background:var(--paper,#f6f7f9)}
+.qd-body{padding:16px 20px 20px;font-size:14px;line-height:1.6}
+.qd-grp{margin:0 0 16px}
+.qd-grp:last-child{margin-bottom:0}
+.qd-line{margin:2px 0;overflow-wrap:anywhere}
+.qd-line b{font-weight:700}
+.qd-line .v{white-space:pre-wrap}
+.qd-line .none{color:var(--muted,#6b7280)}
+.qd-notes{margin-top:4px;padding:10px 12px;border-radius:8px;background:var(--paper,#f6f7f9);white-space:pre-wrap;overflow-wrap:anywhere}
+.qd-score{font-weight:700}
+.qd-score.sc-good{color:var(--green,#16a34a)}
+.qd-score.sc-mid{color:var(--orange,#d97706)}
+.qd-score.sc-low{color:var(--red,#dc2626)}
+
 /* ---------- Toast ---------- */
 .panels li small.ph-time,.shift-panel li small.ph-time{color:#14532d!important;font-weight:600;opacity:1}
 #toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:#0f2a4d;color:#fff;padding:9px 16px;border-radius:999px;opacity:0;pointer-events:none;transition:.25s;z-index:99}
@@ -621,6 +645,51 @@ html[data-theme=dark] #qaTable tr[class*="mo-"] td.qa-score{background:color-mix
 /* Performance Stack Ranking: also tint the score cells (band shows in text colour and dot); No Data cells keep their dark style */
 #metricTable tr[class*="mo-"] td:not(.nodata){background:color-mix(in srgb,var(--mc) 14%,#fff)!important}
 html[data-theme=dark] #metricTable tr[class*="mo-"] td:not(.nodata){background:color-mix(in srgb,var(--mc) 22%,var(--surface))!important}
+/* ---------- Summary: eye-catching top performers (gold podium + green star panels) ---------- */
+.sum-grid3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px;align-items:start}
+.sum-grid3 .panel h3{font-size:13px;margin:0 0 8px}
+@media(max-width:900px){.sum-grid3{grid-template-columns:1fr}}
+.attn{list-style:none;margin:0;padding:0}
+.attn li{display:flex;justify-content:space-between;gap:8px;padding:6px 0;border-bottom:1px solid var(--line);font-size:14px}
+.attn li small{color:var(--muted);display:block}
+.attn li strong{white-space:nowrap}
+.podium .pod:first-child{background:linear-gradient(135deg,#fff6d6,var(--surface,#fff) 72%);box-shadow:0 0 0 2px rgba(245,179,1,.45),0 8px 22px rgba(245,179,1,.28)}
+.podium .pod .medal{font-size:36px}
+.podium .pod:first-child .medal{filter:drop-shadow(0 2px 5px rgba(245,179,1,.7))}
+.podium .pod .ps{font-size:30px;font-weight:800}
+.podium .pod .pn{font-size:16px}
+.pod-note{margin:-8px 0 14px;font-size:12px;color:var(--muted)}
+.panel.star{border:1px solid #bbf7d0;border-top:4px solid #16a34a;background:linear-gradient(180deg,#ecfdf3,var(--surface,#fff) 110px)}
+.panel.star h3{color:#166534}
+.stars li{align-items:center}
+.stars li .rk{display:inline-block;min-width:30px;font-style:normal;font-weight:700;color:var(--muted)}
+.stars li.r1{background:#fff8dc;border-radius:8px;padding-left:8px;padding-right:8px;font-weight:700}
+.stars li strong{color:#15803d;background:#dcfce7;border-radius:999px;padding:2px 11px;font-weight:800}
+.stars li.r1 strong{background:#fde68a;color:#92400e}
+.stars li.more{justify-content:center;border-bottom:0;color:var(--muted);font-size:12px}
+html[data-theme=dark] .podium .pod:first-child{background:linear-gradient(135deg,#2e2710,var(--surface) 72%)}
+html[data-theme=dark] .panel.star{border-color:#1f5135;background:linear-gradient(180deg,#10291c,var(--surface) 110px)}
+html[data-theme=dark] .panel.star h3{color:#86efac}
+html[data-theme=dark] .stars li.r1{background:#33290c}
+html[data-theme=dark] .stars li strong{background:#14532d;color:#86efac}
+html[data-theme=dark] .stars li.r1 strong{background:#5b4a0c;color:#fde68a}
+/* ---------- Summary: needs attention, trend bars, coaching flags ---------- */
+.panel.warn{border-top:4px solid #dc2626;background:linear-gradient(180deg,#fff1f2,var(--surface,#fff) 110px)}
+.panel.warn h3{color:#b91c1c}
+.panel.warn .attn li strong{color:#b91c1c}
+html[data-theme=dark] .panel.warn{background:linear-gradient(180deg,#2a1417,var(--surface) 110px)}
+html[data-theme=dark] .panel.warn h3,html[data-theme=dark] .panel.warn .attn li strong{color:#fca5a5}
+.bars{display:flex;align-items:flex-end;gap:6px}
+.bar-col{display:flex;flex-direction:column;align-items:center;flex:1;min-width:0}
+.bar-val{font-size:11px;font-weight:700;color:var(--navy);margin-bottom:2px}
+.bar-area{height:130px;width:100%;display:flex;align-items:flex-end}
+.bar-fill{width:100%;border-radius:4px 4px 0 0}
+.bar-lbl{font-size:11px;color:var(--muted);margin-top:4px}
+.bar-axis{font-size:11px;color:var(--muted);text-align:right;margin-top:4px}
+.flag-chip{display:inline-block;padding:2px 10px;border-radius:999px;font-size:12px;font-weight:700;background:#fef3c7;color:#92400e;white-space:nowrap}
+.flag-chip.red{background:#fee2e2;color:#b91c1c}
+html[data-theme=dark] .flag-chip{background:#4a3a0c;color:#fde68a}
+html[data-theme=dark] .flag-chip.red{background:#4c1d22;color:#fca5a5}
 </style>
 </head>
 
@@ -938,9 +1007,27 @@ html[data-theme=dark] #metricTable tr[class*="mo-"] td:not(.nodata){background:c
     <select id="ssSupervisor" onchange="buildScoreSummary()"><option>All Supervisors</option></select>
     <select id="ssAgent" onchange="buildScoreSummary()"><option value="">All Agents</option></select>
     <input type="text" id="ssSearch" placeholder="🔍 Search Agent..." onkeyup="buildScoreSummary()">
+    <button type="button" class="blue" onclick="downloadScoreSummary()">⬇ Download CSV</button>
   </div>
   <div class="trk-legend" id="ssLegend"></div>
   <div id="ssCards"></div>
+  <div id="ssTopWrap" hidden>
+    <h3 class="sum-h" id="ssTodayTitle">Today's staffing</h3>
+    <div class="daily-summary" id="ssToday"></div>
+
+    <h3 class="sum-h">Top performers</h3>
+    <div class="podium" id="ssPodium"></div>
+    <div class="pod-note" id="ssPodiumNote" hidden></div>
+    <div class="sum-grid3" id="ssStars"></div>
+
+    <h3 class="sum-h">Needs attention</h3>
+    <div class="sum-grid3" id="ssAttn"></div>
+
+    <h3 class="sum-h">Monthly trend</h3>
+    <div class="sum-grid3" id="ssTrend"></div>
+
+    <h3 class="sum-h">All agents</h3>
+  </div>
   <div class="panel">
     <div class="schedule-container">
       <table id="ssTable" class="nosort"><thead></thead><tbody></tbody></table>
@@ -2489,6 +2576,8 @@ function initQa() {
     buildQA();
   });
   $('qaTable').addEventListener('click', e => {                 // open / close an agent or month row
+    const a = e.target.closest('tr.qa-audit');
+    if (a) { openQaDetail(+a.dataset.qa); return; }               // ticket row: show the audit details
     const h = e.target.closest('tr.grp-head');
     if (!h) return;
     const k = h.dataset.k;
@@ -2511,10 +2600,10 @@ function fillAgentSelect(selId, names) {
    Tick one or more months (or Year to date). Each agent is one row (average score, audits, latest call);
    open it to see the audits, or - with several months ticked - the months, and open a month to see its audits. */
 function buildQA() {
-  const all = qaList.map(x => {
+  const all = qaList.map((x, qid) => {
     const date = normalizeDate(x.CallDate);
     return { analyst: String(x['Analyst Name'] ?? '').trim(), supervisor: String(x.Supervisor ?? '').trim(), date, ym: date.slice(0, 7),
-             ticket: String(x.TicketNumber ?? '').trim(), score: qaPct(x.Score) };
+             ticket: String(x.TicketNumber ?? '').trim(), score: qaPct(x.Score), id: qid };
   }).filter(x => x.ym);
 
   qaMonths = [...new Set(all.map(x => x.ym))].sort();
@@ -2577,7 +2666,7 @@ function buildQA() {
     '<span class="trk-chip st-present">Green: 95% or higher</span>' +
     '<span class="trk-chip st-partial">Amber: 85% - 94.9%</span>' +
     '<span class="trk-chip st-absent">Red: below 85%</span>' +
-    '<span class="trk-chip info">Click an agent (▸) to open their audits</span>';
+    '<span class="trk-chip info">Click an agent (▸) to open their audits, then a ticket 🎫 for the full details</span>';
 
   const table = $('qaTable');
   table.tHead.innerHTML = `<tr>
@@ -2587,7 +2676,7 @@ function buildQA() {
 
   const dateOf = d => d ? fmtDate(parseYMD(d)) : '—';
   const scoreTd = v => `<td class="qa-score${qaBand(v)}" title="${QA_TIP}">${fmtScore(v)}</td>`;
-  const auditRow = (x, st) => `<tr class="qa-audit" style="${st}"><td>🎫 ${esc(x.ticket) || '—'}</td>${scoreTd(x.score)}<td></td><td>${dateOf(x.date)}</td><td>${esc(x.supervisor)}</td></tr>`;
+  const auditRow = (x, st) => `<tr class="qa-audit" data-qa="${x.id}" title="Click to see the audit details" style="${st}"><td>🎫 ${esc(x.ticket) || '—'}</td>${scoreTd(x.score)}<td></td><td>${dateOf(x.date)}</td><td>${esc(x.supervisor)}</td></tr>`;
 
   table.tBodies[0].innerHTML = list.length ? list.map((g, n) => {
     const st = supStyle(g.supervisor), aKey = 'a|' + g.key, open = qaOpen.has(aKey);
@@ -2612,6 +2701,57 @@ function buildQA() {
   $('qaAgents').textContent = list.length;
   $('qaCount').textContent = rows.length;
   $('qaAvg').textContent = fmtScore(avgOf(rows));
+}
+
+/* ---------- QA audit details: click a ticket to see the whole audit as a simple Label: value list ---------- */
+function qaDetailFields(raw) {
+  const heads = Object.keys(raw);
+  const used = new Set(['Analyst Name', 'Supervisor', 'CallDate', 'TicketNumber', 'Score', 'Notes']);
+  const pick = re => heads.find(h => !used.has(h) && re.test(h.trim()));
+  const typeH = pick(/qa.?type|audit.?type|evaluation.?type|^type$/i);        if (typeH) used.add(typeH);
+  const byH = pick(/submitted|submitter|evaluator|auditor|reviewer|created.?by|email|username/i); if (byH) used.add(byH);
+  let qs = heads.filter(h => !used.has(h) && /^\s*(qaq|q|question)\s*[#.\-:]?\s*\d+\s*$/i.test(h));   // QAQ1, QAQ2, ... / Q1 / Question 1
+  qs.forEach(h => used.add(h));
+  let last = qs.length - 1;
+  while (last >= 0 && !String(raw[qs[last]] ?? '').trim()) last--;       // unused trailing questions (the form has up to 25) are hidden
+  if (qs.length) qs = qs.slice(0, last + 1);
+  if (!qs.length && !heads.some(h => /^\s*(qaq|q|question)\s*[#.\-:]?\s*\d+\s*$/i.test(h))) qs = heads.filter(h => !used.has(h) && h.trim() && !/^(timestamp|date)$/i.test(h.trim()) && !/^_\d+$/.test(h.trim()));   // question columns not named Q1, Q2...
+  const label = h => /^\s*(qaq|q|question)\s*[#.\-:]?\s*\d+\s*$/i.test(h) ? 'Q' + h.match(/\d+/)[0] : h.trim();
+  return { typeH, byH, qs: qs.map(h => ({ label: label(h), value: raw[h] })) };
+}
+function openQaDetail(id) {
+  const raw = qaList[id];
+  if (!raw) return;
+  const f = qaDetailFields(raw), txt = v => String(v ?? '').trim();
+  const line = (l, v, cls = '') => `<div class="qd-line"><b>${esc(l)}:</b> ${txt(v) ? `<span class="v ${cls}">${esc(txt(v))}</span>` : '<span class="none">—</span>'}</div>`;
+  const sc = qaPct(raw.Score), date = normalizeDate(raw.CallDate);
+  const scoreHtml = sc == null ? esc(txt(raw.Score) || '—') : `<span class="qd-score${qaBand(sc)}" title="${QA_TIP}">${sc.toFixed(1)}%</span>`;
+  const notes = txt(raw.Notes);
+  let back = document.getElementById('qdBack');
+  if (!back) {
+    back = document.createElement('div');
+    back.id = 'qdBack'; back.className = 'qd-back'; back.hidden = true;
+    back.addEventListener('click', e => { if (e.target === back || e.target.closest('.qd-x')) back.hidden = true; });
+    document.addEventListener('keydown', e => { if (e.key === 'Escape') back.hidden = true; });
+    document.body.appendChild(back);
+  }
+  back.innerHTML = `<div class="qd-card" role="dialog" aria-modal="true" aria-label="QA audit details">
+    <div class="qd-head"><b>🎫 QA Audit Details</b><button class="qd-x" type="button" title="Close (Esc)">✕</button></div>
+    <div class="qd-body">
+      <div class="qd-grp">
+        ${line('Analyst Name', raw['Analyst Name'])}
+        ${line('Supervisor', raw.Supervisor)}
+        ${line('Call Date', date ? fmtDate(parseYMD(date)) : txt(raw.CallDate))}
+        ${line('Ticket Number', raw.TicketNumber)}
+        ${f.typeH ? line('QA Type', raw[f.typeH]) : ''}
+        <div class="qd-line"><b>Score:</b> ${scoreHtml}</div>
+      </div>
+      ${f.qs.length ? `<div class="qd-grp">${f.qs.map(q => line(q.label, q.value)).join('')}</div>` : ''}
+      <div class="qd-grp"><div class="qd-line"><b>Notes:</b> ${notes ? '' : '<span class="none">—</span>'}</div>${notes ? `<div class="qd-notes">${esc(notes)}</div>` : ''}</div>
+      ${f.byH ? `<div class="qd-grp">${line('Submitted By', raw[f.byH])}</div>` : ''}
+    </div></div>`;
+  back.hidden = false;
+  back.querySelector('.qd-card').scrollTop = 0;
 }
 
 /* =====================================================================
@@ -3672,6 +3812,7 @@ function ssMonthMatches(label, ym) {
 
 const ssAttBand = v => v == null ? '' : v >= 95 ? ' sc-good' : v >= 91 ? ' sc-mid' : ' sc-low';
 const ssTotBand = v => v == null ? '' : v >= 85 ? ' sc-good' : v >= 60 ? ' sc-mid' : ' sc-low';
+const ssMonShort = ym => new Date(+ym.slice(0, 4), +ym.slice(5, 7) - 1, 1).toLocaleDateString('en-US', { month: 'short' });
 const ssFmt = (v, d = 1, suffix = '%') => v == null ? '—' : v.toFixed(d) + suffix;
 const ssAvg = list => { const n = list.filter(v => v != null); return n.length ? n.reduce((a, b) => a + b, 0) / n.length : null; };
 
@@ -3688,6 +3829,38 @@ function shiftScoreSumMonth(delta) {
   buildScoreSummary();
 }
 
+const ssTrendCache = { key: '', map: new Map() };
+/* One month for a group of agents: attendance (hours worked / expected), QA average over all audits, average Stack Ranking total */
+function ssMonthPoint(tym, rows, idx, today) {
+  const [yy, mm] = tym.split('-').map(Number);
+  const dd = Array.from({ length: new Date(yy, mm, 0).getDate() }, (_, i) => ymd(new Date(yy, mm - 1, i + 1)));
+  let hw = 0, he = 0;
+  rows.forEach(r => { const c = trackerSummary(dd.map(d => attendanceFor(r, d, today, idx))); hw += c.hoursWorked; he += c.hoursExp; });
+  const names = new Set(rows.map(r => normName(r.Name)));
+  const qs = qaList.filter(x => normalizeDate(x.CallDate).slice(0, 7) === tym && names.has(normName(x['Analyst Name']))).map(x => qaPct(x.Score)).filter(v => v != null);
+  const I = metricIdx, tots = [];
+  if (I.month >= 0 && I.total >= 0) {
+    metricRows.filter(r => ssMonthMatches(r[I.month], tym) && names.has(normName(r[I.agent]))).forEach(r => {
+      const v = metricVal(r[I.total]); if (typeof v === 'number') tots.push(v);
+    });
+  }
+  return { ym: tym, att: he ? hw / he * 100 : null, qa: ssAvg(qs), total: ssAvg(tots) };
+}
+
+let ssExport = { ym: '', rows: [] };
+function downloadScoreSummary() {
+  if (!ssExport.rows.length) { toast('Nothing to download for this view'); return; }
+  const csvCell = v => `"${String(v ?? '').replace(/"/g, '""')}"`, f = (v, d = 1) => v == null ? '' : v.toFixed(d);
+  const rows = [['Agent', 'Supervisor', 'Attendance %', 'Present', 'Late / Left early', 'Called off / NCNS', 'Leave', 'QA avg %', 'Audits', 'Stack Ranking total', 'Rank', 'Below target on'],
+    ...ssExport.rows.map(a => [a.name, a.sup, f(a.att), a.present, a.partial, a.absent, a.leave, f(a.qa), a.audits, f(a.total), a.rank ?? '', a.low.join(' + ')])];
+  const filename = `scorecard-summary-${ssExport.ym}.csv`;
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(new Blob(['\uFEFF' + rows.map(r => r.map(csvCell).join(',')).join('\r\n')], { type: 'text/csv;charset=utf-8' }));
+  a.download = filename;
+  document.body.appendChild(a); a.click(); a.remove(); URL.revokeObjectURL(a.href);
+  toast('⬇ Downloaded ' + filename);
+}
+
 function buildScoreSummary() {
   const body = $('ssTable').tBodies[0], head = $('ssTable').tHead;
   const ym = $('ssMonth').value;
@@ -3695,11 +3868,13 @@ function buildScoreSummary() {
     '<span class="trk-chip st-present">Green: on target</span><span class="trk-chip st-partial">Amber: below target</span><span class="trk-chip st-absent">Red: well below</span>' +
     '<span class="trk-chip info" title="Green >=95% | Amber 91-94.9% | Red below 91%">Attendance: 95% / 91%</span>' +
     '<span class="trk-chip info" title="Green >=95% | Amber 85-94.9% | Red below 85%">QA: 95% / 85%</span>' +
-    '<span class="trk-chip info" title="Green >=85 pts | Amber 60-84 pts | Red below 60 pts">Stack Ranking total: 85 / 60 pts</span>';
+    '<span class="trk-chip info" title="Green >=85 pts | Amber 60-84 pts | Red below 60 pts">Stack Ranking total: 85 / 60 pts</span>' +
+    '<span class="trk-chip info" title="Coaching flag: below the green target on 2 or more of Attendance (95%), QA (95%) and Stack Ranking (85 pts). Red = 2 or more are in the red band.">🚩 Coaching: below target on 2+ measures</span>';
   if (!ym || !estData.length) {
     head.innerHTML = '';
     body.innerHTML = '<tr><td>Pick a month (schedule data must be loaded)</td></tr>';
     $('ssCards').innerHTML = '';
+    $('ssTopWrap').hidden = true;
     return;
   }
 
@@ -3716,6 +3891,17 @@ function buildScoreSummary() {
     const sc = qaPct(x.Score), k = normName(x['Analyst Name']);
     if (!qaBy.has(k)) qaBy.set(k, []);
     qaBy.get(k).push(sc);
+  });
+
+  /* Previous month (for the ▲ / ▼ comparison on the team cards) */
+  const pdt = new Date(y, m - 2, 1), pym = `${pdt.getFullYear()}-${pad(pdt.getMonth() + 1)}`;
+  const pdays = Array.from({ length: new Date(pdt.getFullYear(), pdt.getMonth() + 1, 0).getDate() }, (_, i) => ymd(new Date(pdt.getFullYear(), pdt.getMonth(), i + 1)));
+  const qaPrevBy = new Map();
+  qaList.forEach(x => {
+    if (normalizeDate(x.CallDate).slice(0, 7) !== pym) return;
+    const sc = qaPct(x.Score), k = normName(x['Analyst Name']);
+    if (!qaPrevBy.has(k)) qaPrevBy.set(k, []);
+    qaPrevBy.get(k).push(sc);
   });
 
   /* Performance Stack Ranking: the month's total and rank among everyone listed that month */
@@ -3737,8 +3923,9 @@ function buildScoreSummary() {
     .filter(r => (!ag || normName(r.Name) === normName(ag)) && (!q || up(r.Name).includes(q)))
     .map(r => {
       const info = days.map(d => attendanceFor(r, d, today, idx)), c = trackerSummary(info);
+      const pc = trackerSummary(pdays.map(d => attendanceFor(r, d, today, idx)));
       const qs = qaBy.get(normName(r.Name)) || [], total = totalBy.has(normName(r.Name)) ? totalBy.get(normName(r.Name)) : null;
-      return { name: r.Name, sup: r.Supervisor || 'Unassigned', c, att: c.pct, qa: ssAvg(qs), audits: qs.length, qsList: qs, total, rank: rankOf(total) };
+      return { name: r.Name, sup: r.Supervisor || 'Unassigned', c, att: c.pct, present: c.present, partial: c.partial, absent: c.absent, leave: c.leave, qa: ssAvg(qs), audits: qs.length, qsList: qs, total, rank: rankOf(total), pw: pc.hoursWorked, pe: pc.hoursExp, pqs: qaPrevBy.get(normName(r.Name)) || [] };
     });
 
   /* Roll-up cards: one per supervisor, plus an all-teams card when more than one is shown */
@@ -3747,11 +3934,21 @@ function buildScoreSummary() {
     const att = hrsExp ? hrsWk / hrsExp * 100 : null;
     const qa = ssAvg(list.flatMap(a => a.qsList)), audits = list.reduce((t, a) => t + a.audits, 0);
     const tot = ssAvg(list.map(a => a.total)), nTot = list.filter(a => a.total != null).length;
+    const pe = list.reduce((t, a) => t + a.pe, 0), pw = list.reduce((t, a) => t + a.pw, 0);
+    const patt = pe ? pw / pe * 100 : null, pqa = ssAvg(list.flatMap(a => a.pqs)), pLbl = ssMonShort(pym);
+    const delta = (cur, prev) => {
+      if (cur == null || prev == null) return '';
+      const d = cur - prev;
+      return Math.abs(d) < 0.05 ? ` <small style="font-weight:500;color:var(--muted)" title="Same as ${pLbl}">= ${pLbl}</small>`
+        : ` <small style="font-weight:700;color:${d > 0 ? 'var(--green)' : 'var(--red)'}" title="vs ${pLbl}: ${prev.toFixed(1)}%">${d > 0 ? '▲' : '▼'} ${Math.abs(d).toFixed(1)}</small>`;
+    };
+    const nPart = list.reduce((t, a) => t + a.c.partial, 0), nAbs = list.reduce((t, a) => t + a.c.absent, 0), nLv = list.reduce((t, a) => t + a.c.leave, 0);
     const line = (label, val, band) => `<div class="ss-line"><span>${label}</span><b class="${band.trim().replace('sc-', 'ss-')}">${val}</b></div>`;
     return `<div class="card" style="--c:${color}">
       <h3>${esc(name)}</h3><div class="ss-sub">${sub}</div>
-      ${line('🗓️ Attendance', ssFmt(att), ssAttBand(att))}
-      ${line('✅ QA average', `${ssFmt(qa)} <small style="font-weight:500;color:var(--muted)">(${audits} audits)</small>`, qaBand(qa))}
+      ${line('🗓️ Attendance', ssFmt(att) + delta(att, patt), ssAttBand(att))}
+      <div class="ss-line" title="Days this month: late / left early, called off / NCNS, leave"><span>◐ Late · ✖ Absent · 🌴 Leave</span><span><b style="color:${nPart ? 'var(--orange)' : 'var(--muted)'}">${nPart}</b> · <b style="color:${nAbs ? 'var(--red)' : 'var(--muted)'}">${nAbs}</b> · <b style="color:#0891b2">${nLv}</b></span></div>
+      ${line('✅ QA average', `${ssFmt(qa)}${delta(qa, pqa)} <small style="font-weight:500;color:var(--muted)">(${audits} audits)</small>`, qaBand(qa))}
       ${line('🏆 Stack Ranking avg', `${ssFmt(tot, 1, ' pts')} <small style="font-weight:500;color:var(--muted)">(${nTot} agents)</small>`, ssTotBand(tot))}
     </div>`;
   };
@@ -3762,8 +3959,90 @@ function buildScoreSummary() {
   if (groups.size > 1) cards.unshift(rollup(data, '👥 All teams', '#0d6efd', `${data.length} agents`));
   $('ssCards').innerHTML = data.length ? cards.join('') : '';
 
+  /* Top performers: podium (Stack Ranking total; QA when the month has no totals) + top-5 star panels, same filters as the table */
+  const medals = [['🥇', '#f5b301'], ['🥈', '#94a3b8'], ['🥉', '#cd7f32']];
+  const byTotal = data.some(a => a.total != null);
+  const rankDesc = (rows, key, tie) => rows.slice().sort((a, b) => b[key] - a[key] || (tie ? b[tie] - a[tie] : 0) || a.name.localeCompare(b.name));
+  const top3 = (byTotal ? rankDesc(data.filter(a => a.total != null), 'total') : rankDesc(data.filter(a => a.qa != null), 'qa', 'audits')).slice(0, 3);
+  $('ssTopWrap').hidden = !data.length;
+  $('ssPodium').innerHTML = top3.length ? top3.map((a, n) => `<div class="pod" style="--c:${medals[n][1]}"><div class="medal">${medals[n][0]}</div>
+    <div class="pn">${esc(a.name)}</div><div class="ps">${byTotal ? ssFmt(a.total, 1, ' pts') : ssFmt(a.qa)}</div><small>${esc(a.sup)}</small></div>`).join('')
+    : '<div class="empty" style="--c:#6c757d">No scores for this month yet</div>';
+  $('ssPodiumNote').hidden = byTotal || !top3.length;
+  $('ssPodiumNote').textContent = 'No Stack Ranking total for this month yet, so the top 3 are ranked by QA average.';
+  const star = (title, rows, key, tie, fmt) => {
+    const all = rankDesc(rows, key, tie), shown = all.slice(0, 5), last = shown[shown.length - 1];
+    const tied = last ? all.filter(a => a[key] === last[key]).length - shown.filter(a => a[key] === last[key]).length : 0;
+    return `<div class="panel star"><h3>${title}</h3><ul class="attn stars">` + (shown.length
+      ? shown.map((a, n) => `<li class="r${n + 1}"><span><i class="rk">${medals[n] ? medals[n][0] : (n + 1) + '.'}</i>${esc(a.name)}<small>${esc(a.sup)}</small></span><strong>${fmt(a)}</strong></li>`).join('')
+        + (tied > 0 ? `<li class="more">+${tied} more with the same score</li>` : '')
+      : '<li class="empty" style="--c:#6c757d">No data for this month yet</li>') + '</ul></div>';
+  };
+  $('ssStars').innerHTML =
+    star('⭐ Highest QA', data.filter(a => a.qa != null), 'qa', 'audits', a => ssFmt(a.qa)) +
+    star('📊 Best attendance', data.filter(a => a.att != null).map(a => ({ ...a, hw: a.c.hoursWorked })), 'att', 'hw', a => ssFmt(a.att)) +
+    star('🏆 Highest Stack Ranking total', data.filter(a => a.total != null), 'total', null, a => ssFmt(a.total, 1, ' pts'));
+
+  /* Coaching flags: below the green target on 2+ measures (Attendance 95%, QA 95%, Stack Ranking 85 pts) */
+  data.forEach(a => {
+    a.low = [];
+    if (a.att != null && a.att < 95) a.low.push('Attendance');
+    if (a.qa != null && a.qa < 95) a.low.push('QA');
+    if (a.total != null && a.total < 85) a.low.push('Stack Ranking');
+    a.flagsN = a.low.length;
+    a.flagRed = ((a.att != null && a.att < 91) + (a.qa != null && a.qa < 85) + (a.total != null && a.total < 60)) >= 2;
+  });
+  const medalOf = new Map(top3.map((a, n) => [a.name, medals[n][0]]));
+
+  /* Today's staffing (always the real today, filtered by supervisor) */
+  const todayInfo = bySup.map(r => attendanceFor(r, today, today, idx));
+  const tSched = todayInfo.filter(x => x.kind !== 'off').length, tLeave = todayInfo.filter(x => x.kind === 'leave').length,
+        tAbs = todayInfo.filter(x => x.kind === 'absent').length;
+  $('ssTodayTitle').textContent = `Today's staffing · ${fmtDate(parseYMD(today))}` + (sup === ALL ? '' : ` · ${sup}`);
+  $('ssToday').innerHTML =
+    `<div class="summary-box">👥 Scheduled: <span>${tSched}</span></div><div class="summary-box">✅ Working: <span>${tSched - tLeave - tAbs}</span></div>` +
+    `<div class="summary-box">📋 Leave: <span>${tLeave}</span></div><div class="summary-box">🚫 Absenteeism: <span>${tAbs}</span></div>` +
+    `<div class="summary-box">⚫ OFF: <span>${todayInfo.length - tSched}</span></div>`;
+
+  /* Needs attention: mirror of the star panels */
+  const attn = (title, rows, fmt) => `<div class="panel warn"><h3>${title}</h3><ul class="attn">` + (rows.length
+    ? rows.map(a => `<li><span>${esc(a.name)}<small>${esc(a.sup)}</small></span><strong>${fmt(a)}</strong></li>`).join('')
+    : '<li class="empty" style="--c:#6c757d">Nothing to flag</li>') + '</ul></div>';
+  const lowest = (rows, key) => rows.slice().sort((a, b) => a[key] - b[key] || a.name.localeCompare(b.name)).slice(0, 5);
+  $('ssAttn').innerHTML =
+    attn('⭐ Lowest QA', lowest(data.filter(a => a.qa != null), 'qa'), a => ssFmt(a.qa)) +
+    attn('📊 Lowest attendance', lowest(data.filter(a => a.att != null), 'att'), a => ssFmt(a.att)) +
+    attn('⏰ Most late / left early', data.filter(a => a.partial > 0).sort((a, b) => b.partial - a.partial || a.name.localeCompare(b.name)).slice(0, 5),
+         a => a.partial + ' day' + (a.partial === 1 ? '' : 's'));
+
+  /* Monthly trend: every month of the picked year so far (supervisor filter applies; cached because it covers many months) */
+  const ckey = [estData.length, qaList.length, metricRows.length, loliInfo.rows, ptoList.length, calledOffList.length, attTimeList.length].join('|');
+  if (ssTrendCache.key !== ckey) { ssTrendCache.key = ckey; ssTrendCache.map.clear(); }
+  const lastMo = y === estNow().getFullYear() ? estNow().getMonth() + 1 : 12, pts = [];
+  for (let mo = 1; mo <= lastMo; mo++) {
+    const tym = `${y}-${pad(mo)}`, ck = tym + '|' + sup;
+    if (!ssTrendCache.map.has(ck)) ssTrendCache.map.set(ck, ssMonthPoint(tym, bySup, idx, today));
+    pts.push(ssTrendCache.map.get(ck));
+  }
+  const shownPts = pts.filter(p => p.att != null || p.qa != null || p.total != null);
+  const bars = (key, color, unit) => {
+    const vals = shownPts.map(p => p[key]).filter(v => v != null);
+    if (!vals.length) return '<div class="empty" style="--c:#6c757d">No data yet</div>';
+    const lo = Math.max(0, Math.floor((Math.min(...vals) - 5) / 5) * 5), hi = 100;
+    return '<div class="bars">' + shownPts.map(p => {
+      const v = p[key], h = v == null ? 0 : Math.max(2, (v - lo) / (hi - lo) * 100);
+      return `<div class="bar-col"><div class="bar-val">${v == null ? '—' : v.toFixed(1)}</div>
+        <div class="bar-area"><div class="bar-fill" style="height:${h}%;background:${color};${p.ym === ym ? 'outline:2px solid var(--ink);outline-offset:1px' : ''}"></div></div>
+        <div class="bar-lbl" style="${p.ym === ym ? 'font-weight:800;color:var(--ink)' : ''}">${ssMonShort(p.ym)}</div></div>`;
+    }).join('') + `</div><div class="bar-axis">Scale ${lo} - ${hi}${unit} · outlined bar = month picked</div>`;
+  };
+  $('ssTrend').innerHTML =
+    `<div class="panel"><h3>📊 Attendance %</h3>${bars('att', '#1e88e5', '%')}</div>` +
+    `<div class="panel"><h3>⭐ QA score %</h3>${bars('qa', '#17a2b8', '%')}</div>` +
+    `<div class="panel"><h3>🏆 Avg Stack Ranking total</h3>${bars('total', '#28a745', '')}</div>`;
+
   /* Agent table */
-  const cols = [['name', '👤 Agent'], ['sup', '🧑‍💼 Supervisor'], ['att', '🗓️ Attendance'], ['qa', '✅ QA avg'], ['audits', '📋 Audits'], ['total', '🏆 Stack Ranking total'], ['rank', '# Rank']];
+  const cols = [['name', '👤 Agent'], ['sup', '🧑‍💼 Supervisor'], ['att', '🗓️ Attendance'], ['present', '✔ Present'], ['partial', '◐ Late / Left early'], ['absent', '✖ Called off / NCNS'], ['leave', '🌴 Leave'], ['qa', '✅ QA avg'], ['audits', '📋 Audits'], ['total', '🏆 Stack Ranking total'], ['rank', '# Rank'], ['flagsN', '🚩 Coaching']];
   const arrow = c => ssSort.col === c ? (ssSort.asc ? ' ▲' : ' ▼') : '';
   head.innerHTML = '<tr>' + cols.map(([k, t]) => `<th onclick="ssSortBy('${k}')">${t}${arrow(k)}</th>`).join('') + '</tr>';
 
@@ -3775,14 +4054,20 @@ function buildScoreSummary() {
     if (y == null) return -1;
     return dir * (typeof x === 'string' ? x.localeCompare(y) : x - y) || a.name.localeCompare(b.name);
   });
+  ssExport = { ym, rows: data.slice() };
   body.innerHTML = data.length ? data.map(a => `<tr class="${supClass(a.sup)}" style="${supStyle(a.sup)}">
-    <td>${esc(a.name)}</td><td>${esc(a.sup)}</td>
+    <td>${medalOf.get(a.name) ? medalOf.get(a.name) + ' ' : ''}${esc(a.name)}</td><td>${esc(a.sup)}</td>
     <td class="${ssAttBand(a.att).trim()}" title="Hours worked / hours expected">${ssFmt(a.att)}</td>
+    <td>${a.present || '—'}</td>
+    <td style="${a.partial ? 'color:var(--orange);font-weight:700' : 'color:var(--muted)'}" title="Days late / left early (more than 10 min off the shift)">${a.partial || '—'}</td>
+    <td style="${a.absent ? 'color:var(--red);font-weight:700' : 'color:var(--muted)'}" title="Called off / NCNS days">${a.absent || '—'}</td>
+    <td style="${a.leave ? 'color:#0891b2;font-weight:600' : 'color:var(--muted)'}" title="Leave days (VL, SL, ...)">${a.leave || '—'}</td>
     <td class="${qaBand(a.qa).trim()}" title="${QA_TIP}">${ssFmt(a.qa)}</td>
     <td>${a.audits || '—'}</td>
     <td class="${ssTotBand(a.total).trim()}" title="Green: >=85 pts | Amber: 60-84 pts | Red: <60 pts">${ssFmt(a.total, 1, '')}</td>
-    <td>${a.rank ? `${a.rank} <small style="color:var(--muted)">of ${sorted.length}</small>` : '—'}</td></tr>`).join('')
-    : '<tr><td colspan="7">No agents found</td></tr>';
+    <td>${a.rank ? `${a.rank} <small style="color:var(--muted)">of ${sorted.length}</small>` : '—'}</td>
+    <td title="${a.flagsN ? 'Below target on: ' + a.low.join(', ') : 'On target'}">${a.flagsN >= 2 ? `<span class="flag-chip${a.flagRed ? ' red' : ''}">${a.flagRed ? '● ' : ''}🚩 ${a.low.join(' + ')}</span>` : a.flagsN === 1 ? `<span style="color:var(--muted)">${a.low[0]}</span>` : '<span style="color:var(--muted)">—</span>'}</td></tr>`).join('')
+    : '<tr><td colspan="12">No agents found</td></tr>';
 }
 
 /* =====================================================================
