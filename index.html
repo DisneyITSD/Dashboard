@@ -256,6 +256,23 @@ tr.roster-off td{background:#f1f2f4;color:#666;font-style:italic}
 .cal-num{font-weight:700;font-size:13px}
 .cal-status{font-weight:700}
 .cal-shift,.cal-note{font-size:11px;opacity:.85}
+.cal-note.cal-act{opacity:1;font-weight:600}
+.view-more{margin:16px 0 8px;font-size:13px;color:var(--muted)}
+.view-more>summary{cursor:pointer;font-weight:600;color:var(--navy);user-select:none;width:fit-content}
+.view-more>summary:hover{text-decoration:underline}
+.view-more .view-hint{margin:8px 0 0}
+.view-more .vm-sec{margin:0 0 8px}
+.view-more .vm-list{margin:4px 0 0;padding-left:22px}
+.cal-note.cal-pct{opacity:1;font-weight:700;background:none}
+.cal-note.cal-pct.st-present{color:#2e7d32}
+.cal-note.cal-pct.st-partial{color:#e65100}
+.cal-note.cal-pct.st-absent{color:#c62828}
+.trk-info{margin:0 0 12px;font-size:12.5px;line-height:1.5}
+.trk-info .ti-title{font-weight:700;color:var(--navy);margin:0 0 6px}
+.trk-info .ti-row{display:flex;align-items:center;gap:10px;margin:0 0 5px;flex-wrap:wrap}
+.trk-info .ti-row .trk-chip{min-width:150px;justify-content:flex-start}
+.trk-info .ti-desc{color:var(--muted)}
+.trk-info .ti-sum{display:flex;flex-direction:column;gap:2px;margin:0 0 12px;color:var(--muted)}
 
 /* ---------- Team roster ---------- */
 .team-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:12px;align-items:start}
@@ -935,7 +952,7 @@ html[data-theme=dark] .flag-chip.red{background:#4c1d22;color:#fca5a5}
 
 <!-- ============ MONTHLY ROSTER ============ -->
 <section class="tab-panel" id="rosterTab" hidden>
-  <div class="view-hint">📊 Monthly calendar for one agent at a time (pick the agent above, ‹ › changes the month), built from the weekly roster plus the "Schedule By Date" tab, in EST or PH time.<br>Colours show each day's attendance (same rules as Performance › Attendance tracker) and the strip on top gives the month's attendance %.<br>A purple outline 🔁 marks days changed from the weekly roster; tick Changed only to list agents with changes.<br>Hover a day to see the actual log-in / log-out times.</div>
+  <div class="view-hint">📊 Monthly calendar for one agent at a time (pick the agent above, ‹ › changes the month), in EST or PH time.<br>Each day shows the shift, the status and the actual log-in / log-out. A purple outline 🔁 marks days changed from the weekly roster; tick Changed only to list agents with changes.</div>
   <div class="controls">
     <button type="button" onclick="shiftRosterMonth(-1)" title="Previous month">‹</button>
     <input type="month" id="rosterMonth" onchange="buildRosterView()">
@@ -967,6 +984,21 @@ html[data-theme=dark] .flag-chip.red{background:#4c1d22;color:#fca5a5}
       </tr></thead><tbody></tbody></table>
     </div>
   </div>
+  <details class="view-more"><summary>ℹ️ How attendance is calculated</summary>
+    <div class="view-hint">
+      <div class="vm-sec"><b>📊 Attendance Information</b></div>
+      <div class="vm-sec">⏰ Actual log-in / log-out times are sourced from the CXOne (Agent Time Card) report. Entries submitted through the Late/Early Time Form take priority, and approved disputes override previous records.</div>
+      <div class="vm-sec">📈 Attendance % = Hours Worked ÷ Hours Expected, using the same logic as the Performance → Attendance Tracker.
+        <ul class="vm-list">
+          <li>Hours Worked = the lower of (Shift Length − Late Minutes − Early Leave Minutes) and the total logged-in hours</li>
+          <li>Only time between the scheduled shift start and end counts; time logged before the start or after the end is not counted</li>
+          <li>Every minute late or left early reduces the hours; the 10-minute grace period only decides the Late / Left Early / Short Hours tag</li>
+          <li>Logged-out time during the shift of more than 10 minutes is tagged Short Hours</li>
+          <li>Called Off and NCNS count as expected hours with 0 hours worked</li>
+        </ul></div>
+      <div class="vm-sec">💡 Calendar colors indicate attendance status (Present, Late/Left Early, Called Off/NCNS, Leave, OFF, and Upcoming).</div>
+    </div>
+  </details>
 </section>
 
 <!-- ============ TEAM ROSTER (agents per supervisor) ============ -->
@@ -1047,7 +1079,7 @@ html[data-theme=dark] .flag-chip.red{background:#4c1d22;color:#fca5a5}
 
 <!-- ============ SCORECARD: SUMMARY ============ -->
 <section class="tab-panel" id="scoreSumTab" hidden>
-  <div class="view-hint">📋 One-page scorecard for the month: Attendance %, Quality Assurance average and Performance Stack Ranking total.<br>It shows today's staffing, top performers, who needs attention, the monthly trend, and every agent in the table at the bottom (click a column title to sort; 🚩 marks agents below target on 2+ measures).<br>Download CSV exports every agent with the full day counts (present, late / left early, called off, leave).</div>
+  <div class="view-hint">📋 One-page scorecard for the month: Attendance %, Quality Assurance average and Performance Stack Ranking total.<br>It shows today's staffing, top performers, who needs attention, the monthly trend and every agent in the table at the bottom.</div>
   <div class="controls">
     <button type="button" onclick="shiftScoreSumMonth(-1)" title="Previous month">‹</button>
     <input type="month" id="ssMonth" onchange="buildScoreSummary()">
@@ -1080,11 +1112,14 @@ html[data-theme=dark] .flag-chip.red{background:#4c1d22;color:#fca5a5}
       <table id="ssTable" class="nosort"><thead></thead><tbody></tbody></table>
     </div>
   </div>
+  <details class="view-more"><summary>ℹ️ About the table and export</summary>
+    <div class="view-hint">Click a column title to sort; 🚩 marks agents below target on 2+ measures.<br>Download CSV exports every agent with the full day counts (present, late / left early, called off, leave).</div>
+  </details>
 </section>
 
 <!-- ============ SCORECARD: ATTENDANCE ============ -->
 <section class="tab-panel" id="trackerTab" hidden>
-  <div class="view-hint">🗓️ Per-agent attendance for the month, scored as hours worked ÷ hours expected (leave, OFF and upcoming days are left out).<br>Actual log-in / log-out times come from the LOLI Actual sheet; a time submitted through the Late / early time form takes priority and an approved dispute replaces it.<br>Hover a day to see the shift and the times.<br>The Shift column shows each agent's usual shift in EST (🔁 = it changes during the month; hover for the breakdown).<br>The legend below explains each status, and the Team total row adds up the agents shown.<br>Click % to sort; Download CSV exports the grid.</div>
+  <div class="view-hint">🗓️ Per-agent attendance for the month, scored as hours worked ÷ hours expected.<br>Hover a day to see the shift and the log-in / log-out times. Click % to sort; Download CSV exports the grid.</div>
   <div class="controls">
     <button type="button" onclick="shiftTrackerMonth(-1)" title="Previous month">‹</button>
     <input type="month" id="trackerMonth" onchange="buildTracker()">
@@ -1093,13 +1128,26 @@ html[data-theme=dark] .flag-chip.red{background:#4c1d22;color:#fca5a5}
     <input type="text" id="trackerSearch" placeholder="🔍 Search Agent..." onkeyup="buildTracker()">
     <button type="button" class="blue" id="trackerDownloadBtn" onclick="downloadTracker()">⬇ Download CSV</button>
   </div>
-  <div class="trk-legend" id="trackerLegend"></div>
+  <div class="trk-info" id="trackerLegend"></div>
   <div id="trackerBody"></div>
+  <details class="view-more"><summary>ℹ️ How attendance is calculated</summary>
+    <div class="view-hint">
+      <div class="vm-sec"><b>📊 Attendance Information</b></div>
+      <div class="vm-sec">⏰ Actual log-in / log-out times are sourced from the LOLI Actual sheet. 📝 Late/Early Time Form submissions take priority, and ✅ approved disputes override previous records.</div>
+      <div class="vm-sec">📈 Attendance % = Hours Worked ÷ Hours Expected, using the same rules as the Performance → Attendance Tracker.</div>
+      <div class="vm-sec">⏱️ Hours Worked = the lower of (Shift Length − Minutes Late − Minutes Left Early) and the total logged-in hours.</div>
+      <div class="vm-sec">🕒 Only time between the scheduled shift start and end counts. Every minute late or left early reduces the hours; the 10-minute grace period only decides the Late / Left Early / Short Hours tag.</div>
+      <div class="vm-sec">🚫 Leave, OFF, and Upcoming days are excluded from the Attendance % calculation.</div>
+      <div class="vm-sec">❌ Called Off and NCNS count as expected hours with 0 hours worked.</div>
+      <div class="vm-sec">📅 Calendar colors indicate each day's attendance status.</div>
+      <div class="vm-sec">💡 Hover over a day to view the scheduled shift and actual log-in/log-out details.</div>
+    </div>
+  </details>
 </section>
 
 <!-- ============ SCORECARD: QUALITY ASSURANCE ============ -->
 <section class="tab-panel" id="qaTab" hidden>
-  <div class="view-hint">✅ Quality Assurance scores by analyst, ranked by average score.<br>Tick one or more months (or Year to date).<br>Click an agent (▸) to open their audits; with several months ticked, open a month to see its audits.<br>Click a column title to sort.</div>
+  <div class="view-hint">✅ Quality Assurance scores by analyst, ranked by average score.<br>Tick one or more months (or Year to date); click an agent (▸) to open their audits.</div>
   <div class="controls">
     <div class="msel" id="qaMonthWrap">
       <button type="button" id="qaMonthBtn" class="msel-btn">Month ▾</button>
@@ -1125,11 +1173,14 @@ html[data-theme=dark] .flag-chip.red{background:#4c1d22;color:#fca5a5}
       </table>
     </div>
   </div>
+  <details class="view-more"><summary>ℹ️ More about this table</summary>
+    <div class="view-hint">With several months ticked, open a month to see its audits.<br>Click a column title to sort.</div>
+  </details>
 </section>
 
 <!-- ============ SCORECARD: OVERALL METRIC ============ -->
 <section class="tab-panel" id="metricTab" hidden>
-  <div class="view-hint">📊 Performance stack ranking per agent.<br>Tick one or more months (or Year to date): each agent then shows one row with their average, ranked by it.<br>Click an agent (▸) to open their monthly scores.<br>Click a column title to sort.</div>
+  <div class="view-hint">📊 Performance stack ranking per agent.<br>Tick one or more months (or Year to date); click an agent (▸) to open their monthly scores.</div>
   <div class="controls">
     <div class="msel" id="metricMonthWrap">
       <button type="button" id="metricMonthBtn" class="msel-btn">Month ▾</button>
@@ -1151,11 +1202,14 @@ html[data-theme=dark] .flag-chip.red{background:#4c1d22;color:#fca5a5}
       <table id="metricTable"><thead></thead><tbody></tbody></table>
     </div>
   </div>
+  <details class="view-more"><summary>ℹ️ More about this table</summary>
+    <div class="view-hint">Each agent shows one row with their average, ranked by it.<br>Click a column title to sort.</div>
+  </details>
 </section>
 
 <!-- ============ SCORECARD: METRIC SCORECARD (actual scores) ============ -->
 <section class="tab-panel" id="mcsTab" hidden>
-  <div class="view-hint">📈 Actual scores per agent.<br>Tick one or more months (or Year to date); in the Total row, counts are added up and rates and times are averaged.<br>With several months ticked, each agent shows one row with the Total; click an agent (▸) to open their monthly scores.<br>With one month ticked, click a column title to sort.</div>
+  <div class="view-hint">📈 Actual scores per agent.<br>Tick one or more months (or Year to date); click an agent (▸) to open their monthly scores.</div>
   <div class="note red" id="mcsNote" hidden></div>
   <div class="controls">
     <div class="msel" id="mcsMonthWrap">
@@ -1175,6 +1229,9 @@ html[data-theme=dark] .flag-chip.red{background:#4c1d22;color:#fca5a5}
       <table id="mcsTable"><thead></thead><tbody></tbody></table>
     </div>
   </div>
+  <details class="view-more"><summary>ℹ️ More about this table</summary>
+    <div class="view-hint">In the Total row, counts are added up and rates and times are averaged.<br>With several months ticked, each agent shows one row with the Total. With one month ticked, click a column title to sort.</div>
+  </details>
 </section>
 
 <!-- ============ MISSING AGENT CHECKER ============ -->
@@ -2287,6 +2344,19 @@ function rosterPick(name) {
   buildRosterView();
 }
 
+/* Actual log-in / log-out printed in the calendar cell (EST, or converted to PH time when the PH view is on) */
+function calActualHtml(a, c, ph) {
+  if (a.autoNcns) return '<div class="cal-note cal-act">❌ No log-in / log-out (NCNS)</div>';
+  if (!a.inTime && !a.outTime) return '';
+  const date = c.estDate || c.date;
+  const inM = parseClock(a.inTime), outM = parseClock(a.outTime);
+  const show = (txt, m, off) => !txt ? '—' : ph && m != null ? phTime(date, m + off) : txt;
+  const outOff = inM != null && outM != null && outM < inM ? 1440 : 0;      // overnight shift: log-out is the next day
+  const zone = ph ? 'PH' : 'EST';
+  return `<div class="cal-note cal-act">🟢 In: ${esc(show(a.inTime, inM, 0))}${a.inDisputed ? ' (disputed)' : ''}</div>`
+       + `<div class="cal-note cal-act">🔴 Out: ${esc(show(a.outTime, outM, outOff))}${a.outDisputed ? ' (disputed)' : ''}${a.outTime ? ' ' + zone : ''}</div>`;
+}
+
 function rosterCalendarHtml({ r, cells, est }, today, ph) {
   const lead = (parseYMD(cells[0].date).getDay() + 6) % 7;
   const dows = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'].map(d => `<div class="cal-dow">${d}</div>`).join('');
@@ -2302,7 +2372,8 @@ function rosterCalendarHtml({ r, cells, est }, today, ph) {
       <div class="cal-status">${c.shiftChg ? '🔁 ' : ''}${time}</div>
       ${a.kind === 'off' ? '' : `<div class="cal-status" style="font-size:11px">${a.icon} ${esc(a.text)}</div>`}
       ${a.missed ? `<div class="cal-note">${esc(missedText(a))}</div>` : ''}
-      ${a.loggedHrs != null ? `<div class="cal-note">⏱ ${fmtHrs(a.loggedHrs)} hrs logged</div>` : ''}
+      ${calActualHtml(a, c, ph)}
+      ${a.loggedHrs != null ? `<div class="cal-note">⏱ ${fmtHrs(a.loggedHrs)} hrs logged${a.gapMin ? ` · ${fmtHrs(a.gapMin / 60)} logged out` : ''}</div>` : ''}${dayPctHtml(a)}
       ${c.shiftChg ? `<div class="cal-note">Was ${isOff(c.base) ? 'OFF' : convertShiftRange(c.base)}</div>` : ''}
       ${c.supChg ? `<div class="cal-note">Supervisor: ${esc(c.sup)}</div>` : ''}</div>`;
   }).join('');
@@ -3537,7 +3608,7 @@ const TRACKER_STATUS = {
 };
 const TRACKER_LEGEND = [
   ['present', '✔ Present (shift finished; stays Present until the LOLI Actual sheet is updated for that date)'], ['upcoming', '○ Upcoming (shift not finished yet)'],
-  ['partial', `◐ Late / Left early (actual login / logout from LOLI Actual, more than ${LOLI_GRACE_MIN} min off the shift; * = estimated half shift)`],
+  ['partial', `◐ Late / Left early (actual login / logout from LOLI Actual, more than ${LOLI_GRACE_MIN} min off the shift or logged-in hours short; * = estimated half shift)`],
   ['absent', '✖ Called off / NCNS (NCNS is tagged automatically from Nov 1, 2026 on, and only when LOLI Actual has data for a later date but nothing for that day)'], ['leave', '🌴 Leave (VL, SL, ...)'], ['off', '– OFF']
 ];
 
@@ -3603,10 +3674,12 @@ function attendanceFor(r, date, today, idx) {
 
   /* Actual log-in / log-out from the LOLI Actual tab (a supervisor-submitted time entry still takes priority) */
   const p0 = parseShift(x.shift);
-  const eligible = !x.inTime && !x.outTime && p0 && ['present', 'upcoming', 'partial'].includes(x.kind);
+  /* A submitted time entry only needs the LOLI Actual sheet when it is missing a log-in or a log-out: the missing side is filled from the sheet */
+  const eligible = !(x.inTime && x.outTime) && p0 && ['present', 'upcoming', 'partial'].includes(x.kind);
   const loli = eligible ? loliFor(r, date, x.shift) : null;
   const dsp = eligible ? disputeIdx.get(normName(r.Name) + '|' + date) : null;    // supervisor dispute replaces the actual time
-  const act = loli || dsp ? { login: dsp?.login ?? loli?.login ?? null, logout: dsp?.logout ?? loli?.logout ?? null } : null;
+  const formIn = x.inTime ? parseClock(x.inTime) : null, formOut = x.outTime ? parseClock(x.outTime) : null;
+  const act = loli || dsp ? { login: dsp?.login ?? formIn ?? loli?.login ?? null, logout: dsp?.logout ?? formOut ?? loli?.logout ?? null } : null;
   if (act) {
     const ended = shiftEnded(x.shift, date, today);
     /* Without a dispute, the sheet's own Minutes Late / Minutes Early are used; otherwise they are worked out from the times */
@@ -3622,14 +3695,30 @@ function attendanceFor(r, date, today, idx) {
     x.inTime = loliClock(act.login);
     x.outTime = ended || dsp?.logout != null ? loliClock(act.logout) : '';
     x.missed = lateC + earlyC;
-    if (ended && sheet) {                                               // Total Logged-in Hours from the LOLI Actual tab
-      const lg = sheet.hours != null ? sheet.hours : sheet.short != null ? exp - sheet.short : null;
-      if (lg != null) x.loggedHrs = Math.max(0, Math.min(exp, lg));
+    /* Hours worked: only time inside the scheduled shift counts (every minute late / left early is deducted; the grace period only decides the tag)
+       and never more than the hours actually logged in (LOLI Actual total, minus any time logged before the shift start or after its end) */
+    let gapC = 0;
+    if (ended) {
+      const win = Math.max(0, exp - (late + early) / 60);
+      let lg = win;
+      const sh = sheet ? (sheet.hours != null ? sheet.hours : sheet.short != null ? exp - sheet.short : null) : null;
+      if (sh != null) {
+        const outside = (act.login != null ? Math.max(0, clockDiff(p0[0], act.login)) : 0) + (act.logout != null ? Math.max(0, clockDiff(act.logout, p0[1])) : 0);
+        lg = Math.max(0, Math.min(win, sh - outside / 60));
+        /* The sheet counts seconds but the log-in / log-out are read in whole minutes: a difference of 2 minutes or less is rounding, not time logged out */
+        if ((win - lg) * 60 <= 2) lg = win;
+        const gap = Math.round((win - lg) * 60);
+        gapC = gap > LOLI_GRACE_MIN ? gap : 0;            // logged out during the shift for more than the grace period
+      }
+      x.loggedHrs = lg;
+      x.gapMin = gapC;
     }
-    if (lateC || earlyC) {
-      const code = lateC && earlyC ? 'L/LE' : lateC ? 'LATE' : 'LE';
-      Object.assign(x, { kind: 'partial', text: lateC && earlyC ? 'Late / Left early' : lateC ? 'Late' : 'Left early', code, icon: TRACKER_STATUS.partial.icon,
-        reason: [lateC ? `Late ${lateC} min` : '', earlyC ? `Left early ${earlyC} min` : ''].filter(Boolean).join(' + ') });
+    if (lateC || earlyC || gapC) {
+      const code = lateC && earlyC ? 'L/LE' : lateC ? 'LATE' : earlyC ? 'LE' : 'SH';
+      const text = lateC && earlyC ? 'Late / Left early' : lateC ? 'Late' : earlyC ? 'Left early' : 'Short hours';
+      x.missed = lateC + earlyC + gapC;
+      Object.assign(x, { kind: 'partial', text, code, icon: TRACKER_STATUS.partial.icon,
+        reason: [lateC ? `Late ${lateC} min` : '', earlyC ? `Left early ${earlyC} min` : '', gapC ? `Logged out ${gapC} min during shift` : ''].filter(Boolean).join(' + ') });
     } else if (dsp && x.kind === 'partial') {
       /* A dispute cleared the lateness: count the day as present */
       const t = TRACKER_STATUS[ended ? 'present' : 'upcoming'];
@@ -3681,7 +3770,15 @@ const missedText = x => x.missed ? `${x.missed} min missed${x.estimated ? ' (est
 
 /* Hover text: only the actual log-in / log-out times (empty when there is no LOLI data for the day) */
 const fmtHrs = h => { const m = Math.round(h * 60); return Math.floor(m / 60) + ':' + String(m % 60).padStart(2, '0'); };
-const actualTip = x => x.autoNcns ? 'NCNS - no log-in / log-out in LOLI Actual' : x.inTime || x.outTime ? `Log-in Time: ${x.inTime || '—'}${x.inDisputed ? ' (disputed)' : ''}\nLog-out Time: ${x.outTime || '—'}${x.outDisputed ? ' (disputed)' : ''}${x.loggedHrs != null ? `\nTotal logged-in: ${fmtHrs(x.loggedHrs)} hrs` : ''}` : '';
+const actualTip = x => x.autoNcns ? 'NCNS - no log-in / log-out in LOLI Actual' : x.inTime || x.outTime ? `Log-in Time: ${x.inTime || '—'}${x.inDisputed ? ' (disputed)' : ''}\nLog-out Time: ${x.outTime || '—'}${x.outDisputed ? ' (disputed)' : ''}${x.loggedHrs != null ? `\nHours logged in the shift: ${fmtHrs(x.loggedHrs)} hrs` : ''}${x.gapMin ? `\nLogged out during shift: ${fmtHrs(x.gapMin / 60)} hrs` : ''}` : '';
+
+/* Daily attendance % shown in the calendar cells: hours worked ÷ hours expected for that day (leave, OFF and upcoming days have none) */
+const dayPctHtml = x => {
+  if (!x || !(x.exp > 0)) return '';
+  const pct = Math.min(100, (x.worked / x.exp) * 100);
+  const band = pct >= 95 ? 'st-present' : pct >= 91 ? 'st-partial' : 'st-absent';
+  return `<div class="cal-note cal-pct ${band}" title="Hours worked ÷ hours expected for this day">📊 ${x.estimated ? '~' : ''}${pct.toFixed(1)}% attendance</div>`;
+};
 
 const trackerTip = x => [x.shift && !isOff(x.shift) ? `Shift: ${convertShiftRange(x.shift)} EST` : '', actualTip(x)].filter(Boolean).join('\n');
 
@@ -3766,9 +3863,23 @@ function trackerGridHtml(rows, monthOf, days, today) {
 function buildTracker() {
   const body = $('trackerBody');
   const rosterN = estData.filter(r => loliIdx.has(normName(r.Name))).length;
-  $('trackerLegend').innerHTML = TRACKER_LEGEND.map(([k, t]) => `<span class="trk-chip st-${k}">${t}</span>`).join('') +
-    `<span class="trk-chip" title="Log-in / log-out rows read from the LOLI Actual tab">🕘 LOLI Actual: ${loliInfo.rows} rows · ${rosterN} of ${estData.length} agents matched${loliInfo.lastDate ? ' · updated through ' + loliInfo.lastDate : ''}</span>` +
-    (DISPUTE_GID ? `<span class="trk-chip" title="Log-in / log-out disputes from the dispute form">📝 Disputes: ${disputeInfo.rows} applied${DISPUTE_NEEDS_APPROVAL ? ` · ${disputeInfo.pending} pending approval` : ''}</span>` : '');
+  const fmtLong = d => parseYMD(d).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+  const LEG = [
+    ['present', 'Present', 'Shift completed and attendance recorded'],
+    ['upcoming', 'Upcoming', 'Scheduled shift has not been completed yet'],
+    ['partial', 'Late / Left Early', `Log-in/log-out is more than ${LOLI_GRACE_MIN} minutes outside the scheduled shift, or logged-in hours are more than ${LOLI_GRACE_MIN} minutes short of it (* indicates an estimated half shift)`],
+    ['absent', 'Called Off / NCNS', 'Scheduled shift not worked (NCNS is automatically tagged when later LOLI Actual data exists but no attendance is recorded for the scheduled day)'],
+    ['leave', 'Leave', 'Approved leave (VL)'],
+    ['off', 'OFF', 'Scheduled day off']
+  ];
+  $('trackerLegend').innerHTML =
+    '<div class="ti-title">🎨 Attendance Status Legend</div>' +
+    LEG.map(([k, label, desc]) => `<div class="ti-row"><span class="trk-chip st-${k}">${TRACKER_STATUS[k].icon} ${label}</span><span class="ti-desc">${esc(desc)}</span></div>`).join('') +
+    '<div class="ti-title" style="margin-top:12px">📋 Data Summary</div>' +
+    `<div class="ti-sum"><span title="Log-in / log-out rows read from the LOLI Actual tab">🕘 LOLI Actual: ${loliInfo.rows} records</span>` +
+    `<span>${rosterN} of ${estData.length} agents matched</span>` +
+    (loliInfo.lastDate ? `<span>Updated through ${fmtLong(loliInfo.lastDate)}</span>` : '') + '</div>' +
+    (DISPUTE_GID ? `<div class="ti-sum"><span title="Log-in / log-out disputes from the dispute form">📝 Disputes: ${disputeInfo.rows} applied${DISPUTE_NEEDS_APPROVAL ? ` • ${disputeInfo.pending} pending approval` : ''}</span></div>` : '');
 
   const ym = $('trackerMonth').value;
   if (!ym || !estData.length) {
@@ -3832,7 +3943,7 @@ function downloadTracker() {
                trackerPct(c), c.hoursWorked.toFixed(1), c.hoursExp.toFixed(1)]);
   }
   rows.push([]);
-  rows.push(['P = Present, U = Upcoming, LATE / LE = Late / Left early (* = estimated half shift), NCNS / CO = Called off, VL / SL / ML / BRV = Leave, OFF = Off']);
+  rows.push(['P = Present, U = Upcoming, LATE / LE / SH = Late / Left early / Short hours (* = estimated half shift), NCNS / CO = Called off, VL / SL / ML / BRV = Leave, OFF = Off']);
 
   const filename = `attendance-tracker-${ym}.csv`;
   const csv = '\uFEFF' + rows.map(r => r.map(csvCell).join(',')).join('\r\n');   // BOM keeps Excel happy with UTF-8
