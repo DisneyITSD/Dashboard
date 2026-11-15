@@ -531,6 +531,7 @@ select:focus,input:focus{outline:0;border-color:var(--blue);box-shadow:0 0 0 3px
 .stats .card:hover{transform:none;box-shadow:none;background:#fafbfc}
 .stats .card.alert{background:#fff7f7;animation:none}.stats .card.warn{background:#fffcf5}
 .sum-cards.stats{grid-template-columns:repeat(4,minmax(0,1fr))}
+.sum-cards.stats.five{grid-template-columns:repeat(5,minmax(0,1fr))}
 .sum-cards .card{border-bottom:1px solid var(--line)}.sum-cards .card .pct{color:var(--muted);font-weight:500}
 .sum-cards .card .value{color:var(--c)}
 .card{padding:16px 18px;text-align:left;background:var(--surface);border:1px solid var(--line);border-top:3px solid var(--c,var(--blue));border-radius:12px;box-shadow:none}
@@ -573,7 +574,7 @@ td.sc-good::before,td.sc-mid::before,td.sc-low::before{content:"";display:inline
 #metricTable tr.grp-head td:first-child,#mcsTable tr.grp-head td:first-child,#qaTable tr.grp-head td:first-child{background:#f3f6fd}
 .trk-chip{font-weight:600}
 
-@media(max-width:1100px){.sum-cards.stats{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:1100px){.sum-cards.stats,.sum-cards.stats.five{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media(max-width:900px){
   .side{position:fixed;left:0;top:0;transform:translateX(-100%);transition:transform .22s ease;box-shadow:0 0 40px rgba(0,0,0,.3)}
   body.nav-open .side{transform:none}
@@ -4171,20 +4172,32 @@ function buildAgentSummary() {
   /* Cards: attendance and QA over all the ticked months, points averaged, call / ticket counts added up */
   const me = sumRoll(a, selYm);
   const f1 = v => v == null ? '—' : v.toFixed(1), pc = v => v == null ? '—' : v.toFixed(1) + '%';
-  const card = (title, val, band, sub, tip) => `<div class="card" style="--c:${BAND_COL[band] || '#6c757d'};cursor:default" ${tip ? `title="${esc(tip)}"` : ''}><h3>${title}</h3><div class="value">${val}</div><div class="pct">${sub}</div></div>`;
+  const cardC = (title, val, color, sub, tip) => `<div class="card" style="--c:${color};cursor:default" ${tip ? `title="${esc(tip)}"` : ''}><h3>${title}</h3><div class="value">${val}</div><div class="pct">${sub}</div></div>`;
+  const bc = b => BAND_COL[b] || '#1e88e5';
+  /* Same eight cards, same order and same look as the Summary tab */
+  const scCard = (name, label, blue) => {
+    const i = (scoreAll.find(x => x.name === name) || { i: -1 }).i;
+    const tip = 'Overall Metric Scorecard - ' + name + (multi ? (mcsIsSum(i >= 0 ? mcsHeads[i] : name) ? ' (added up over the ticked months)' : ' (average of the ticked months)') : '');
+    if (i < 0) return cardC(label, '—', '#1e88e5', 'Overall Metric Scorecard', 'No column named "' + name + '" was found in the Overall Metric Scorecard tab');
+    const v = myRow ? myRow[i] : '', nd = !v || /no data/i.test(v);
+    if (nd) return cardC(label, '—', '#1e88e5', 'Overall Metric Scorecard', tip);
+    const num = metricVal(v);
+    const shown = blue && typeof num === 'number' ? num.toLocaleString() : esc(v);
+    return cardC(label, shown, blue ? '#1e88e5' : bc(mcsBand(mcsHeads[i], v)), 'Overall Metric Scorecard', tip);
+  };
   const totals = D.agents.map(x => sumRoll(x, selYm).total).filter(v => v != null).sort((p, q) => q - p);
   const rank = me.total != null ? totals.findIndex(v => v <= me.total) + 1 : null;
-  const cards = [
-    card('📅 Attendance', pc(me.pct), bandOf('att', me.pct), `${me.w.toFixed(1)} / ${me.e.toFixed(1)} hrs`, 'Hours worked ÷ hours expected (green 95%+, amber 91-94.9%, red below 91%)'),
-    card('✅ QA audits', pc(me.qa), bandOf('qa', me.qa), `${me.qn} audit${me.qn === 1 ? '' : 's'}`, 'Average QA score of all the audits in the period (green 95%+, amber 85-94.9%)'),
-    card('🏆 Total points', f1(me.total), bandOf('total', me.total), `${rank ? `Rank ${rank} of ${totals.length}` : ''}`, 'Performance Stack Ranking total, averaged over the months (green 85+, amber 60-84)'),
-    card('🎯 FCR points', f1(me.fcr), bandOf('fcr', me.fcr), '', 'First Contact Resolution points (green 10, amber 6-8)')
-  ].join('') + scoreAll.map(({ name, i }) => {
-    const cd = AGSUM_CARDS[name] || { label: '📊 ' + name };
-    if (i < 0) return card(cd.label, '—', '', 'not found in the scorecard sheet', 'No column named "' + name + '" was found in the Overall Metric Scorecard tab');
-    const v = myRow ? myRow[i] : '', nd = !v || /no data/i.test(v);
-    return card(cd.label, nd ? '—' : esc(v), nd ? '' : mcsBand(mcsHeads[i], v), '', mcsIsSum(mcsHeads[i]) && multi ? 'Added up over the months' : 'Overall Metric Scorecard - ' + name + (multi ? ' (average of the ticked months)' : ''));
-  }).join('');
+  const cards =
+    cardC('📅 Attendance', pc(me.pct), bc(bandOf('att', me.pct)), `${me.w.toFixed(1)} / ${me.e.toFixed(1)} hrs`, 'Hours worked ÷ hours expected (green 95%+, amber 91-94.9%, red below 91%)') +
+    cardC('✅ QA audits', pc(me.qa), bc(bandOf('qa', me.qa)), `${me.qn} audit${me.qn === 1 ? '' : 's'}`, 'Average QA score of all the audits in the period (green 95%+, amber 85-94.9%)') +
+    cardC('🏆 Stack rank', rank ? '#' + rank : '—', bc(bandOf('total', me.total)), me.total != null ? `${me.total.toFixed(1)} pts · of ${totals.length} agents` : 'No stack ranking data', 'Performance Stack Ranking position by total points, averaged over the months (green 85+, amber 60-84)') +
+    scCard('Working Rate', '💼 Working rate') +
+    scCard('Compliance', '📋 Compliance') +
+    scCard('Misroutes', '🔀 Misroutes') +
+    scCard('FCR Count (First Contact Resolution)', '🎯 FCR count') +
+    scCard('AHT', '⏱ AHT') +
+    scCard('Calls Handled', '📞 Calls handled', true) +
+    scCard('Tickets Opened', '🎫 Tickets opened', true);
 
   /* Overall Metric Scorecard: the same table as Performance > Metric Scorecard (the agent's month rows and a Total row for several months) */
   const sCell = (v, i) => { if (/no data/i.test(v || '')) return '<td class="nodata">No Data</td>'; const b = mcsBand(mcsHeads[i], v); return `<td${b ? ` class="kc-${b}"` : ''}>${esc(v) || '—'}</td>`; };
@@ -4214,7 +4227,7 @@ function buildAgentSummary() {
 
   box.innerHTML = `
     <div class="trk-head"><div class="trk-title">${esc(a.name)} <small>· ${esc(a.sup)} · ${esc(periodLabel)}</small></div></div>
-    <div class="stats sum-cards" style="margin-bottom:16px">${cards}</div>
+    <div class="stats sum-cards five" style="margin-bottom:16px">${cards}</div>
     <h3 class="sum-h">Overall Metric Scorecard</h3>
     <div class="panel"><div class="schedule-container">${scores}</div></div>
     <h3 class="sum-h" style="margin-top:16px">Performance stack ranking</h3>
