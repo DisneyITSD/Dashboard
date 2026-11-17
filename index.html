@@ -55,10 +55,6 @@ select:disabled,input:disabled{background:#f1f3f5;color:var(--gray);cursor:not-a
 a.tab-btn{display:inline-block;padding:8px 12px;border-radius:8px;text-decoration:none;cursor:pointer;font:inherit}
 .tab-btn:hover,.tab-btn.active{background:rgba(255,255,255,.14);transform:none;box-shadow:none;opacity:1}
 .dropdown{position:relative;display:inline-block}
-.dropdown-content{display:none;position:absolute;top:100%;left:0;min-width:220px;background:#fff;box-shadow:0 6px 15px rgba(0,0,0,.15);border-radius:10px;z-index:999;overflow:hidden}
-.dropdown.open .dropdown-content{display:block}
-.dropdown-content a{display:block;padding:12px 15px;text-decoration:none;color:var(--navy);font-weight:600}
-.dropdown-content a:hover{background:#eef6ff}
 .live{display:flex;align-items:center;gap:10px;font-size:12px}
 #liveClock{display:inline-block;background:none;color:#fff;border:1px solid rgba(255,255,255,.4);border-radius:999px;padding:5px 14px;font-size:12px;font-weight:500;line-height:1.35;white-space:nowrap;text-align:left;cursor:default;user-select:none}
 #lastUpdated{color:#b9c7da!important}
@@ -168,9 +164,6 @@ tr.roster-off td{background:#f1f2f4;color:#666;font-style:italic}
 .us{color:var(--navy);font-weight:bold}
 .ph{color:#14532d;font-weight:bold}
 #scheduleTable td:nth-child(2){font-weight:700}
-#rosterTable td.today-col{background:#fff8d6!important}
-#rosterTable th.today-col{background:#fff3cd;color:#8a6100}
-#rosterTable th.today-col::before{content:'\25CF '}
 #qaTable td.qa-score{font-weight:700;white-space:nowrap}
 #qaTable th:not(:first-child),#qaTable td:not(:first-child){text-align:center}
 #qaTable td.sc-good{background:#e8f5e9;color:#2e7d32}
@@ -258,7 +251,7 @@ tr.roster-off td{background:#f1f2f4;color:#666;font-style:italic}
 .cal-day.is-today{box-shadow:0 0 0 2px var(--blue)}
 .cal-num{font-weight:700;font-size:13px}
 .cal-status{font-weight:700}
-.cal-shift,.cal-note{font-size:11px;opacity:.85}
+.cal-note{font-size:11px;opacity:.85}
 .cal-note.cal-act{opacity:1;font-weight:600}
 .view-more{margin:16px 0 8px;font-size:13px;color:var(--muted)}
 .view-more>summary{cursor:pointer;font-weight:600;color:var(--navy);user-select:none;width:fit-content}
@@ -373,7 +366,6 @@ tr.grp-head:hover{filter:brightness(.97)}
 @media(max-width:768px){
   .daily-summary{flex-direction:column}
   .cal-day{min-height:70px;padding:4px}
-  .cal-shift{display:none}
 }
 @media(max-width:560px){
   .panels{grid-template-columns:1fr}
@@ -826,6 +818,28 @@ html[data-theme=dark] #dataUpdateNote .du-item{background:rgba(255,255,255,.05);
 html[data-theme=dark] #dataUpdateNote .du-name{color:#cfdcff}
 @media (prefers-reduced-motion:reduce){#dataUpdateNote{animation:none}}
 @media (max-width:600px){#dataUpdateNote{padding:10px 12px;gap:10px}#dataUpdateNote .du-ic{width:32px;height:32px}}
+#refreshBtn.spinning{cursor:progress;opacity:.85;animation:rfSpin .8s linear infinite}
+#refreshBtn:disabled{cursor:progress}
+@keyframes rfSpin{to{transform:rotate(360deg)}}
+@media (prefers-reduced-motion:reduce){#refreshBtn.spinning{animation:none}}
+/* KPI targets (Summary page) - plain text style */
+.kpi-card{margin:0 0 14px;border:1px solid var(--line);border-radius:12px;background:var(--surface)}
+.kpi-head{list-style:none;cursor:pointer;display:flex;align-items:center;justify-content:space-between;gap:10px;padding:11px 16px;font-weight:700;font-size:14.5px;color:var(--ink)}
+.kpi-head::-webkit-details-marker{display:none}
+.kpi-chev{color:var(--muted);display:inline-flex;align-items:center;gap:6px;font-size:12.5px;font-weight:600;white-space:nowrap}
+.kpi-chev::before{content:"Hide"}
+.kpi-chev::after{content:"▾";display:inline-block;font-size:14px;transition:transform .2s}
+.kpi-card:not([open]) .kpi-chev::before{content:"Show"}
+.kpi-card:not([open]) .kpi-chev::after{transform:rotate(-90deg)}
+.kpi-body{padding:0 16px 14px}
+.kpi-intro{margin:0 0 6px;color:var(--muted);font-size:13.5px}
+.kpi-list{list-style:none;margin:0;padding:0}
+.kpi-list li{padding:9px 0;border-top:1px solid var(--line)}
+.kpi-line{display:flex;flex-wrap:wrap;align-items:baseline;gap:4px 10px}
+.kpi-line b{color:var(--ink);font-size:14px}
+.kpi-goal{color:var(--blue);font-weight:700;font-size:13px}
+.kpi-text{margin-top:2px;color:var(--muted);font-size:13.5px;line-height:1.55}
+.kpi-outro{margin:8px 0 0;padding-top:9px;border-top:1px solid var(--line);color:var(--muted);font-size:13px;font-style:italic}
 </style>
 </head>
 
@@ -903,6 +917,21 @@ html[data-theme=dark] #dataUpdateNote .du-name{color:#cfdcff}
 
 <div id="statusBanner" class="note red" hidden></div>
 <div id="highAnnouncements" class="note red" style="white-space:pre-wrap" hidden></div>
+<details class="kpi-card" id="kpiCard" hidden>
+  <summary class="kpi-head"><span>🎯 Team targets for the month</span><span class="kpi-chev" aria-hidden="true"></span></summary>
+  <div class="kpi-body">
+    <p class="kpi-intro">The monthly targets your team is measured against, and what each number tells you.</p>
+    <ul class="kpi-list">
+    <li><div class="kpi-line"><b>Attendance</b><span class="kpi-goal">Aim for 95% or higher</span></div><div class="kpi-text">The share of scheduled days your agents showed up. Low attendance cuts into coverage, so watch for patterns in absences and late arrivals.</div></li>
+    <li><div class="kpi-line"><b>Call and Ticket Quality</b><span class="kpi-goal">Aim for 95% or higher</span></div><div class="kpi-text">The average score from call and ticket reviews. It shows how well agents follow quality standards, and low scores point to where coaching is needed.</div></li>
+    <li><div class="kpi-line"><b>FCR (First Contact Resolution)</b><span class="kpi-goal">Aim for 82% or higher</span></div><div class="kpi-text">How often agents resolve the cast member’s issue on first contact, with no follow-ups. A dip can signal knowledge gaps or process issues.</div></li>
+    <li><div class="kpi-line"><b>Work Rate</b><span class="kpi-goal">Aim for 75% or higher</span></div><div class="kpi-text">How much of logged-in time goes to actual work. About 25% of the day is already planned for breaks and other activities, so a rate below target is worth a look at adherence.</div></li>
+    <li><div class="kpi-line"><b>Ticket Compliance</b><span class="kpi-goal">Aim for 100% or higher</span></div><div class="kpi-text">Every call should have a ticket, and tickets should match or beat calls. Below 100% means undocumented calls, so follow up with the agent.</div></li>
+    <li><div class="kpi-line"><b>Misroute Rate</b><span class="kpi-goal">Aim for below 1.030%</span></div><div class="kpi-text">How often tickets land with the wrong team. The lower the better, and a high rate usually calls for a triage refresher.</div></li>
+    </ul>
+    <p class="kpi-outro">Spot gaps early, coach with purpose, and lift the whole team. 💪</p>
+  </div>
+</details>
 <div id="dataUpdateNote" role="status" hidden></div>
 
 <!-- ============ DASHBOARD ============ -->
@@ -1875,8 +1904,19 @@ function rowFor(r, date) {
            'Break 1': d.b1, 'Lunch': d.lunch, 'Break 2': d.b2, 'Break 3': d.b3 };
 }
 
-async function refreshAttendanceData(notify = false) {
-  await Promise.all([loadAttendance(), loadSchedules(), loadDaily(), loadQA(), loadMetric(), loadMcs()]);
+/* QA / Metric / Scorecard only change when you update them (days apart), so the 1-minute auto-refresh skips them and
+   reloads them every SCORES_REFRESH_MS. The ↻ Refresh button always reloads everything. */
+const SCORES_REFRESH_MS = 15 * 60 * 1000;
+let lastScoresLoad = Date.now();
+async function refreshAttendanceData(notify = false, scores = true) {
+  if (scores) lastScoresLoad = Date.now();
+  const btn = notify ? $('refreshBtn') : null;           // manual click: show progress and block double-clicks
+  if (btn) { btn.disabled = true; btn.classList.add('spinning'); }
+  try {
+    await Promise.all([loadAttendance(), loadSchedules(), loadDaily(),
+      ...(scores ? [loadQA(), loadMetric(), loadMcs()] : []),
+      ...(notify && typeof loadDataUpdates === 'function' ? [loadDataUpdates()] : [])]);   // also re-read the "Data as of" dates
+  } finally { if (btn) { btn.disabled = false; btn.classList.remove('spinning'); } }
   renderAll();
   if (notify) toast(loadErrors.attendance || loadErrors.schedules || loadErrors.daily || loadErrors.qa || loadErrors.metric || loadErrors.mcs
     ? '⚠️ Refresh failed - see the banner at the top.'
@@ -4121,11 +4161,6 @@ function agFmt(v, k) {
   return k.colons >= 2 ? `${Math.floor(sec / 3600)}:${pad(Math.floor(sec % 3600 / 60))}:${pad(sec % 60)}` : `${Math.floor(sec / 60)}:${pad(sec % 60)}`;
 }
 /* Team average of one column: the mean of every agent's (already combined) value */
-function agTeamAvg(rows, i, k) {
-  if (k.kind === 'text') return '—';
-  const nums = rows.map(r => metricVal(r[i])).filter(v => typeof v === 'number');
-  return nums.length ? agFmt(mean(nums), k) : '—';
-}
 
 function renderAgSumMonthPicker() {
   const yms = agSumMonths, allOn = yms.length > 1 && yms.every(m => agSumSel.has(m));
@@ -4663,18 +4698,6 @@ function ssMonthPoint(tym, rows, idx, today) {
 }
 
 let ssExport = { ym: '', rows: [] };
-function downloadScoreSummary() {
-  if (!ssExport.rows.length) { toast('Nothing to download for this view'); return; }
-  const csvCell = v => `"${String(v ?? '').replace(/"/g, '""')}"`, f = (v, d = 1) => v == null ? '' : v.toFixed(d);
-  const rows = [['Agent', 'Supervisor', 'Attendance %', 'Present', 'Late / Left early', 'Called off / NCNS', 'Leave', 'QA avg %', 'Audits', 'Stack Ranking total', 'Rank', 'Below target on'],
-    ...ssExport.rows.map(a => [a.name, a.sup, f(a.att), a.present, a.partial, a.absent, a.leave, f(a.qa), a.audits, f(a.total), a.rank ?? '', a.low.join(' + ')])];
-  const filename = `scorecard-summary-${ssExport.ym}.csv`;
-  const a = document.createElement('a');
-  a.href = URL.createObjectURL(new Blob(['\uFEFF' + rows.map(r => r.map(csvCell).join(',')).join('\r\n')], { type: 'text/csv;charset=utf-8' }));
-  a.download = filename;
-  document.body.appendChild(a); a.click(); a.remove(); URL.revokeObjectURL(a.href);
-  toast('⬇ Downloaded ' + filename);
-}
 
 /* Current Month Scorecard: every agent for the CURRENT month only. The month picker doesn't change it; supervisor and search still do. */
 function buildSsCurrent(bySup, q, idx, today) {
@@ -4986,7 +5009,7 @@ window.addEventListener('DOMContentLoaded', async () => {
   const poll = async () => {
     if (document.hidden || pollBusy) return;
     pollBusy = true; lastPoll = Date.now();
-    try { await refreshAttendanceData(false); } finally { pollBusy = false; }
+    try { await refreshAttendanceData(false, Date.now() - lastScoresLoad > SCORES_REFRESH_MS); } finally { pollBusy = false; }
   };
   setInterval(poll, REFRESH_MS);
   document.addEventListener('visibilitychange', () => { if (!document.hidden && Date.now() - lastPoll > REFRESH_MS) poll(); });
@@ -5011,6 +5034,8 @@ const DATA_UPDATES = {
 const PAGE_ALIASES = { attendancetracker: 'trackerTab', attendance: 'trackerTab' };
 const SUMMARY_FROM = [['trackerTab','Attendance'], ['qaTab','Quality Assurance'], ['mcsTab','Metric Scorecard'], ['metricTab','Stack Ranking']];
 function renderDataUpdate(id){
+  const kpi = document.getElementById('kpiCard');   // the targets card sits above the note and only shows on the Summary page
+  if (kpi) kpi.hidden = !/^(summaryTab|scoreSumTab)$/.test(id);
   const el = document.getElementById('dataUpdateNote'); if (!el) return;
   const get = k => (sheetUpdates && sheetUpdates[k]) || DATA_UPDATES[k];
   const has = u => u && u.date;   // only the date is shown; any text in the Note column is ignored
