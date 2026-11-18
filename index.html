@@ -417,6 +417,29 @@ html[data-theme=dark] #ssStackTable tr[class*="mo-"] td:not(.nodata){background:
 html[data-theme=dark] #ssMcsTable td.kc-good{color:#86efac}
 html[data-theme=dark] #ssMcsTable td.kc-mid{color:#fdba74}
 html[data-theme=dark] #ssMcsTable td.kc-low{color:#fca5a5}
+
+/* Unavailable Time page: colour legend + date picker */
+#lbprrTable td.ut-red{background:#fecaca;color:#7f1d1d;font-weight:600}
+#lbprrTable td.ut-yel{background:#fef08a;color:#713f12;font-weight:600}
+html[data-theme=dark] #lbprrTable td.ut-red{background:#7f1d1d;color:#fecaca}
+html[data-theme=dark] #lbprrTable td.ut-yel{background:#854d0e;color:#fef9c3}
+.ut-panel{min-width:270px;max-height:70vh;overflow:auto}
+.ut-panel .ut-h{display:flex;justify-content:space-between;align-items:center;padding:8px 10px 4px;font-size:11px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+.ut-panel .ut-h button{padding:0;min-height:0;background:none;border:0;color:var(--blue);font-size:12px;font-weight:600;text-transform:none;letter-spacing:0}
+.ut-panel .ut-dates{max-height:200px;overflow:auto}
+#lbprrTable th{cursor:pointer;user-select:none;white-space:nowrap}
+#lbprrTable th:hover{filter:brightness(.96)}
+#lbprrTable .ut-arr{font-size:10px;margin-left:2px}
+#lbprrTable tr.ut-grp td{background:var(--paper,#f1f5f9);font-weight:700;font-size:14px;border-top:2px solid var(--line,#e5e7eb)}
+#lbprrTable tr.ut-sub td{font-weight:700;border-top:1px solid var(--line,#e5e7eb);background:var(--surface,#fff)}
+#lbprrTable tfoot td{position:sticky;bottom:0;z-index:10;font-weight:700;background:var(--surface,#fff);color:var(--ink,#111827);border-top:2px solid var(--line,#e5e7eb)}
+.ut-caret{display:inline-block;width:14px;font-size:11px;color:var(--muted);transition:transform .15s}
+#lbprrTable tr.ut-grp{cursor:pointer}
+#lbprrTable tr.ut-grp:hover td{filter:brightness(.97)}
+#lbprrTable tr.ut-grp.open .ut-caret{transform:rotate(90deg)}
+#lbprrTable tr.ut-grp td:nth-child(2){font-weight:600;color:var(--muted)}
+.ut-legend{display:flex;flex-wrap:wrap;gap:8px 18px;margin:0 0 12px;font-size:13px;color:var(--muted)}
+.ut-legend i{display:inline-block;width:12px;height:12px;border-radius:3px;margin-right:6px;vertical-align:-1px}
 </style>
 <script>(function(){try{var m=localStorage.getItem('ditsc_theme')||'system';document.documentElement.dataset.theme=(m==='dark'||(m==='system'&&matchMedia('(prefers-color-scheme: dark)').matches))?'dark':'light'}catch(e){}})()</script>
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet" media="print" onload="this.media='all'"><noscript><link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet"></noscript>
@@ -889,6 +912,7 @@ html[data-theme=dark] #dataUpdateNote .du-name{color:#cfdcff}
         <a class="tab-btn" href="#ptoTab" data-tab="ptoTab"><svg class="ni" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M6.3 17.7l-1.4 1.4M19.1 4.9l-1.4 1.4"/></svg><span>Leaves</span></a>
         <a class="tab-btn" href="#calledOffTab" data-tab="calledOffTab"><svg class="ni" viewBox="0 0 24 24" aria-hidden="true"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="m17 8 5 5M22 8l-5 5"/></svg><span>Absenteeism</span></a>
         <a class="tab-btn" href="#lateTab" data-tab="lateTab"><svg class="ni" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg><span>Late / Left early</span></a>
+        <a class="tab-btn" href="#lbprrTab" data-tab="lbprrTab" data-title="Unavailable Time"><svg class="ni" viewBox="0 0 24 24" aria-hidden="true"><path d="M17 8h1a4 4 0 0 1 0 8h-1"/><path d="M3 8h14v9a4 4 0 0 1-4 4H7a4 4 0 0 1-4-4z"/><path d="M6 2v3M10 2v3M14 2v3"/></svg><span>Unavailable Time</span></a>
       </div></div>
     </div>
     <div class="nav-group" data-group="Performance">
@@ -1318,6 +1342,42 @@ html[data-theme=dark] #dataUpdateNote .du-name{color:#cfdcff}
   </details>
 </section>
 
+<!-- ============ LBPRR (Break / Overbreak / Lunch / Overlunch / Restroom / Project + logged-in hours) ============ -->
+<section class="tab-panel" id="lbprrTab" hidden>
+  <div class="view-hint">☕ Break, Overbreak, Lunch, Overlunch, Restroom and Project time per agent per shift (LBPRR sheet), with the Total Logged-in Hours from the LOLI Actual sheet.</div>
+  <div class="controls">
+    <div class="msel" id="lbprrDateWrap">
+      <button type="button" id="lbprrDateBtn" class="msel-btn">All dates ▾</button>
+      <div class="msel-panel ut-panel" id="lbprrDatePanel" hidden></div>
+    </div>
+    <select id="lbprrSup" onchange="buildLbprr()"><option>All Supervisors</option></select>
+    <select id="lbprrAgent" onchange="buildLbprr()"><option value="">All Agents</option></select>
+    <input type="text" id="lbprrSearch" placeholder="🔍 Search Agent..." onkeyup="buildLbprr()">
+    <button type="button" onclick="clearLbprr()">Clear filters</button>
+    <button type="button" id="lbprrToggleAll" onclick="utToggleAll()" style="display:none">Expand all</button>
+    <button type="button" class="blue" onclick="downloadLbprr()">⬇ Download CSV</button>
+  </div>
+  <div class="daily-summary">
+    <div class="summary-box">📋 Records: <span id="lbprrCount">0</span></div>
+  </div>
+  <div class="ut-legend">
+    <span><i style="background:#fecaca"></i>Break over 0:45:00 · Lunch over 1:00:00</span>
+    <span><i style="background:#fef08a"></i>Total Logged-in Hours below 11:00:00</span>
+    
+  </div>
+  <div class="panel">
+    <div class="schedule-container">
+      <table id="lbprrTable" class="nosort">
+        <thead><tr>
+          <th data-sort="name" title="Click to sort">👤 Agent Name <span class="ut-arr"></span></th><th data-sort="date" title="Click to sort">📅 Shift Date <span class="ut-arr"></span></th><th data-sort="brk" title="Click to sort">☕ Break <span class="ut-arr"></span></th><th data-sort="lunch" title="Click to sort">🍽️ Lunch <span class="ut-arr"></span></th><th data-sort="rest" title="Click to sort">🚻 Restroom <span class="ut-arr"></span></th><th data-sort="proj" title="Click to sort">📁 Project <span class="ut-arr"></span></th><th data-sort="hours" title="Click to sort">⏱ Total Logged-in Hours <span class="ut-arr"></span></th>
+        </tr></thead>
+        <tbody></tbody>
+        <tfoot><tr id="lbprrTotal"><td>Total</td><td></td><td></td><td></td><td></td><td></td><td></td></tr></tfoot>
+      </table>
+    </div>
+  </div>
+</section>
+
 <!-- ============ SCORECARD: QUALITY ASSURANCE ============ -->
 <section class="tab-panel" id="qaTab" hidden>
   <div class="view-hint">✅ Quality Assurance scores by analyst, ranked by average score.<br>Tick one or more months (or Year to date); click an agent (▸) to open their audits.</div>
@@ -1521,6 +1581,12 @@ const sheetUrl = gid => `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz
 const scheduleUrl = gid => sheetUrl(gid) + '&headers=1';
 /* Paste the number after "gid=" from the LOLI Actual tab's address bar here (most reliable). Empty = find the tab by its name. */
 const LOLI_GID = '74611449';
+
+/* LBPRR tab: Agent Name | Shift Date | Break | Overbreak | Lunch | Overlunch | Restroom | Project.
+   Paste the number after "gid=" from the LBPRR tab's address bar here (most reliable). Empty = find the tab by its name. */
+const LBPRR_GID = '1191914646';
+const LBPRR_URL = LBPRR_GID ? sheetUrl(LBPRR_GID) : `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv&sheet=${encodeURIComponent('LBPRR')}`;
+let lbprrRaw = [], loliRaw = [], lbprrError = '';
 /* Log-in / log-out dispute form: paste the Google Form's "embedded" link (…/viewform?embedded=true) and the gid of the
    form's response tab here (see the setup steps shown on the Dispute form page). Empty = feature stays off. */
 const DISPUTE_FORM_URL = 'https://docs.google.com/forms/d/e/1FAIpQLSeOJQdLCQ_J3s3BkxfyMYpLzJrx3krf24jFzWXZUwxF0RCSUQ/viewform?embedded=true';
@@ -1818,6 +1884,9 @@ async function loadAttendance() {
     loadErrors.dispute = disputeInfo.error ? `Couldn't load the dispute form responses (${disputeInfo.error}) - check DISPUTE_GID and sharing`
                        : disputeInfo.noStatus ? 'Disputes need approval but the response tab has no "Approval Status" column - add it next to the form columns' : '';
     loliIdx = buildLoliIndex(loliRows);
+    loliRaw = loliRows;
+    lbprrError = '';
+    lbprrRaw = await fetchCSV(LBPRR_URL, { raw: true }).catch(e => { lbprrError = e.message; return []; });
     loadErrors.loli = loliInfo.error ? `Couldn't load the "LOLI Actual" tab (${loliInfo.error}) - check the tab name and sharing`
                     : !loliInfo.rows ? 'The "LOLI Actual" tab was read but no log-in rows were found (' + loliInfo.sample + ') - the tab name may not be matching; set LOLI_GID in the code' : '';
     loadErrors.attendance = '';
@@ -1962,6 +2031,7 @@ async function refreshAttendanceData(notify = false, scores = true) {
 }
 
 const TAB_RENDERERS = {
+  lbprrTab: buildLbprr,
   lookupTab: runLookup,
   scheduleTab: buildScheduleView,
   rosterTab: buildRosterView,
@@ -3710,6 +3780,200 @@ function buildShiftChanges(date, mins, supFilter) {
    missed (estimated, marked *) until the actual times are submitted.
    ===================================================================== */
 const SHIFT_HOURS_DEFAULT = 11;
+
+/* ---------- Unavailable Time page: Break / Overbreak / Lunch / Overlunch / Restroom / Project (LBPRR tab) + Total Logged-in Hours (LOLI Actual tab) ----------
+   Columns are found by their header words, so the order in the sheet doesn't matter. Times are shown as written in the sheet.
+   Total Logged-in Hours is looked up in the LOLI Actual tab by agent name + shift date.
+   Colour legend: Break > 0:45:00 and Lunch > 1:00:00 = red; Total Logged-in Hours < 11:00:00 = yellow; Overbreak / Overlunch of 0:00:00 are left blank. */
+const LBPRR_COLS = [['brk', 'Break'], ['lunch', 'Lunch'], ['rest', 'Restroom'], ['proj', 'Project']];
+const UT_BREAK_MAX = 45 * 60, UT_LUNCH_MAX = 60 * 60, UT_HOURS_MIN = 11 * 3600;
+const utSel = { m: new Set(), d: new Set() };
+let utInit = false;
+const utOpen = new Set();   // agents whose daily rows are expanded (multi-date view)
+let utGroupNames = [];      // agents currently shown as drop-down groups
+const utSortState = { k: 'date', asc: false, user: false };   // default: newest date first, then agent name
+const utSecs = s => { const m = clean(s).match(/^(\d+):(\d{2})(?::(\d{2}))?$/); return m ? +m[1] * 3600 + +m[2] * 60 + +(m[3] || 0) : null; };
+const utFmt = s => `${Math.floor(s / 3600)}:${pad(Math.floor(s % 3600 / 60))}:${pad(Math.round(s % 60))}`;
+const utMonthLabel = ym => new Date(+ym.slice(0, 4), +ym.slice(5, 7) - 1, 1).toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
+/* What a cell shows: Overbreak / Overlunch of 0:00:00 become blank */
+const utShow = (k, v) => (k === 'ob' || k === 'ol') && utSecs(v) === 0 ? '' : v;
+function utClass(k, v) {
+  const s = utSecs(v); if (s == null) return '';
+  if (k === 'brk' && s > UT_BREAK_MAX) return 'ut-red';
+  if (k === 'lunch' && s > UT_LUNCH_MAX) return 'ut-red';
+  if (k === 'hours' && s < UT_HOURS_MIN) return 'ut-yel';
+  return '';
+}
+function lbprrRows() {
+  const rows = lbprrRaw;
+  const h = rows.findIndex(r => r.some(x => /agent/i.test(clean(x))) && r.some(x => /date/i.test(clean(x))));
+  if (h < 0) return [];
+  const f = (re, not) => rows[h].findIndex(x => re.test(clean(x)) && !(not && not.test(clean(x))));
+  const c = { name: f(/agent/i), date: f(/date/i), brk: f(/break/i, /over/i), ob: f(/over.?break/i), lunch: f(/lunch/i, /over/i),
+              ol: f(/over.?lunch/i), rest: f(/rest.?room/i), proj: f(/project/i) };
+  /* Total Logged-in Hours from the LOLI Actual rows (first filled value per agent + date) */
+  const hours = new Map();
+  const lh = loliRaw.findIndex(r => r.some(x => /^agent name$/i.test(clean(x))));
+  if (lh >= 0) {
+    const g = re => loliRaw[lh].findIndex(x => re.test(clean(x)));
+    const ln = g(/^agent name$/i), ld = g(/date/i), lt = g(/logged.?in hours/i);
+    if (ln >= 0 && ld >= 0 && lt >= 0) loliRaw.slice(lh + 1).forEach(r => {
+      const k = normName(r[ln]) + '|' + parseLoliDate(r[ld]), v = clean(r[lt]);
+      if (clean(r[ln]) && v && !hours.has(k)) hours.set(k, v);
+    });
+  }
+  const supMap = new Map(estData.map(r => [normName(r.Name), r.Supervisor || '']));
+  const out = [];
+  rows.slice(h + 1).forEach(r => {
+    const name = clean(r[c.name]), date = parseLoliDate(r[c.date]);
+    if (!name || !/^\d{4}-\d{2}-\d{2}$/.test(date)) return;
+    const o = { name, date, sup: supMap.get(normName(name)) || '', hours: hours.get(normName(name) + '|' + date) || '' };
+    LBPRR_COLS.forEach(([k]) => o[k] = c[k] >= 0 ? clean(r[c[k]]) : '');
+    out.push(o);
+  });
+  return out.sort((a, b) => b.date.localeCompare(a.date) || a.name.localeCompare(b.name));
+}
+function lbprrFiltered(all) {
+  const sup = $('lbprrSup').value, agent = $('lbprrAgent').value, q = up($('lbprrSearch').value);
+  const rows = (all || lbprrRows()).filter(x =>
+    (!utSel.m.size || utSel.m.has(x.date.slice(0, 7))) && (!utSel.d.size || utSel.d.has(x.date)) &&
+    (sup === ALL || x.sup === sup) && (!agent || x.name === agent) && (!q || up(x.name).includes(q)));
+  /* Sort by the clicked header; blank cells (and 0:00:00 Overbreak / Overlunch) always go last */
+  const { k, asc } = utSortState, text = k === 'name' || k === 'date';
+  const val = x => text ? x[k] : (s => (s === 0 && (k === 'ob' || k === 'ol')) ? null : s)(utSecs(x[k]));
+  return rows.sort((a, b) => {
+    const va = val(a), vb = val(b);
+    if (va == null || vb == null) { if (va != vb) return va == null ? 1 : -1; }
+    else if (va !== vb) { const d = text ? String(va).localeCompare(String(vb)) : va - vb; return asc ? d : -d; }
+    return b.date.localeCompare(a.date) || a.name.localeCompare(b.name);
+  });
+}
+/* Sum of every time column for a list of rows (Overbreak / Overlunch stay blank when the sum is 0:00:00) */
+function utTotals(list) {
+  return [...LBPRR_COLS.map(([k]) => k), 'hours'].map(k => {
+    const s = list.reduce((n, x) => n + (utSecs(x[k]) || 0), 0);
+    return (s || (k !== 'ob' && k !== 'ol')) ? utFmt(s) : '';
+  });
+}
+function utRenderPanel(all) {
+  const ms = [...new Set(all.map(x => x.date.slice(0, 7)))].sort().reverse();
+  const ds = [...new Set(all.map(x => x.date))].sort().reverse();
+  const box = (t, k, label) => `<label><input type="checkbox" data-t="${t}" data-k="${k}" ${utSel[t].has(k) ? 'checked' : ''}> ${esc(label)}</label>`;
+  const p = $('lbprrDatePanel'), keep = p.querySelector('.ut-dates')?.scrollTop || 0;
+  p.innerHTML =
+    `<div class="ut-h"><span>Month</span><button type="button" data-clear="1">Clear</button></div>` + ms.map(m => box('m', m, utMonthLabel(m))).join('') +
+    `<div class="ut-h"><span>Dates</span></div><div class="ut-dates">` + ds.map(d => box('d', d, fmtDate(parseYMD(d)))).join('') + `</div>`;
+  const sc = p.querySelector('.ut-dates'); if (sc) sc.scrollTop = keep;
+  const n = utSel.m.size + utSel.d.size;
+  $('lbprrDateBtn').textContent = (n ? [['m', 'month'], ['d', 'date']].filter(([t]) => utSel[t].size)
+      .map(([t, w]) => `${utSel[t].size} ${w}${utSel[t].size > 1 ? 's' : ''}`).join(' · ') : 'All dates') + ' ▾';
+}
+function utInitOnce() {
+  if (utInit) return; utInit = true;
+  $('lbprrDateBtn').addEventListener('click', e => { e.stopPropagation(); $('lbprrDatePanel').hidden = !$('lbprrDatePanel').hidden; });
+  $('lbprrDateWrap').addEventListener('click', e => e.stopPropagation());
+  document.addEventListener('click', () => $('lbprrDatePanel').hidden = true);
+  $('lbprrDatePanel').addEventListener('change', e => {
+    const i = e.target; if (!i.dataset.t) return;
+    i.checked ? utSel[i.dataset.t].add(i.dataset.k) : utSel[i.dataset.t].delete(i.dataset.k);
+    buildLbprr();
+  });
+  $('lbprrTable').tHead.addEventListener('click', e => {
+    const th = e.target.closest('th'); if (!th || !th.dataset.sort) return;
+    const k = th.dataset.sort;
+    utSortState.user = true;
+    if (utSortState.k === k) utSortState.asc = !utSortState.asc; else { utSortState.k = k; utSortState.asc = !(k === 'date'); }
+    buildLbprr();
+  });
+  $('lbprrTable').tBodies[0].addEventListener('click', e => {
+    const tr = e.target.closest('tr.ut-grp'); if (!tr) return;
+    const n = tr.dataset.ag; utOpen.has(n) ? utOpen.delete(n) : utOpen.add(n);
+    buildLbprr();
+  });
+  $('lbprrDatePanel').addEventListener('click', e => { if (e.target.dataset.clear) { Object.values(utSel).forEach(s => s.clear()); buildLbprr(); } });
+}
+function utToggleAll() {
+  const all = utGroupNames.length && utGroupNames.every(n => utOpen.has(n));
+  all ? utOpen.clear() : utGroupNames.forEach(n => utOpen.add(n));
+  buildLbprr();
+}
+function clearLbprr() {
+  Object.values(utSel).forEach(s => s.clear());
+  $('lbprrSup').value = ALL; $('lbprrAgent').value = ''; $('lbprrSearch').value = '';
+  buildLbprr();
+}
+function buildLbprr() {
+  utInitOnce();
+  const all = lbprrRows();
+  /* Supervisor + Agent drop-downs (the agent list follows the chosen supervisor; the current choice is kept) */
+  const supSel = $('lbprrSup'), agSel = $('lbprrAgent');
+  const sups = [...new Set(estData.map(x => x.Supervisor).filter(Boolean))].sort();
+  const prevSup = supSel.value || ALL;
+  supSel.innerHTML = `<option>${ALL}</option>` + sups.map(s => `<option>${esc(s)}</option>`).join('');
+  supSel.value = sups.includes(prevSup) ? prevSup : ALL;
+  const names = [...new Set(all.filter(x => supSel.value === ALL || x.sup === supSel.value).map(x => x.name))].sort((a, b) => a.localeCompare(b));
+  const prevAg = agSel.value;
+  agSel.innerHTML = `<option value="">All Agents</option>` + names.map(n => `<option value="${esc(n)}">${esc(n)}</option>`).join('');
+  agSel.value = names.includes(prevAg) ? prevAg : '';
+  utRenderPanel(all);
+
+  $('lbprrTable').tHead.querySelectorAll('th').forEach(th => th.querySelector('.ut-arr').textContent = th.dataset.sort === utSortState.k ? (utSortState.asc ? '▲' : '▼') : '');
+  const rows = lbprrFiltered(all), v = s => s ? esc(s) : '—';
+  const td = (k, val) => { const cls = utClass(k, val); return `<td${cls ? ` class="${cls}"` : ''}>${v(utShow(k, val))}</td>`; };
+  const rowHtml = (x, showName) => `
+    <tr>
+      <td>${showName ? esc(x.name) : ''}</td>
+      <td>${fmtDate(parseYMD(x.date))}</td>
+      ${LBPRR_COLS.map(([k]) => (k === 'ob' || k === 'ol') && !utShow(k, x[k]) ? '<td></td>' : td(k, x[k])).join('')}
+      ${(() => { const cls = utClass('hours', x.hours); return `<td${cls ? ` class="${cls}"` : ''}><strong>${v(x.hours)}</strong></td>`; })()}
+    </tr>`;
+  /* Several dates picked (dates, months or years that cover more than one day): group by agent, one row per date, then that agent's Total */
+  const grouped = (utSel.d.size || utSel.m.size) && new Set(rows.map(x => x.date)).size > 1;
+  let html;
+  if (!rows.length) {
+    html = `<tr><td colspan="7">${lbprrError ? 'Couldn\u2019t load the LBPRR tab (' + esc(lbprrError) + ') \u2013 check the tab name and sharing' : 'No records found'}</td></tr>`;
+  } else if (!grouped) {
+    html = rows.map(x => rowHtml(x, true)).join('');
+  } else {
+    const by = new Map();
+    (utSortState.user ? rows : rows.slice().sort((a, b) => a.date.localeCompare(b.date))).forEach(x => { if (!by.has(x.name)) by.set(x.name, []); by.get(x.name).push(x); });
+    /* The header you click orders the agent rows: Agent Name = A-Z, Shift Date = number of days, a time column = that column's total */
+    const { k: sk, asc: sasc } = utSortState, byUser = utSortState.user && sk !== 'name';
+    const gval = list => sk === 'date' ? list.length : list.reduce((n, x) => n + (utSecs(x[sk]) || 0), 0);
+    const groups = [...by.entries()].sort((p, q) => {
+      if (byUser) { const d = gval(p[1]) - gval(q[1]); if (d) return sasc ? d : -d; }
+      const n = p[0].localeCompare(q[0]);
+      return utSortState.user && sk === 'name' && !sasc ? -n : n;
+    });
+    utGroupNames = groups.map(g => g[0]);
+    html = groups.map(([name, list]) => {
+      const open = utOpen.has(name);
+      return `<tr class="ut-grp${open ? ' open' : ''}" data-ag="${esc(name)}" title="Click to ${open ? 'hide' : 'show'} daily rows"><td><span class="ut-caret">▶</span>${esc(name)}</td><td>${list.length} day${list.length === 1 ? '' : 's'}</td>${utTotals(list).map(c => `<td>${c}</td>`).join('')}</tr>` +
+        (open ? list.map(x => rowHtml(x, false)).join('') : '');
+    }).join('');
+  }
+  if (!grouped) utGroupNames = [];
+  const tb = $('lbprrToggleAll');
+  tb.style.display = utGroupNames.length ? '' : 'none';
+  tb.textContent = utGroupNames.length && utGroupNames.every(n => utOpen.has(n)) ? 'Collapse all' : 'Expand all';
+  $('lbprrTable').tBodies[0].innerHTML = html;
+  $('lbprrCount').textContent = rows.length;
+  /* Total row: the sum of every time column for the rows shown (Overbreak / Overlunch stay blank when the sum is 0:00:00) */
+  const cells = utTotals(rows);
+  $('lbprrTotal').innerHTML = `<td>Total</td><td>${rows.length} record${rows.length === 1 ? '' : 's'}</td>` + cells.map(c => `<td>${c}</td>`).join('');
+}
+function downloadLbprr() {
+  const rows = lbprrFiltered();
+  if (!rows.length) return toast('Nothing to download yet');
+  const q = s => '"' + String(s ?? '').replace(/"/g, '""') + '"';
+  const head = ['Agent Name', 'Shift Date', ...LBPRR_COLS.map(x => x[1]), 'Total Logged-in Hours'];
+  const csv = [head, ...rows.map(x => [x.name, x.date, ...LBPRR_COLS.map(([k]) => utShow(k, x[k])), x.hours])].map(r => r.map(q).join(',')).join('\r\n');
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(new Blob(['\uFEFF' + csv], { type: 'text/csv;charset=utf-8' }));
+  a.download = 'Unavailable_Time.csv';
+  a.click();
+  setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+}
 
 /* ---------- LOLI Actual tab: actual log-in / log-out per agent per day ----------
    Times are read as EST clock times (same as the schedule). Up to LOLI_GRACE_MIN minutes
