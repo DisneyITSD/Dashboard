@@ -616,6 +616,17 @@ td.sc-good::before,td.sc-mid::before,td.sc-low::before{content:"";display:inline
 html[data-theme=dark] .lc-0{--c:#9ca3af;--bg:#1b2331}html[data-theme=dark] .lc-1{--c:#93c5fd;--bg:#16263d}html[data-theme=dark] .lc-peak{--c:#fdba74;--bg:#3a2a12}
 @media(max-width:900px){.lc-grid{grid-template-columns:repeat(2,1fr);grid-template-rows:none;grid-auto-flow:row}}
 @media(max-width:560px){.lc-grid{grid-template-columns:1fr}}
+.lc-grid.bk-grid{grid-template-rows:repeat(24,auto)}
+@media(max-width:900px){.lc-grid.bk-grid{grid-template-rows:none}}
+.pc-ok{--c:#2e7d32;--bg:#e8f5e9}.pc-low{--c:#c62828;--bg:#ffebee}
+html[data-theme=dark] .pc-ok{--c:#86efac;--bg:#10291c}html[data-theme=dark] .pc-low{--c:#fca5a5;--bg:#3b1519}
+.pc-cell{cursor:pointer}
+.pc-cell .pc-main{display:flex;align-items:baseline;justify-content:space-between;gap:8px}
+.pc-cell .pc-main b{font-size:18px}
+.pc-cell .pc-names{font-weight:400;color:var(--ink,#1f2937)}
+.pc-controls label{display:flex;align-items:center;gap:6px;font-weight:600}
+.pc-controls .pc-min{width:80px;padding:9px 8px}
+.pc-legend{display:flex;flex-wrap:wrap;gap:14px;font-size:13px;color:var(--muted);margin:0 0 4px}
 /* Hide / show the side menu (desktop; phones keep the ☰ button) */
 .side-toggle{display:none}
 @media(min-width:901px){
@@ -869,7 +880,7 @@ html[data-theme=dark] #dataUpdateNote .du-name{color:#cfdcff}
         <a class="tab-btn" href="#rosterTab" data-tab="rosterTab"><svg class="ni" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18M8 14h.01M12 14h.01M16 14h.01M8 18h.01M12 18h.01"/></svg><span>Monthly view</span></a>
         <a class="tab-btn" href="#teamTab" data-tab="teamTab"><svg class="ni" viewBox="0 0 24 24" aria-hidden="true"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/></svg><span>Team roster</span></a>
         <a class="tab-btn" href="#forecastTab" data-tab="forecastTab" data-title="Daily Intervals"><svg class="ni" viewBox="0 0 24 24" aria-hidden="true"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg><span>Daily intervals</span></a>
-        <a class="tab-btn" href="#lunchTab" data-tab="lunchTab" data-title="Lunch Concurrency"><svg class="ni" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 2v7c0 1.1.9 2 2 2h4a2 2 0 0 0 2-2V2M7 2v20M21 15V2a5 5 0 0 0-5 5v6c0 1.1.9 2 2 2h3zm0 0v7"/></svg><span>Lunch concurrency</span></a>
+        <a class="tab-btn" href="#phoneTab" data-tab="phoneTab" data-title="Phone Coverage (After Breaks &amp; Lunch)"><svg class="ni" viewBox="0 0 24 24" aria-hidden="true"><path d="M22 16.9v3a2 2 0 0 1-2.2 2 19.8 19.8 0 0 1-8.6-3.1 19.5 19.5 0 0 1-6-6A19.8 19.8 0 0 1 2.1 4.2 2 2 0 0 1 4.1 2h3a2 2 0 0 1 2 1.7c.1 1 .4 1.9.7 2.8a2 2 0 0 1-.5 2.1L8.1 9.9a16 16 0 0 0 6 6l1.3-1.3a2 2 0 0 1 2.1-.4c.9.3 1.8.6 2.8.7a2 2 0 0 1 1.7 2z"/></svg><span>Phone coverage</span></a>
       </div></div>
     </div>
     <div class="nav-group" data-group="Attendance">
@@ -1000,13 +1011,21 @@ html[data-theme=dark] #dataUpdateNote .du-name{color:#cfdcff}
   <div id="coverageTimelinePanel" class="panel"></div>
 </section>
 
-<!-- ============ LUNCH CONCURRENCY ============ -->
-<section class="tab-panel" id="lunchTab" hidden>
-  <div class="view-hint">🍽️ How many agents are on lunch (60 minutes) in each 30-minute interval of the chosen date.<br>The busiest interval(s) are marked 🔺.<br>Leave and called-off shifts are not counted.</div>
-  <div class="controls">
-    <input type="date" id="lunchDate" onchange="buildLunchConcurrency()">
+<!-- ============ PHONE COVERAGE ============ -->
+<section class="tab-panel" id="phoneTab" hidden>
+  <div class="view-hint">📞 Agents actually available on the phones in each 15-minute interval: those on shift (after leave, absences and late / left-early time) <strong>minus</strong> everyone on break (15 min), lunch (60 min) or lactation break (20 min).<br>An interval turns red when the active count is below the minimum you set. Click any interval to see who is away.</div>
+  <div class="controls pc-controls">
+    <input type="date" id="phoneDate" onchange="buildPhoneCoverage()">
+    <select id="phoneView" onchange="buildPhoneCoverage()">
+      <option value="break">Break</option>
+      <option value="lunch">Lunch</option>
+      <option value="lact">Lactation Break</option>
+      <option value="bl">Break + Lunch</option>
+      <option value="all" selected>Break + Lunch + Lactation Break</option>
+    </select>
+    <label>🎯 Min agents on phones <input type="number" min="0" class="pc-min" id="pcMinInput"></label>
   </div>
-  <div id="lunchConcurrencyPanel" class="panel"></div>
+  <div id="phoneCoveragePanel" class="panel"></div>
 </section>
 
 <!-- ============ ANNOUNCEMENTS ============ -->
@@ -1062,6 +1081,8 @@ html[data-theme=dark] #dataUpdateNote .du-name{color:#cfdcff}
             <th onclick="sortBy('schedule','Lunch')">🍽️ Lunch</th>
             <th onclick="sortBy('schedule','Break 2')">☕ B2</th>
             <th onclick="sortBy('schedule','Break 3')">☕ B3</th>
+            <th onclick="sortBy('schedule','Lactation 1')">🍼 Lactation Break 1</th>
+            <th onclick="sortBy('schedule','Lactation 2')">🍼 Lactation Break 2</th>
             <th onclick="sortBy('schedule','Supervisor')">🧑‍💼 Supervisor</th>
           </tr>
         </thead>
@@ -1695,7 +1716,7 @@ const badge = t => `<span style="color:${t.color};font-weight:bold">${t.icon} ${
 
 const emptyItem = (color, text) => `<li class="empty" style="--c:${color}">${text}</li>`;
 const phLine = ph => ph ? `<br><small class="ph-time">${FLAG.ph}${ph} PH</small>` : '';
-const nameTimeItem = (cls, x) => `<li class="${cls}"><strong>${esc(x.name)}</strong><br><small>${x.time} EST</small>${phLine(x.ph)}</li>`;
+const nameTimeItem = (cls, x) => `<li class="${cls}"><strong>${esc(x.name)}</strong>${x.lact ? ' <small>· Lactation Break</small>' : ''}<br><small>${x.time} EST</small>${phLine(x.ph)}</li>`;
 const uniqueSupervisors = () => [...new Set(estData.map(x => x.Supervisor).filter(Boolean))];
 
 function toggleDetails(card) {
@@ -1807,7 +1828,22 @@ async function loadAttendance() {
   renderStatus();
 }
 
-const TIME_COLS = ['Break 1', 'Lunch', 'Break 2', 'Break 3'];
+const TIME_COLS = ['Break 1', 'Lunch', 'Break 2', 'Break 3', 'Lactation 1', 'Lactation 2'];
+
+/* Agents with two special 20-minute breaks. Their start times come from the optional "Lactation 1" and "Lactation 2"
+   columns of the schedule sheets (weekly roster EST / PH tabs and, if you use it, "Schedule By Date").
+   They show on the dashboard as "Lactation Break". */
+const LACTATION_AGENTS = ['Raquela Nicole Lareta', 'Crisma Vic Melecio', 'Erica Mae Villamor', 'Jieleen Villegas', 'Joanah Carl Anoling'];
+const LACTATION_MIN = 20;
+const LACT_KEYS = new Set(LACTATION_AGENTS.map(normName));
+const isLact = n => LACT_KEYS.has(normName(n));
+/* Every break of an agent for the day: start minute + length (15 min, or 20 min for the special breaks) */
+function breakList(r) {
+  const out = [];
+  ['Break 1', 'Break 2', 'Break 3'].forEach(c => { const t = tm(r[c]); if (t != null) out.push({ t, len: 15 }); });
+  if (isLact(r.Name)) ['Lactation 1', 'Lactation 2'].forEach(c => { const t = tm(r[c]); if (t != null) out.push({ t, len: LACTATION_MIN, lact: true }); });
+  return out;
+}
 
 function parseClock(v) {
   if (v === '' || v == null) return null;
@@ -1856,7 +1892,8 @@ function buildDailyMap(rows) {
       shift: normShift(x.Shift),
       supervisor: String(x.Supervisor ?? '').trim(),
       b1: normTime(x['Break 1']), lunch: normTime(x['Lunch']),
-      b2: normTime(x['Break 2']), b3: normTime(x['Break 3'])
+      b2: normTime(x['Break 2']), b3: normTime(x['Break 3']),
+      l1: normTime(x['Lactation 1']), l2: normTime(x['Lactation 2'])
     });
   });
   return m;
@@ -1901,7 +1938,8 @@ function rowFor(r, date) {
   const d = dailyFor(r, date);
   if (!d) return r;
   return { ...r, [dayName(date)]: d.shift, Supervisor: d.supervisor || r.Supervisor,
-           'Break 1': d.b1, 'Lunch': d.lunch, 'Break 2': d.b2, 'Break 3': d.b3 };
+           'Break 1': d.b1, 'Lunch': d.lunch, 'Break 2': d.b2, 'Break 3': d.b3,
+           'Lactation 1': d.l1 || r['Lactation 1'], 'Lactation 2': d.l2 || r['Lactation 2'] };
 }
 
 /* QA / Metric / Scorecard only change when you update them (days apart), so the 1-minute auto-refresh skips them and
@@ -1938,7 +1976,7 @@ const TAB_RENDERERS = {
   metricTab: buildMetric,
   mcsTab: buildMcs,
   forecastTab: refreshForecast,
-  lunchTab: buildLunchConcurrency,
+  phoneTab: buildPhoneCoverage,
   announcementsTab: buildAnnouncementsTab
 };
 
@@ -2018,9 +2056,8 @@ function getStatus(r, date, time) {
   const lunch = tm(r['Lunch']);
   if (lunch != null && c >= lunch && c < lunch + 60) return 'Lunch';
 
-  for (const b of [r['Break 1'], r['Break 2'], r['Break 3']]) {
-    const bt = tm(b);
-    if (bt != null && c >= bt && c < bt + 15) return 'Break';
+  for (const k of breakList(r)) {
+    if (c >= k.t && c < k.t + k.len) return 'Break';
   }
   return 'Working';
 }
@@ -2157,17 +2194,16 @@ function runLookup() {
     if (!st) return;
     if (supFilter !== ALL && r.Supervisor !== supFilter) return;
 
-    [r['Break 1'], r['Break 2'], r['Break 3']].forEach(br => {
-      const bt = tm(br);
-      if (bt != null && bt > mins && bt <= mins + 30) upBreaks.push({ name: r.Name, sup: r.Supervisor, time: fmtAMPM(toHHMM(bt)), ph: phTime(date, bt) });
+    breakList(r).forEach(k => {
+      if (k.t > mins && k.t <= mins + 30) upBreaks.push({ name: r.Name, sup: r.Supervisor, time: fmtAMPM(toHHMM(k.t)), ph: phTime(date, k.t), lact: k.lact });
     });
     const lt = tm(r['Lunch']);
     if (lt != null && lt > mins && lt <= mins + 30) upLunches.push({ name: r.Name, sup: r.Supervisor, time: fmtAMPM(toHHMM(lt)), ph: phTime(date, lt) });
 
     w.push({ name: r.Name, sup: r.Supervisor, type: st.toLowerCase() });
     if (st === 'Break') {
-      const bt = [r['Break 1'], r['Break 2'], r['Break 3']].find(x => { const t = tm(x); return t != null && mins >= t && mins < t + 15; });
-      b.push({ name: r.Name, sup: r.Supervisor, time: formatTimeRange(bt, 15), ph: phRange(date, tm(bt), 15) });
+      const k = breakList(r).find(k => mins >= k.t && mins < k.t + k.len);
+      b.push({ name: r.Name, sup: r.Supervisor, time: formatTimeRange(toHHMM(k.t), k.len), ph: phRange(date, k.t, k.len), lact: k.lact });
     }
     if (st === 'Lunch') l.push({ name: r.Name, sup: r.Supervisor, time: formatTimeRange(r['Lunch'], 60), ph: phRange(date, tm(r['Lunch']), 60) });
   });
@@ -2405,46 +2441,86 @@ function buildCoverageTimeline() {
     <div style="display:grid;grid-template-columns:repeat(4,1fr);grid-template-rows:repeat(12,auto);grid-auto-flow:column;gap:10px;margin-top:15px">${cells}</div>`;
 }
 
-/* Lunch Concurrency: how many agents are on lunch (60 min) in each 30-minute interval.
-   An agent counts in every interval their lunch overlaps; leave and Called Off / NCNS shifts are left out. */
-function lunchSlots(date) {
-  const people = estData.map(r => ({
-    r,
-    shifts: shiftsAround(r, date).map(s => ({ ...s, out: coverageGaps(r, s).out }))
-  }));
-  /* Each agent's lunch as minutes on this date's timeline (overnight shifts: after-midnight lunches land in the next day) */
-  const lunches = [];
-  people.forEach(({ r, shifts }) => shifts.forEach(s => {
-    if (s.out) return;
-    const lt = tm(rowFor(r, s.date)['Lunch']);
-    if (lt == null) return;
-    const at = [lt - 1440, lt, lt + 1440].find(x => x >= s.start && x < s.end);
-    if (at != null) lunches.push({ name: r.Name, start: at, end: at + 60 });
-  }));
+/* Phone Coverage: who is on shift (as in Daily Intervals) minus who is on break, lunch or lactation break, per 15-minute interval.
+   Active on phones = on shift (after leave / called off / late / left early) minus agents on break, lunch or lactation break.
+   Uses the same rules as the two pages it combines (coverageGaps for shifts, breakList + 60-min lunch for time away). */
+function phoneSlots(date, step = 15) {
+  const people = estData.map(r => {
+    const shifts = shiftsAround(r, date).map(s => ({ ...s, ...coverageGaps(r, s) }));
+    const items = [];
+    shifts.forEach(s => {
+      if (s.out) return;
+      const row = rowFor(r, s.date);
+      [...breakList(row).map(k => [k.t, k.lact ? 'x' : 'b', k.len]), [tm(row['Lunch']), 'l', 60]].forEach(([t, type, len]) => {
+        if (t == null) return;
+        const at = [t - 1440, t, t + 1440].find(x => x >= s.start && x < s.end);
+        if (at != null) items.push({ type, start: at, end: at + len });
+      });
+    });
+    return { name: r.Name, shifts, items };
+  });
   const slots = [];
-  for (let m = 0; m < 1440; m += 30) {
-    const names = lunches.filter(l => l.start < m + 30 && l.end > m).map(l => l.name).sort((a, b) => a.localeCompare(b));
-    slots.push({ time: toHHMM(m), count: names.length, names });
+  for (let m = 0; m < 1440; m += step) {
+    let expected = 0, onShift = 0;
+    const br = [], lu = [], lx = [], away = new Set();
+    people.forEach(p => {
+      const s = p.shifts.find(x => x.start <= m && m < x.end);
+      if (!s) return;
+      expected++;
+      if (s.out || s.gaps.some(([a, b]) => m >= a && m < b)) return;      // leave, called off, late or left early
+      onShift++;
+      p.items.filter(i => i.start < m + step && i.end > m).forEach(i => {
+        (i.type === 'b' ? br : i.type === 'l' ? lu : lx).push(p.name);
+        away.add(p.name);
+      });
+    });
+    const byName = (a, b) => a.localeCompare(b);
+    slots.push({ time: toHHMM(m), expected, onShift, br: br.sort(byName), lu: lu.sort(byName), lx: lx.sort(byName),
+                 away: away.size, active: onShift - away.size });
   }
-  return { slots, total: lunches.filter(l => l.end > 0 && l.start < 1440).length };
+  return slots;
 }
 
-function buildLunchConcurrency() {
-  const date = $('lunchDate').value;
+function buildPhoneCoverage() {
+  const date = $('phoneDate').value;
   if (!date) return;
-  const { slots, total } = lunchSlots(date);
-  const peak = Math.max(0, ...slots.map(s => s.count));
-  const peakTimes = peak ? slots.filter(s => s.count === peak).map(s => fmtAMPM(s.time)) : [];
-
+  const min = Math.max(0, parseInt($('pcMinInput').value) || 0);
+  /* The view only picks which away types are listed. 📞 Active always has every break, lunch and lactation break subtracted. */
+  const f = { break: { b: 1 }, lunch: { l: 1 }, lact: { x: 1 }, bl: { b: 1, l: 1 }, all: { b: 1, l: 1, x: 1 } }[$('phoneView').value] || { b: 1, l: 1, x: 1 };
+  const slots15 = phoneSlots(date, 15).map(s => {
+    const br = f.b ? s.br : [], lu = f.l ? s.lu : [], lx = f.x ? s.lx : [];
+    return { ...s, br, lu, lx };
+  });
+  /* Lunch alone = 30-minute intervals: the numbers of the :00 / :30 interval, with lunches from both 15-minute halves listed */
+  const half = $('phoneView').value === 'lunch';
+  const slots = half
+    ? slots15.filter((_, i) => i % 2 === 0).map((s, k) => ({ ...s, lu: [...new Set([...s.lu, ...slots15[2 * k + 1].lu])].sort((a, b) => a.localeCompare(b)) }))
+    : slots15;
+  const isLow = s => min > 0 && s.onShift > 0 && s.active < min;
+  const lowCount = slots.filter(isLow).length;
+  const nameLine = (icon, label, list) => list.length ? `<div style="margin-top:8px"><strong>${icon} ${label}:</strong>${list.map(n => `<br>${esc(n)}`).join('')}</div>` : '';
   const cells = slots.map(s => {
-    const cls = !s.count ? 'lc-0' : s.count === peak ? 'lc-peak' : 'lc-1';
-    return `<div class="lc-cell ${cls}">
-      <strong>${fmtAMPM(s.time)}</strong> &nbsp;&nbsp; On lunch: <strong>${s.count}</strong>${s.count === peak && peak ? ' 🔺' : ''}</div>`;
+    const cls = !s.onShift ? 'lc-0' : isLow(s) ? 'pc-low' : 'pc-ok';
+    const away = [s.br.length ? `☕ ${s.br.length}` : '', s.lu.length ? `🍽️ ${s.lu.length}` : '', s.lx.length ? `🍼 ${s.lx.length}` : ''].filter(Boolean).join(' · ');
+    const detail = nameLine('☕', 'Break', s.br) + nameLine('🍽️', 'Lunch', s.lu) + nameLine('🍼', 'Lactation', s.lx);
+    return `<div class="lc-cell pc-cell ${cls}" onclick="this.querySelector('.pc-names')?.toggleAttribute('hidden')">
+      <div class="pc-main"><strong>${fmtAMPM(s.time)}</strong><span>📞 <b>${s.active}</b></span></div>
+      <small>On shift ${s.onShift}${away ? ` &nbsp;−&nbsp; ${away}` : ''}${s.expected !== s.onShift ? ` &nbsp;·&nbsp; Expected ${s.expected}` : ''}</small>
+      ${detail ? `<small class="pc-names" hidden>${detail}</small>` : ''}</div>`;
   }).join('');
 
-  $('lunchConcurrencyPanel').innerHTML = `
-    <h3>🍽️ Lunch Concurrency${peak ? ` <span style="color:var(--muted);font-size:14px;font-weight:500">· Peak: ${peak} at ${peakTimes.slice(0, 3).join(', ')}${peakTimes.length > 3 ? '…' : ''} · ${total} lunch${total === 1 ? '' : 'es'} scheduled</span>` : ''}</h3>
-    <div class="lc-grid">${cells}</div>`;
+  $('phoneCoveragePanel').innerHTML = `
+    <h3>📞 Active on Phones${lowCount ? ` <span style="color:#c62828;font-size:14px;font-weight:500">· ⚠️ ${lowCount} interval(s) below the minimum of ${min}</span>` : ''}</h3>
+    <div class="pc-legend"><span>📞 = active on phones</span><span>On shift = working, after leave / absence / late / left early</span><span>☕ break · 🍽️ lunch · 🍼 lactation break</span><span>The view only changes which breaks are listed; 📞 always counts all of them</span></div>
+    <div class="lc-grid${half ? '' : ' bk-grid'}">${cells}</div>`;
+}
+const PC_MIN_KEY = 'ditsc_pc_min_agents';
+function initPhoneSettings() {
+  const el = $('pcMinInput'); if (!el) return;
+  let saved = null, fcSaved = null;
+  try { saved = localStorage.getItem(PC_MIN_KEY); fcSaved = localStorage.getItem(FC_MIN_KEY); } catch (e) {}
+  el.value = saved ?? fcSaved ?? 7;
+  el.addEventListener('input', () => { try { localStorage.setItem(PC_MIN_KEY, el.value); } catch (e) {} buildPhoneCoverage(); });
 }
 
 /* =====================================================================
@@ -2486,6 +2562,8 @@ function buildScheduleView() {
       <td>${isOff(shift) ? '' : formatTimeRange(r['Lunch'], 60)}</td>
       <td>${isOff(shift) ? '' : formatTimeRange(r['Break 2'], 15)}</td>
       <td>${isOff(shift) ? '' : formatTimeRange(r['Break 3'], 15)}</td>
+      <td>${isOff(shift) || !isLact(r.Name) ? '' : formatTimeRange(r['Lactation 1'], LACTATION_MIN)}</td>
+      <td>${isOff(shift) || !isLact(r.Name) ? '' : formatTimeRange(r['Lactation 2'], LACTATION_MIN)}</td>
       <td>${esc(r.Supervisor)}</td>
     </tr>`).join('');
 
@@ -2561,7 +2639,7 @@ function rosterCalendarHtml({ r, cells, est }, today, ph) {
     <div><div class="as-name">${esc(r.Name)}</div><div class="as-sup">${esc(r.Supervisor || 'Unassigned')}</div></div>
     <div><div class="as-pct" style="color:${sm.pct == null ? 'inherit' : sm.pct >= 95 ? '#16a34a' : sm.pct >= 91 ? '#d97706' : '#dc2626'}">${trackerPct(sm)}</div><div class="as-lbl">Attendance this month${ph ? ' (EST days)' : ''}</div>
       <div class="as-sub">${sm.hoursWorked.toFixed(1)} / ${sm.hoursExp.toFixed(1)} hrs · ✔ ${sm.present} · ◐ ${sm.partial} · ✖ ${sm.absent} · 🌴 ${sm.leave}${chg ? ' · 🔁 ' + chg + ' changed' : ''}</div></div>
-    <div class="as-brk">${tile('Break 1', r['Break 1'], 15, '')}${tile('Lunch', r['Lunch'], 60, 'lunch')}${tile('Break 2', r['Break 2'], 15, '')}${tile('Break 3', r['Break 3'], 15, '')}</div>
+    <div class="as-brk">${tile('Break 1', r['Break 1'], 15, '')}${tile('Lunch', r['Lunch'], 60, 'lunch')}${tile('Break 2', r['Break 2'], 15, '')}${tile('Break 3', r['Break 3'], 15, '')}${isLact(r.Name) ? tile('Lactation Break 1', r['Lactation 1'], LACTATION_MIN, '') + tile('Lactation Break 2', r['Lactation 2'], LACTATION_MIN, '') : ''}</div>
   </div>`;
   return `${head}<div class="panel"><div class="cal">${dows}${'<div></div>'.repeat(lead)}${days}</div></div>`;
 }
@@ -4986,7 +5064,7 @@ function buildIntervalOptions() {
 
 window.addEventListener('DOMContentLoaded', async () => {
   buildIntervalOptions();
-  initMinTarget(); initForecastSettings();
+  initMinTarget(); initForecastSettings(); initPhoneSettings();
   initMenus();
   initMetricMonth();
   initGroupToggle();
@@ -4994,7 +5072,7 @@ window.addEventListener('DOMContentLoaded', async () => {
   initMcsMonth();
 
   const today = ymd(estNow());
-  ['selectedDate', 'ptoDate', 'calledOffDate', 'scheduleDate', 'forecastDate', 'lunchDate']
+  ['selectedDate', 'ptoDate', 'calledOffDate', 'scheduleDate', 'forecastDate', 'phoneDate']
     .forEach(id => $(id).value = today);
   $('trackerMonth').value = today.slice(0, 7);
   renderDisputeForm();
