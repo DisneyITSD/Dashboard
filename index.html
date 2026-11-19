@@ -173,6 +173,17 @@ tr.roster-off td{background:#f1f2f4;color:#666;font-style:italic}
 #qaTable tr.grp-head td:first-child{background:#eef6ff;color:var(--navy);font-weight:700}
 #qaTable tr.qa-month td:first-child{padding-left:32px;background:#f8fafc;font-weight:600}
 #qaTable tr.qa-audit td:first-child{padding-left:56px;font-weight:400;color:#334155}
+/* Agent Summary > Quality assurance (same look as the Quality Assurance page) */
+#agSumQa td.qa-score{font-weight:700;white-space:nowrap}
+#agSumQa th:not(:first-child),#agSumQa td:not(:first-child){text-align:center}
+#agSumQa tr.qa-agent td:first-child{background:#eef6ff;color:var(--navy);font-weight:700}
+#agSumQa tr.qa-month td:first-child{padding-left:32px;background:#f8fafc;font-weight:600}
+#agSumQa tr.qa-audit td:first-child{padding-left:56px;font-weight:400;color:#334155;text-decoration:underline dotted;text-underline-offset:3px}
+#agSumQa tr.qa-audit{cursor:pointer}
+#agSumQa tr.qa-audit:hover td{filter:brightness(.97)}
+html[data-theme=dark] #agSumQa tr.qa-agent td:first-child{background:#18233a;color:#c7d6ff}
+html[data-theme=dark] #agSumQa tr.qa-month td:first-child{background:#141b27}
+html[data-theme=dark] #agSumQa tr.qa-audit td:first-child{color:#aab4c4}
 
 /* ---------- Missing Agent Checker ---------- */
 .missing-layout{align-items:flex-start;gap:20px}
@@ -200,6 +211,9 @@ tr.roster-off td{background:#f1f2f4;color:#666;font-style:italic}
 .qd-line .v{white-space:pre-wrap}
 .qd-line .none{color:var(--muted,#6b7280)}
 .qd-notes{margin-top:4px;padding:10px 12px;border-radius:8px;background:var(--paper,#f6f7f9);white-space:pre-wrap;overflow-wrap:anywhere}
+.qd-notes .qd-nb{white-space:normal;margin:0 0 12px;line-height:1.45}
+.qd-notes .qd-nb:last-child{margin-bottom:0}
+.qd-notes .qd-nb>div{margin:2px 0}
 .qd-score{font-weight:700}
 .qd-score.sc-good{color:var(--green,#16a34a)}
 .qd-score.sc-mid{color:var(--orange,#d97706)}
@@ -446,6 +460,47 @@ html[data-theme=dark] #lbprrTable td.ut-yel{background:#854d0e;color:#fef9c3}
 #lbprrTable tr.ut-grp td:nth-child(2){font-weight:600;color:var(--muted)}
 .ut-legend{display:flex;flex-wrap:wrap;gap:8px 18px;margin:0 0 12px;font-size:13px;color:var(--muted)}
 .ut-legend i{display:inline-block;width:12px;height:12px;border-radius:3px;margin-right:6px;vertical-align:-1px}
+
+/* QA: most-missed questions (answers of "No") */
+.panel.qq{padding:14px 16px;margin-bottom:12px}
+.qq-head{display:flex;flex-wrap:wrap;align-items:center;gap:6px 14px;margin-bottom:10px}
+.qq-sub{color:var(--muted);font-size:12px}
+.qq-ctl{margin-left:auto;display:flex;gap:8px}
+.qq-ctl select,.qq-ctl button{padding:6px 12px;font-size:13px;min-width:0}
+.qq-body{display:flex;flex-wrap:wrap;gap:18px}
+.qq-bars{flex:1 1 380px;min-width:280px}
+.qq-trend{flex:1 1 300px;min-width:260px}
+.qq-row{display:grid;grid-template-columns:42px 1fr 96px;align-items:center;gap:8px;padding:3px 6px;border-radius:6px;cursor:pointer;font-size:13px}
+.qq-row:hover{background:var(--paper)}
+.qq-row.sel{background:color-mix(in srgb,var(--blue) 12%,transparent);box-shadow:inset 3px 0 0 var(--blue)}
+.qq-lab{font-weight:700}
+.qq-qt{grid-column:2 / -1;font-size:12px;line-height:1.3;opacity:.75;margin:-2px 0 3px}
+.qq-qfull{font-size:14px;line-height:1.35;margin:0 0 12px}
+.qq-qfull small{display:block;opacity:.7;margin-top:2px}
+.qd-qt{opacity:.7;font-size:12px}
+.qq-crit{font-size:12.5px;line-height:1.4;margin:0 0 14px}
+.qq-crit b{display:block;font-size:13px;margin-bottom:3px}
+.qq-crit.yes b{color:#2e7d32}
+.qq-crit.no b{color:#c62828}
+html[data-theme=dark] .qq-crit.yes b{color:#86efac}
+html[data-theme=dark] .qq-crit.no b{color:#f87171}
+.qq-ci{display:flex;gap:7px;align-items:flex-start;margin:4px 0}
+.qq-ci>span:first-child{flex:none;font-size:10px;line-height:1.9}
+.qq-track{height:14px;background:var(--line);border-radius:7px;overflow:hidden}
+.qq-fill{height:100%;border-radius:7px;background:var(--red)}
+.qq-num{text-align:right;color:var(--muted);font-variant-numeric:tabular-nums;white-space:nowrap}
+.qq-num b{color:var(--ink)}
+.qq-tt{font-weight:700;margin:2px 0 6px}
+.qq-svg{width:100%;height:auto;display:block}
+.qq-grid{stroke:var(--line);stroke-width:1}
+.qq-line{fill:none;stroke:var(--red);stroke-width:2.2;stroke-linejoin:round}
+.qq-dot{fill:var(--red)}
+.qq-txt{fill:var(--muted);font-size:10px}
+.qq-val{fill:var(--ink);font-size:10px;font-weight:600}
+.qq-note{color:var(--muted);font-size:12px;margin-top:6px}
+.qq.yes .qq-fill{background:var(--green)}
+.qq.yes .qq-line{stroke:var(--green)}
+.qq.yes .qq-dot{fill:var(--green)}
 </style>
 <script>(function(){try{var m=localStorage.getItem('ditsc_theme')||'system';document.documentElement.dataset.theme=(m==='dark'||(m==='system'&&matchMedia('(prefers-color-scheme: dark)').matches))?'dark':'light'}catch(e){}})()</script>
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet" media="print" onload="this.media='all'"><noscript><link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet"></noscript>
@@ -1409,6 +1464,33 @@ html[data-theme=dark] #dataUpdateNote .du-name{color:#cfdcff}
   </div>
   <div class="podium" id="qaPodium"></div>
   <div class="trk-legend" id="qaLegend"></div>
+  <div class="panel qq yes" id="qaWell">
+    <div class="qq-head">
+      <b>📈 What went well</b>
+      <span class="qq-sub" id="qySub"></span>
+      <div class="qq-ctl">
+        <button type="button" id="qyMore" onclick="qqToggle('yes')">Show all</button>
+      </div>
+    </div>
+    <div class="qq-body">
+      <div class="qq-bars" id="qyBars"></div>
+      <div class="qq-trend" id="qyTrend"></div>
+    </div>
+  </div>
+  <div class="panel qq" id="qaQuestions">
+    <div class="qq-head">
+      <b>📉 What went wrong</b>
+      <span class="qq-sub" id="qqSub"></span>
+      <div class="qq-ctl">
+        <input type="hidden" id="qqSort" value="count">
+        <button type="button" id="qqMore" onclick="qqToggle('no')">Show all</button>
+      </div>
+    </div>
+    <div class="qq-body">
+      <div class="qq-bars" id="qqBars"></div>
+      <div class="qq-trend" id="qqTrend"></div>
+    </div>
+  </div>
   <div class="panel">
     <div class="schedule-container">
       <table id="qaTable">
@@ -1611,6 +1693,7 @@ const URLS = {
   attTime: sheetUrl(417537234),            // "ATTENDANCE TIME" tab: Name | EST Date | Type | Actual Time
   announcements: sheetUrl(6259028),
   qa: scheduleUrl(337356668),              // "QA" tab (&headers=1 forces row 1 to be read as the header)
+  qaScoring: sheetUrl(340509074),          // "QA Scoring" tab: QA# | Question | Yes | No (the wording of Q1 - Q25)
   metric: sheetUrl(2096143764),            // "metric scorecard" tab (Performance Stack Ranking)
   agentScores: sheetUrl(1351966528),       // "agent" tab (Metric Scorecard: actual scores)
   daily: scheduleUrl(1383082920)           // "Schedule By Date" tab
@@ -1992,6 +2075,23 @@ const loadQA = () => guard('qa', "Couldn't load the QA tab", async () => {
   qaList = (await fetchCSV(URLS.qa, { need: 'Analyst Name' })).filter(r => String(r['Analyst Name'] ?? '').trim());
 });
 
+/* QA Scoring tab: QA# | Question | Yes | No  ->  the wording of each question (Q1 - Q25) plus its Yes / No scoring values */
+let qaQMap = new Map();
+const loadQAScoring = () => guard('qaScoring', "Couldn't load the QA Scoring tab", async () => {
+  const rows = await fetchCSV(URLS.qaScoring, { raw: true });
+  const h = rows.findIndex(r => r.some(c => /^qa\s*#?$/i.test(clean(c))));
+  if (h < 0) throw new Error('no "QA#" header found - check the tab gid and sharing');
+  const heads = rows[h].map(c => clean(c).toLowerCase());
+  const col = re => heads.findIndex(x => re.test(x));
+  const iN = col(/^qa\s*#?$/), iQ = col(/^question/), iY = col(/^yes$/), iNo = col(/^no$/);
+  const map = new Map();
+  rows.slice(h + 1).forEach(r => {
+    const m = clean(r[iN]).match(/\d+/); if (!m) return;                 // "Q5", "QAQ5", "5" -> 5
+    map.set(parseInt(m[0], 10), { text: iQ >= 0 ? clean(r[iQ]) : '', yes: iY >= 0 ? clean(r[iY]) : '', no: iNo >= 0 ? clean(r[iNo]) : '' });
+  });
+  qaQMap = map;
+});
+
 /* Metric tab: Month | Agent Name | ...scores... | TOTAL | Remarks | Supervisor
    The header row is the row that has an "Agent Name" cell. If a row above it holds weights, they are shown under the titles. */
 const loadMetric = () => guard('metric', "Couldn't load the Performance Stack Ranking tab", async () => {
@@ -2032,7 +2132,7 @@ async function refreshAttendanceData(notify = false, scores = true) {
   if (btn) { btn.disabled = true; btn.classList.add('spinning'); }
   try {
     await Promise.all([loadAttendance(), loadSchedules(), loadDaily(),
-      ...(scores ? [loadQA(), loadMetric(), loadMcs()] : []),
+      ...(scores ? [loadQA(), loadQAScoring(), loadMetric(), loadMcs()] : []),
       ...(notify && typeof loadDataUpdates === 'function' ? [loadDataUpdates()] : [])]);   // also re-read the "Data as of" dates
   } finally { if (btn) { btn.disabled = false; btn.classList.remove('spinning'); } }
   renderAll();
@@ -3185,6 +3285,89 @@ function buildQA() {
   $('qaAgents').textContent = list.length;
   $('qaCount').textContent = rows.length;
   $('qaAvg').textContent = fmtScore(avgOf(rows));
+  buildQaQuestions(rows, all.filter(x => (sup === ALL || x.supervisor === sup) && (!q || up(`${x.analyst} ${x.ticket}`).includes(q))));
+}
+
+/* ---------- QA: which questions (Q1 - Q25) are answered "No" the most, and how that moves month by month ----------
+   Follows the QA filters: the bars use the ticked months + supervisor + search; the trend line uses every month (same supervisor + search).
+   Only Yes / No answers count; N/A and blank answers are skipped. "No %" = No / (Yes + No). Click a bar to see that question's trend. */
+const qqUi = { no: { p: 'qq', sel: null, all: false, word: 'No' }, yes: { p: 'qy', sel: null, all: false, word: 'Yes' } };   // What went wrong (No) / What went well (Yes)
+let qqLast = { rows: [], trend: [] }, qqBound = false;
+const qaAnswerKind = v => { const s = String(v ?? '').trim().toLowerCase(); return /^(no|n)$/.test(s) ? 'no' : /^(yes|y)$/.test(s) ? 'yes' : ''; };
+const qaQInfo = label => qaQMap.get(parseInt(String(label).replace(/\D/g, ''), 10) || 0) || null;
+const qaLines = s => String(s || '').split(/\r?\n/).map(x => x.trim()).filter(Boolean);      // one entry per line of a sheet cell
+const qaCritHtml = (title, s, cls) => { const L = qaLines(s); return L.length ? `<div class="qq-crit ${cls}"><b>${title}</b>${L.map(x => `<div class="qq-ci"><span>${cls === 'yes' ? '🟢' : '🔴'}</span><span>${esc(x)}</span></div>`).join('')}</div>` : ''; };
+const qaQText = label => (qaQInfo(label) || {}).text || '';
+function qaQuestionStats(rows) {
+  const m = new Map();
+  rows.forEach(x => {
+    const raw = qaList[x.id]; if (!raw) return;
+    qaDetailFields(raw).qs.forEach(q => {
+      const k = qaAnswerKind(q.value); if (!k) return;
+      if (!m.has(q.label)) m.set(q.label, { label: q.label, no: 0, yes: 0, n: parseInt(q.label.replace(/\D/g, ''), 10) || 0 });
+      m.get(q.label)[k]++;
+    });
+  });
+  return [...m.values()].map(e => ({ ...e, tot: e.no + e.yes, rate: e.no + e.yes ? e.no / (e.no + e.yes) * 100 : 0, yrate: e.no + e.yes ? e.yes / (e.no + e.yes) * 100 : 0 }));
+}
+function qqToggle(kind) { qqUi[kind].all = !qqUi[kind].all; buildQaQuestions(); }
+function qqTrendHtml(label, kind) {
+  const W_ = qqUi[kind].word;
+  const byMonth = new Map();
+  qqLast.trend.forEach(x => { if (!byMonth.has(x.ym)) byMonth.set(x.ym, []); byMonth.get(x.ym).push(x); });
+  const pts = [...byMonth.keys()].sort().map(ym => {
+    const s = qaQuestionStats(byMonth.get(ym)).find(e => e.label === label);
+    return { ym, cnt: s ? s[kind] : 0, tot: s ? s.tot : 0, rate: s && s.tot ? (kind === 'no' ? s.rate : s.yrate) : null };
+  });
+  const qi = qaQInfo(label);
+  const head = `<div class="qq-tt">${esc(label)} – “${W_}” % by month</div>` +
+    (qi && qi.text ? `<div class="qq-qfull">${qaLines(qi.text).map(esc).join('<br>')}</div>` + qaCritHtml('✅ YES:', qi.yes, 'yes') + qaCritHtml('❌ NO:', qi.no, 'no') : '');
+  const have = pts.filter(p => p.rate != null);
+  if (!have.length) return head + '<div class="qq-note">No Yes / No answers for this question yet.</div>';
+  const W = 320, H = 180, L = 34, R = 12, T = 18, B = 34, n = pts.length;
+  const yMax = Math.max(10, Math.ceil(Math.max(...have.map(p => p.rate)) / 10) * 10);
+  const X = i => n === 1 ? (L + W - R) / 2 : L + i * (W - L - R) / (n - 1), Y = r => T + (1 - r / yMax) * (H - T - B);
+  const mlab = ym => new Date(+ym.slice(0, 4), +ym.slice(5, 7) - 1, 1).toLocaleDateString('en-US', { month: 'short', year: '2-digit' });
+  const grid = [0, yMax / 2, yMax].map(v => `<line class="qq-grid" x1="${L}" x2="${W - R}" y1="${Y(v)}" y2="${Y(v)}"/><text class="qq-txt" x="${L - 5}" y="${Y(v) + 3}" text-anchor="end">${v}%</text>`).join('');
+  const line = have.length > 1 ? `<polyline class="qq-line" points="${pts.map((p, i) => p.rate == null ? '' : X(i) + ',' + Y(p.rate)).filter(Boolean).join(' ')}"/>` : '';
+  const dots = pts.map((p, i) => p.rate == null ? '' :
+    `<circle class="qq-dot" cx="${X(i)}" cy="${Y(p.rate)}" r="3.5"><title>${esc(mlab(p.ym))}: ${p.cnt} ${W_} of ${p.tot} answered (${p.rate.toFixed(1)}%)</title></circle>` +
+    `<text class="qq-val" x="${X(i)}" y="${Y(p.rate) - 8}" text-anchor="middle">${p.rate.toFixed(0)}%</text>`).join('');
+  const step = Math.ceil(n / 7);
+  const xl = pts.map((p, i) => i % step ? '' : `<text class="qq-txt" x="${X(i)}" y="${H - 14}" text-anchor="middle">${esc(mlab(p.ym))}</text>`).join('');
+  const last = have[have.length - 1], prev = have[have.length - 2];
+  const delta = prev ? ` · ${last.rate - prev.rate >= 0 ? '+' : ''}${(last.rate - prev.rate).toFixed(1)} pts vs ${mlab(prev.ym)}` : '';
+  return head + `<svg class="qq-svg" viewBox="0 0 ${W} ${H}" role="img" aria-label="${esc(label)} ${W_} percentage by month">${grid}${line}${dots}${xl}</svg>` +
+    `<div class="qq-note">${esc(mlab(last.ym))}: ${last.cnt} ${W_} of ${last.tot} answered (${last.rate.toFixed(1)}%)${delta}</div>`;
+}
+function buildQaQuestions(rows, trend) {
+  if (rows) qqLast = { rows, trend: trend || rows };
+  if (!qqBound) {
+    qqBound = true;
+    Object.values(qqUi).forEach(u => $(u.p + 'Bars').addEventListener('click', e => { const r = e.target.closest('.qq-row'); if (r) { u.sel = r.dataset.q; buildQaQuestions(); } }));
+  }
+  const allStats = qaQuestionStats(qqLast.rows);
+  Object.entries(qqUi).forEach(([kind, u]) => {
+    const stats = allStats.slice(), rateOf = s => kind === 'no' ? s.rate : s.yrate, W_ = u.word;
+    stats.sort((a, b) => b[kind] - a[kind] || rateOf(b) - rateOf(a) || a.n - b.n);
+    $(u.p + 'Sub').textContent = `${qqLast.rows.length} audit${qqLast.rows.length === 1 ? '' : 's'} · N/A and blank answers are skipped`;
+    $(u.p + 'More').hidden = stats.length <= 10;
+    $(u.p + 'More').textContent = u.all ? 'Show top 10' : `Show all ${stats.length}`;
+    if (!stats.length) {
+      $(u.p + 'Bars').innerHTML = '<div class="qq-note">No Yes / No answers found in the question columns for these filters.</div>';
+      $(u.p + 'Trend').innerHTML = ''; return;
+    }
+    if (!u.sel || !stats.some(s => s.label === u.sel)) u.sel = stats[0].label;
+    const shown = u.all ? stats : stats.slice(0, 10), max = Math.max(...shown.map(s => s[kind])) || 1;
+    $(u.p + 'Bars').innerHTML = shown.map(s => `
+    <div class="qq-row${s.label === u.sel ? ' sel' : ''}" data-q="${esc(s.label)}" title="${s[kind]} ${W_} of ${s.tot} answered (${rateOf(s).toFixed(1)}%) – click for the monthly trend">
+      <span class="qq-lab">${esc(s.label)}</span>
+      <span class="qq-track"><span class="qq-fill" style="display:block;width:${Math.max(2, s[kind] / max * 100)}%"></span></span>
+      <span class="qq-num"><b>${s[kind]}</b> ${W_} · ${rateOf(s).toFixed(0)}%</span>
+      ${qaQText(s.label) ? `<span class="qq-qt">${esc(qaQText(s.label))}</span>` : ''}
+    </div>`).join('');
+    $(u.p + 'Trend').innerHTML = qqTrendHtml(u.sel, kind);
+  });
 }
 
 /* ---------- QA audit details: click a ticket to see the whole audit as a simple Label: value list ---------- */
@@ -3202,6 +3385,18 @@ function qaDetailFields(raw) {
   if (!qs.length && !heads.some(h => /^\s*(qaq|q|question)\s*[#.\-:]?\s*\d+\s*$/i.test(h))) qs = heads.filter(h => !used.has(h) && h.trim() && !/^(timestamp|date)$/i.test(h.trim()) && !/^_\d+$/.test(h.trim()));   // question columns not named Q1, Q2...
   const label = h => /^\s*(qaq|q|question)\s*[#.\-:]?\s*\d+\s*$/i.test(h) ? 'Q' + h.match(/\d+/)[0] : h.trim();
   return { typeH, byH, qs: qs.map(h => ({ label: label(h), value: raw[h] })) };
+}
+/* Notes in the audit details: one line per sentence, a new block at each "QAQ3" / "QAQ9" marker, links on their own line */
+function qaNotesHtml(s) {
+  const txt = String(s ?? '').replace(/\r/g, '').trim();
+  const abbr = /^(e\.g|i\.e|etc|vs|mr|mrs|ms|dr|approx)\.$|^\d+\.$/i;               // a full stop here does not end a sentence
+  const sentences = seg => seg.replace(/([.!?]["”')\]]*)\s+(?=["“'(]?[A-Z0-9])/g, (m, p, off) => {
+    const w = (seg.slice(0, off + 1).match(/(\S+)$/) || [''])[0];
+    return abbr.test(w) ? m : p + '\n';
+  }).split('\n').map(x => x.trim()).filter(Boolean);
+  return txt.replace(/(^|\s+)(?=QAQ\d+\b)/g, '\n\n').replace(/[ \t]+(?=https?:\/\/)/g, '\n').split(/\n{2,}/).map(b => b.trim()).filter(Boolean).map(block =>
+    `<div class="qd-nb">${block.split('\n').flatMap(sentences).map(l => `<div>${esc(l).replace(/^(QAQ\d+)\b/, '<b>$1</b>')}</div>`).join('')}</div>`
+  ).join('');
 }
 function openQaDetail(id) {
   const raw = qaList[id];
@@ -3230,8 +3425,8 @@ function openQaDetail(id) {
         ${f.typeH ? line('QA Type', raw[f.typeH]) : ''}
         <div class="qd-line"><b>Score:</b> ${scoreHtml}</div>
       </div>
-      ${f.qs.length ? `<div class="qd-grp">${f.qs.map(q => line(q.label, q.value)).join('')}</div>` : ''}
-      <div class="qd-grp"><div class="qd-line"><b>Notes:</b> ${notes ? '' : '<span class="none">—</span>'}</div>${notes ? `<div class="qd-notes">${esc(notes)}</div>` : ''}</div>
+      ${f.qs.length ? `<div class="qd-grp">${f.qs.map(q => line(q.label, q.value).replace(/<\/div>$/, qaQText(q.label) ? ` <span class="qd-qt">– ${esc(qaQText(q.label))}</span></div>` : '</div>')).join('')}</div>` : ''}
+      <div class="qd-grp"><div class="qd-line"><b>Notes:</b> ${notes ? '' : '<span class="none">—</span>'}</div>${notes ? `<div class="qd-notes">${qaNotesHtml(notes)}</div>` : ''}</div>
       ${f.byH ? `<div class="qd-grp">${line('Submitted By', raw[f.byH])}</div>` : ''}
     </div></div>`;
   back.hidden = false;
@@ -3360,14 +3555,14 @@ const METRIC_BANDS = {
 const metricBand = i => METRIC_BANDS[String(metricHeads[i] || '').toLowerCase().trim()] || null;
 
 /* Overall Metric Scorecard: colour from the KPI targets (only columns that have a target; percent values only) */
-function mcsBand(head, v) {
+function mcsBand(head, v, months) {
   if (!v || /no data/i.test(v) || !/%\s*$/.test(String(v).trim())) return '';
   const k = mcsKey(head), n = metricVal(v);
   if (typeof n !== 'number') return '';
   if (k === 'qa') return n >= 95 ? 'good' : n >= 85 ? 'mid' : 'low';
   if (k === 'workingrate') return n >= 75 ? 'good' : n >= 70 ? 'mid' : 'low';
   if (k === 'compliance') return n >= 100 ? 'good' : 'low';
-  if (k === 'misroutes') return n < 1.03 ? 'good' : n < 2 ? 'mid' : 'low';
+  if (k === 'misroutes') return months > 1 ? '' : n < 1.03 ? 'good' : n < 2 ? 'mid' : 'low';   // several months are added up, so the per-month target no longer applies
   if (k.startsWith('fcrcount')) return n >= 82 ? 'good' : n >= 60 ? 'mid' : 'low';
   return '';
 }
@@ -3569,12 +3764,12 @@ function initMcsMonth() {
 }
 
 /* Combine several months into one row per agent:
-   - the columns listed in MCS_SUM are ADDED UP
-   - every other column (percentages, times, rates, misroutes, FCR ...) is AVERAGED
+   - the columns listed in MCS_SUM are ADDED UP (calls, tickets, misroutes ...)
+   - every other column (percentages, times, rates, FCR ...) is AVERAGED
    "No Data" / blank months are ignored. */
 const MCS_SUM = ['Calls Handled', 'Tickets Opened', 'Wrap Up Time - Instances', 'Wrap Up Time - Total Time',
   'Extended Wrap up Time - Instances', 'Extended Wrap up Time - Total Time', 'Activity Code - Restroom - Instances',
-  'Restroom Total Time', 'Refused Calls', 'PTO Used'].map(mcsKey);
+  'Restroom Total Time', 'Refused Calls', 'PTO Used', 'Misroutes'].map(mcsKey);
 const mcsIsSum = h => { const k = mcsKey(h); return MCS_SUM.some(s => k === s || (s.length > 4 && k.startsWith(s))); };
 function mcsAggregate(rowsIn) {
   const I = mcsI, rank = m => { const t = Date.parse(m + ' 1, 2000'); return isNaN(t) ? 0 : t; };
@@ -3655,7 +3850,7 @@ function buildMcs() {
       list.sort((a, b) => rank(a[I.month]) - rank(b[I.month]));
       const sc = supOf(list[list.length - 1]), g = normName(list[0][I.agent]), open = mcsOpen.has(g);
       const row = (r, label, cls, hid) => `<tr class="${cls}" data-g="${esc(g)}" style="${supStyle(sc)}"${hid ? ' hidden' : ''}>` +
-        mcsCols.map(i => { const b = i === I.agent || i === I.sup ? '' : mcsBand(mcsHeads[i], r[i]); return `<td${b ? ` class="kc-${b}"` : ''}>${i === I.agent ? label : esc(i === I.sup ? sc : r[i]) || '—'}</td>`; }).join('') + '</tr>';
+        mcsCols.map(i => { const b = i === I.agent || i === I.sup ? '' : mcsBand(mcsHeads[i], r[i], r._n); return `<td${b ? ` class="kc-${b}"` : ''}>${i === I.agent ? label : esc(i === I.sup ? sc : r[i]) || '—'}</td>`; }).join('') + '</tr>';
       if (list.length < 2) return row(list[0], `${esc(list[0][I.agent])} <small>· ${esc(list[0][I.month] || '')}</small>`, 'mcs-single sup-row', false);
       /* collapsible agent row = Total for the ticked months; click it to show / hide the monthly rows */
       return row(mcsAggregate(list)[0], `<span class="caret"></span>${esc(list[0][I.agent])}`, `grp-head mcs-agent sup-row${open ? ' open' : ''}`, false) +
@@ -3683,7 +3878,7 @@ function buildMcs() {
     return `<tr class="${supClass(sc)}" style="${supStyle(sc)}">` +
       mcsCols.map(i => {
         if (i === I.agent && r._n && r._n < mcsSel.size) return `<td>${esc(r[i])} <small class="mo" title="Totals / averages cover only the months this agent has data">(${r._n}/${mcsSel.size} mo)</small></td>`;
-        const b = i === I.sup ? '' : mcsBand(mcsHeads[i], r[i]);
+        const b = i === I.sup ? '' : mcsBand(mcsHeads[i], r[i], r._n);
         return `<td${b ? ` class="kc-${b}"` : ''}>${esc(i === I.sup ? sc : r[i]) || '—'}</td>`;
       }).join('') + '</tr>';
   }).join('') : `<tr><td colspan="${mcsCols.length || 1}">No agents found</td></tr>`;
@@ -4507,6 +4702,8 @@ function sumTeam(list) {
    rules as the other pages (hours and QA audits added up, scores averaged, call / ticket counts added up).
    ===================================================================== */
 let agSumSel = new Set(), agSumSelInit = false, agSumWired = false, agSumMonths = [];
+const agQaOpen = new Set();      // opened month rows in the Quality assurance table: 'm|<yyyy-mm>'
+let agQaLast = null;             // { a, selYm, multi } of the last build, so a month row can be opened without rebuilding the page
 /* Columns of the Overall Metric Scorecard shown on this tab */
 const AGSUM_COLS = ['Calls Handled', 'Tickets Opened', 'AHT', 'QA', 'Working Rate', 'Occupancy', 'Compliance', 'Misroutes', 'FCR Count (First Contact Resolution)'];
 /* Card label + accepted sheet header names (compared without case, spaces or punctuation) for each scorecard column */
@@ -4564,6 +4761,46 @@ function wireAgSum() {
     }
     buildAgentSummary();
   });
+  $('agSumBody').addEventListener('click', e => {                 // Quality assurance: ticket -> audit details, month row -> open / close
+    const au = e.target.closest('#agSumQa tr.qa-audit');
+    if (au) { openQaDetail(+au.dataset.qa); return; }
+    const h = e.target.closest('#agSumQa tr.grp-head');
+    if (!h) return;
+    agQaOpen.has(h.dataset.k) ? agQaOpen.delete(h.dataset.k) : agQaOpen.add(h.dataset.k);
+    $('agSumQaBox').innerHTML = agSumQaHtml();
+  });
+}
+
+/* Quality assurance table for the picked agent: the same layout as the Quality Assurance page.
+   One month ticked: every audit of that month. Several months: one row per month (open it for its audits). Click a ticket for the full audit. */
+function agSumQaHtml() {
+  if (!agQaLast) return '';
+  const { a, selYm, multi } = agQaLast;
+  const mine = qaList.map((x, id) => {
+    const date = normalizeDate(x.CallDate);
+    return { analyst: String(x['Analyst Name'] ?? '').trim(), supervisor: String(x.Supervisor ?? '').trim(), date, ym: date.slice(0, 7),
+             ticket: String(x.TicketNumber ?? '').trim(), score: qaPct(x.Score), id };
+  }).filter(x => x.ym && selYm.includes(x.ym) && normName(x.analyst) === normName(a.name))
+    .sort((p, q) => q.date.localeCompare(p.date));              // newest first
+  if (!mine.length) return '<div class="my-lbl">No QA audits for this agent in the selected period.</div>';
+  const avgOf = list => { const s = list.filter(x => x.score != null); return s.length ? s.reduce((t, x) => t + x.score, 0) / s.length : null; };
+  const fmt = v => v == null ? '—' : v.toFixed(1) + '%';
+  const scoreTd = v => `<td class="qa-score${qaBand(v)}" title="${QA_TIP}">${fmt(v)}</td>`;
+  const dateOf = d => d ? fmtDate(parseYMD(d)) : '—';
+  const sup = mine[0].supervisor || a.sup || '';
+  const auditRow = x => `<tr class="qa-audit" data-qa="${x.id}" title="Click to see the audit details"><td>🎫 ${esc(x.ticket) || '—'}</td>${scoreTd(x.score)}<td></td><td>${dateOf(x.date)}</td><td>${esc(x.supervisor)}</td></tr>`;
+  let body = `<tr class="qa-agent sup-row" style="${supStyle(sup)}"><td>${esc(a.name)}</td>${scoreTd(avgOf(mine))}<td>${mine.length}</td><td>${dateOf(mine[0].date)}</td><td>${esc(sup)}</td></tr>`;
+  if (!multi) body += mine.map(auditRow).join('');
+  else {
+    const byMonth = new Map();
+    mine.forEach(x => { if (!byMonth.has(x.ym)) byMonth.set(x.ym, []); byMonth.get(x.ym).push(x); });
+    [...byMonth.keys()].sort().forEach(ym => {
+      const items = byMonth.get(ym), k = 'm|' + ym, open = agQaOpen.has(k);
+      body += `<tr class="grp-head qa-month${moClass(ym)}${open ? ' open' : ''}" data-k="${esc(k)}" title="Click to show / hide"><td><span class="caret"></span>${esc(qaYmLabel(ym))}</td>${scoreTd(avgOf(items))}<td>${items.length}</td><td>${dateOf(items[0].date)}</td><td>${esc(items[0].supervisor)}</td></tr>`;
+      if (open) body += items.map(auditRow).join('');
+    });
+  }
+  return `<table id="agSumQa" class="nosort"><thead><tr><th>👤 Analyst Name</th><th>⭐ ${multi ? 'Avg Score' : 'Score'}</th><th>📋 Audits</th><th>📅 ${multi ? 'Latest ' : ''}Call Date</th><th>🧑‍💼 Supervisor</th></tr></thead><tbody>${body}</tbody></table>`;
 }
 
 function buildAgentSummary() {
@@ -4626,7 +4863,7 @@ function buildAgentSummary() {
     if (nd) return cardC(label, '—', '#1e88e5', 'Overall Metric Scorecard', tip);
     const num = metricVal(v);
     const shown = blue && typeof num === 'number' ? num.toLocaleString() : esc(v);
-    return cardC(label, shown, blue ? '#1e88e5' : bc(mcsBand(mcsHeads[i], v)), 'Overall Metric Scorecard', tip);
+    return cardC(label, shown, blue ? '#1e88e5' : bc(mcsBand(mcsHeads[i], v, myRow && myRow._n)), 'Overall Metric Scorecard', tip);
   };
   const totals = D.agents.map(x => sumRoll(x, selYm).total).filter(v => v != null).sort((p, q) => q - p);
   const rank = me.total != null ? totals.findIndex(v => v <= me.total) + 1 : null;
@@ -4643,8 +4880,8 @@ function buildAgentSummary() {
     scCard('Tickets Opened', '🎫 Tickets opened', true);
 
   /* Overall Metric Scorecard: the same table as Performance > Metric Scorecard (the agent's month rows and a Total row for several months) */
-  const sCell = (v, i) => { if (/no data/i.test(v || '')) return '<td class="nodata">No Data</td>'; const b = mcsBand(mcsHeads[i], v); return `<td${b ? ` class="kc-${b}"` : ''}>${esc(v) || '—'}</td>`; };
-  const sRow = (label, r, cls) => `<tr class="${cls}"><td>${label}</td>${scoreCols.map(i => sCell(r[i], i)).join('')}</tr>`;
+  const sCell = (v, i, n) => { if (/no data/i.test(v || '')) return '<td class="nodata">No Data</td>'; const b = mcsBand(mcsHeads[i], v, n); return `<td${b ? ` class="kc-${b}"` : ''}>${esc(v) || '—'}</td>`; };
+  const sRow = (label, r, cls) => `<tr class="${cls}"><td>${label}</td>${scoreCols.map(i => sCell(r[i], i, r._n)).join('')}</tr>`;
   const scores = myC.length && scoreCols.length ? `<table id="agSumMcs" class="nosort"><thead><tr><th>Month</th>${scoreCols.map(i => `<th>${esc(mcsHeads[i])}</th>`).join('')}</tr></thead><tbody>${
     myC.map(r => sRow(esc(r[cI.month] || '—'), r, '')).join('') +
     (multi && myC.length > 1 ? sRow('Total / average', mcsAggregate(myC)[0], 'agsum-total') : '')
@@ -4668,9 +4905,12 @@ function buildAgentSummary() {
   }</tbody></table>`
     : '<div class="my-lbl">No stack ranking data for this agent in the selected period.</div>';
 
+  agQaLast = { a, selYm, multi };
   box.innerHTML = `
     <div class="trk-head"><div class="trk-title">${esc(a.name)} <small>· ${esc(a.sup)} · ${esc(periodLabel)}</small></div></div>
     <div class="stats sum-cards five" style="margin-bottom:16px">${cards}</div>
+    <h3 class="sum-h" style="margin-top:16px">Quality assurance</h3>
+    <div class="panel"><div class="schedule-container" id="agSumQaBox">${agSumQaHtml()}</div></div>
     <h3 class="sum-h">Overall Metric Scorecard</h3>
     <div class="panel"><div class="schedule-container">${scores}</div></div>
     <h3 class="sum-h" style="margin-top:16px">Performance stack ranking</h3>
@@ -4970,7 +5210,7 @@ function buildSsMcs(selYms, bySup, q) {
     return mcsCols.map(i => {
       if (i === I.agent) return `<td>${label}</td>`;
       if (/no data/i.test(r[i] || '')) return '<td class="nodata">No Data</td>';
-      const b = i === I.sup ? '' : mcsBand(mcsHeads[i], r[i]);
+      const b = i === I.sup ? '' : mcsBand(mcsHeads[i], r[i], r._n);
       return `<td${b ? ` class="kc-${b}"` : ''}>${esc(i === I.sup ? sc : r[i]) || '—'}</td>`;
     }).join('');
   };
@@ -5217,16 +5457,16 @@ function buildScoreSummary() {
     const attV = he ? hw / he * 100 : null;
     /* Working rate, Compliance, Misroutes and FCR count: averaged from the Overall Metric Scorecard (ticked months, agents shown) */
     const mKeys = mcsHeads.map(mcsKey);
-    const mAvg = name => {
+    const mAvg = (name, add) => {                  // add = true: the figures of all the agents / months are ADDED UP instead of averaged
       const i = agsumFindCol(name, mKeys);
       if (i < 0) return { v: null, pct: true, head: name };
       const nums = mcsRows.filter(r => (mcsI.month < 0 || selYms.some(t => ssMonthMatches(r[mcsI.month], t))) && pickSet.has(normName(r[mcsI.agent])))
         .map(r => metricVal(r[i])).filter(v => typeof v === 'number');
-      return { v: nums.length ? nums.reduce((t, v) => t + v, 0) / nums.length : null, pct: metricColKind(i, mcsRows).kind === 'pct', head: mcsHeads[i] };
+      return { v: nums.length ? nums.reduce((t, v) => t + v, 0) / (add ? 1 : nums.length) : null, pct: metricColKind(i, mcsRows).kind === 'pct', head: mcsHeads[i], add: !!add };
     };
-    const kcol = m => m.v == null ? '#1e88e5' : BAND_COL[mcsBand(m.head, m.v.toFixed(2) + '%')] || '#1e88e5';
+    const kcol = m => m.v == null || m.add ? '#1e88e5' : BAND_COL[mcsBand(m.head, m.v.toFixed(2) + '%')] || '#1e88e5';
     const kfmt = m => m.v == null ? '—' : m.pct ? m.v.toFixed(2) + '%' : String(+m.v.toFixed(2));
-    const wr = mAvg('Working Rate'), cp = mAvg('Compliance'), mr = mAvg('Misroutes'), fc = mAvg('FCR Count (First Contact Resolution)');
+    const wr = mAvg('Working Rate'), cp = mAvg('Compliance'), mr = mAvg('Misroutes', true), fc = mAvg('FCR Count (First Contact Resolution)');
     const col = (k, v) => BAND_COL[bandOf(k, v)] || '#1e88e5';
     const card = (title, value, sub, color) => `<div class="card" style="--c:${color}"><h3>${title}</h3><div class="value">${value}</div><div class="pct">${sub}</div></div>`;
     $('ssRange').textContent = '📅 ' + (selYms.length === 1 ? ssYmLabel(selYms[0]) : `${ssYmLabel(selYms[0])} - ${ssYmLabel(selYms[selYms.length - 1])} (${selYms.length} months)`) + (sup === ALL ? '' : ` · ${sup}`);
@@ -5379,7 +5619,7 @@ window.addEventListener('DOMContentLoaded', async () => {
   $('trackerMonth').value = today.slice(0, 7);
   renderDisputeForm();
 
-  await Promise.all([loadSchedules(), loadAttendance(), loadDaily(), loadQA(), loadMetric(), loadMcs()]);
+  await Promise.all([loadSchedules(), loadAttendance(), loadDaily(), loadQA(), loadQAScoring(), loadMetric(), loadMcs()]);
   renderAll();
   showTabFromHash();
 
