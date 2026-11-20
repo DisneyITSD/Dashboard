@@ -4598,17 +4598,20 @@ const fmtHMS = h => { const t = Math.round(h * 3600); return Math.floor(t / 3600
    SHORT_FORM_URL        = the form's link (ends with /viewform). Empty = no dispute link is shown on short-hours days.
    SHORT_ENTRY           = optional pre-fill field numbers (⋮ menu › Get pre-filled link), same idea as DISPUTE_ENTRY above.
    SHORT_DISPUTE_GID     = the number after gid= in the response tab's address bar. Empty = nothing is read. */
-function shortDisputeUrl(name, date, supervisor) {
+function shortDisputeUrl(name, date, supervisor, embedded) {
   const q = [];
   if (SHORT_ENTRY.supervisor && supervisor) q.push(`${SHORT_ENTRY.supervisor}=${encodeURIComponent(supervisor)}`);
   if (SHORT_ENTRY.agent && name) q.push(`${SHORT_ENTRY.agent}=${encodeURIComponent(name)}`);
   if (SHORT_ENTRY.submittedBy && supervisor) q.push(`${SHORT_ENTRY.submittedBy}=${encodeURIComponent(supervisor)}`);
   if (SHORT_ENTRY.date && date) q.push(`${SHORT_ENTRY.date}=${encodeURIComponent(date)}`);
-  return SHORT_FORM_URL + (q.length ? '?usp=pp_url&' + q.join('&') : '');
+  const base = SHORT_FORM_URL.split('?')[0];
+  const all = (embedded ? ['embedded=true'] : []).concat(q.length ? ['usp=pp_url', ...q] : []);
+  return base + (all.length ? '?' + all.join('&') : '');
 }
 function shortDisputeLinkHtml(name, date, supervisor) {
   if (!SHORT_FORM_URL) return '';
-  return `<a class="cal-dispute" href="${esc(shortDisputeUrl(name, date, supervisor))}" target="_blank" rel="noopener" title="Open the short hours dispute form for this day" onclick="event.stopPropagation()">🛠 Dispute lost hours</a>`;
+  return `<a class="cal-dispute" href="${esc(shortDisputeUrl(name, date, supervisor))}" target="_blank" rel="noopener" data-n="${esc(name)}" data-d="${esc(date)}" data-s="${esc(supervisor || '')}"
+    title="Dispute the lost hours for this day" onclick="event.preventDefault(); event.stopPropagation(); openDisputeModal(this.dataset.n, this.dataset.d, this.dataset.s, 'short')">🛠 Dispute lost hours</a>`;
 }
 /* Approved short-hours disputes: agent + shift date -> { reason, by }. Columns are found by their header words. */
 function buildShortIndex(rows) {
@@ -4631,18 +4634,22 @@ function buildShortIndex(rows) {
 /* Only days that are below 100% attendance can be disputed (a day showing 100.0% has nothing to correct) */
 const canDispute = x => ['present', 'partial', 'absent'].includes(x.kind) && x.exp > 0 && (x.worked / x.exp) * 100 < 99.95;
 
-function openDisputeModal(name, date, supervisor) {
+function openDisputeModal(name, date, supervisor, kind) {
+  const short = kind === 'short';
+  const title = short ? '🛠 Lost hours dispute' : '🛠 Log-in / log-out dispute';
   let m = $('disputeModal');
   if (!m) {
     m = document.createElement('div');
     m.id = 'disputeModal'; m.className = 'dm-back'; m.hidden = true;
-    m.innerHTML = '<div class="dm-box" role="dialog" aria-modal="true" aria-label="Log-in / log-out dispute">' +
-      '<div class="dm-head"><b>🛠 Log-in / log-out dispute</b><button type="button" class="dm-x" aria-label="Close" onclick="closeDisputeModal()">✕</button></div>' +
+    m.innerHTML = '<div class="dm-box" role="dialog" aria-modal="true" aria-label="Dispute">' +
+      '<div class="dm-head"><b id="disputeTitle"></b><button type="button" class="dm-x" aria-label="Close" onclick="closeDisputeModal()">✕</button></div>' +
       '<iframe id="disputeFrame" title="Dispute form"></iframe></div>';
     m.addEventListener('click', e => { if (e.target === m) closeDisputeModal(); });
     document.body.appendChild(m);
   }
-  $('disputeFrame').src = disputeUrl(name, date, supervisor, true);
+  $('disputeTitle').textContent = title;
+  m.querySelector('.dm-box').setAttribute('aria-label', title);
+  $('disputeFrame').src = short ? shortDisputeUrl(name, date, supervisor, true) : disputeUrl(name, date, supervisor, true);
   m.hidden = false;
   document.body.style.overflow = 'hidden';
 }
