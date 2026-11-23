@@ -578,6 +578,13 @@ body{font-family:"IBM Plex Sans","Segoe UI",system-ui,sans-serif;background:var(
 .head-clock{display:flex;flex-direction:column;align-items:flex-end;gap:2px}
 .page-head #liveClock{display:block;border:0;border-radius:10px;background:#f3f4f6;padding:7px 12px;font-size:12px;line-height:1.55;color:#374151;text-align:left}
 .page-head #lastUpdated{display:none}
+.sk-chip{display:inline-block;padding:2px 9px;border-radius:999px;font-size:12px;font-weight:700;white-space:nowrap}
+.sk-phone{background:#e3f2fd;color:#0d47a1}.sk-chat{background:#e8f5e9;color:#1b5e20}
+html[data-theme=dark] .sk-phone{background:#1b3558;color:#bcd8ff}html[data-theme=dark] .sk-chat{background:#1c3a2a;color:#b5e8c5}
+.sk-th,.sk-td{text-align:center}
+.team-seg{display:inline-flex;border:1px solid var(--blue);border-radius:999px;overflow:hidden}
+.team-seg button{margin:0;border:0;border-radius:0;background:transparent;color:var(--blue);padding:7px 14px;font-weight:600;white-space:nowrap;cursor:pointer}
+.team-seg button.on{background:var(--blue);color:#fff}
 .page-head #refreshBtn{margin:0;padding:8px 18px;border-radius:999px;border:1px solid var(--blue);background:var(--blue);color:#fff;font-weight:600;white-space:nowrap}
 .page-head #refreshBtn:hover{background:#2449c4}
 .controls button[onclick*="refreshAttendanceData"]{display:none}
@@ -899,6 +906,97 @@ html[data-theme=dark] .panel.warn h3,html[data-theme=dark] .panel.warn .attn li 
 .bar-lbl{font-size:11px;color:var(--muted);margin-top:4px}
 .bar-axis{font-size:11px;color:var(--muted);text-align:right;margin-top:4px}
 .controls [hidden]{display:none !important}
+/* Period filter: one compact control; the month picker is hidden when a preset period replaces it */
+.controls .per-sel{font-weight:600;width:auto;min-width:0}
+.controls .per-sel + .msel{margin-left:-4px}
+.per-host{display:contents}
+.msel-panel.mo-panel{max-height:340px;overflow:auto}
+.controls .cal-btn{min-width:190px}
+.cal-pop{width:292px;min-width:292px;padding:10px 10px 8px}
+.cal-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;color:var(--ink)}
+.cal-head b{font-size:14px}
+.cal-nav{cursor:pointer;width:30px;height:30px;line-height:28px;text-align:center;border-radius:8px;border:1px solid var(--border,#d0d7de);user-select:none}
+.cal-nav:hover{background:rgba(13,110,253,.12)}
+.cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:2px 0;text-align:center}
+.cal-w{font-size:11px;color:var(--muted);padding:4px 0;font-weight:600}
+.cal-d{padding:7px 0;border-radius:6px;cursor:pointer;font-size:13px;color:var(--ink);user-select:none}
+.cal-d:hover{background:rgba(13,110,253,.14)}
+.cal-d.dim{opacity:.38}
+.cal-d.td{font-weight:800;box-shadow:inset 0 0 0 1px rgba(13,110,253,.55)}
+.cal-d.in{background:rgba(13,110,253,.18);border-radius:0}
+.cal-d.s,.cal-d.e{background:#0d6efd;color:#fff;opacity:1}
+.cal-d.s{border-radius:6px 0 0 6px}.cal-d.e{border-radius:0 6px 6px 0}.cal-d.s.e{border-radius:6px}
+.cal-hint{margin-top:6px;font-size:11px;color:var(--muted);text-align:center}
+.controls .msel[data-per-hide]{display:none !important}
+.controls .msel-btn{min-width:130px}
+/* Filter bars stay in view while you scroll down any page */
+.main .tab-panel > .controls{position:sticky;top:0;z-index:30;background:var(--paper);padding-top:12px;padding-bottom:14px;margin-top:0}
+.tab-panel.present > .controls{top:46px}
+/* The content area scrolls on its own (not the browser window), so the filter bars stay pinned even when the dashboard sits inside another page */
+html,body{height:100%}
+.app{height:100vh;height:100dvh;min-height:0;overflow:hidden}
+.main{height:100vh;height:100dvh;overflow-y:auto;overflow-x:hidden}
+@media(max-width:900px){.main .tab-panel > .controls{top:var(--headh,58px)}}
+.gb-pair{position:relative}
+.wr-target{position:absolute;left:-4px;right:-4px;height:0;border-top:2px dashed #64748b;pointer-events:none}
+.wr-nav{display:flex;align-items:center;gap:10px;margin-bottom:10px;font-size:13px;color:var(--muted)}
+.wr-nav #wrNavLbl{font-weight:600;color:var(--ink);min-width:200px}
+.wr-btn{min-height:32px;padding:4px 14px;border:1px solid var(--border);border-radius:8px;background:var(--surface);color:var(--ink);font-weight:600;cursor:pointer}
+.wr-btn:hover{background:#f3f4f6}
+.wr-dots{display:inline-flex;gap:6px;margin-left:6px}
+.wr-dots i{width:9px;height:9px;border-radius:50%;background:var(--line);cursor:pointer}
+.wr-dots i.on{background:var(--blue)}
+.wr-slide{display:none;background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:22px 26px;min-height:440px}
+.wr-slide.on{display:block}
+.wr-head{display:flex;justify-content:space-between;align-items:flex-end;gap:12px;border-bottom:2px solid var(--line);padding-bottom:10px;margin-bottom:16px}
+.wr-head small{color:var(--muted);font-size:12px}
+.wr-head h2{margin:2px 0 0;font-size:24px;font-weight:700;color:var(--navy)}
+.wr-head .wr-week{font-size:15px;font-weight:600;color:var(--ink);white-space:nowrap}
+.wr-kpis{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px}
+.wr-kpi{border-left:6px solid var(--c);background:var(--paper);border-radius:10px;padding:12px 16px}
+.wr-kpi small{display:block;color:var(--muted);font-size:12px}
+.wr-kpi b{display:block;font-size:34px;line-height:1.15;color:var(--c)}
+.wr-kpi .wr-sub{font-size:12px;color:var(--muted);margin-top:2px}
+.wr-kpi .wr-delta{font-size:12px;font-weight:600;margin-top:4px}
+.wr-two{display:grid;grid-template-columns:minmax(0,1.1fr) minmax(0,1fr);gap:22px;align-items:start}
+.wr-note{font-size:12px;color:var(--muted);margin-top:8px}
+.wr-stack > * + *{margin-top:18px}
+.wr-stack .wr-tgl{margin:16px 0 0}
+/* Title slide: dark teal with three overlapping circles (works in light and dark mode) */
+.wr-slide.wr-cover{position:relative;overflow:hidden;padding:0;border:0;background:#0f3b4c;color:#fff;aspect-ratio:16/9;min-height:420px;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+.wr-slide.wr-cover.on{display:flex;align-items:center}
+html[data-theme=dark] .wr-slide.wr-cover{box-shadow:0 0 0 1px #2f5666}
+.wr-cover-txt{position:relative;z-index:1;padding:0 6%;max-width:62%}
+.wr-cover-txt small{display:block;margin-bottom:14px;font-size:14px;letter-spacing:.14em;text-transform:uppercase;color:rgba(255,255,255,.72)}
+.wr-cover-txt h1{margin:0 0 18px;font-family:Cambria,Georgia,"Times New Roman",serif;font-size:clamp(34px,5.2vw,64px);line-height:1.12;font-weight:700;color:#fff}
+.wr-cover-txt p{margin:0;font-size:clamp(15px,1.7vw,22px);color:rgba(255,255,255,.9)}
+.wr-cover-txt p + p{margin-top:6px;color:rgba(255,255,255,.7)}
+.wr-circles i{position:absolute;border-radius:50%;aspect-ratio:1/1;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+.wr-circles .c1{left:71.5%;top:13.5%;height:46.5%;background:#0e7c86}
+.wr-circles .c2{left:81.5%;top:46%;height:35.5%;background:rgba(242,166,90,.68)}
+.wr-circles .c3{left:74%;top:61%;height:30%;background:rgba(107,143,179,.62)}
+.wr-tgl{margin:12px 0 8px}
+.wr-h3{margin:0 0 8px;font-size:15px;font-weight:700}
+.wr-q{display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:4px 10px;align-items:baseline;padding:8px 0;border-top:1px solid var(--line);font-size:13px}
+.wr-q:first-of-type{border-top:0}
+.wr-q b{white-space:nowrap}
+.wr-q small{color:var(--muted);white-space:nowrap;font-size:13px}
+.wr-q small strong{color:var(--ink);font-size:15px}
+@media(max-width:900px){.wr-kpis{grid-template-columns:repeat(2,minmax(0,1fr))}.wr-two{grid-template-columns:1fr}}
+.meet-links{display:flex;flex-wrap:wrap;gap:10px}
+.meet-link{padding:8px 14px;border:1px solid var(--line);border-radius:999px;background:var(--surface);color:var(--blue);font-size:13px;font-weight:600;text-decoration:none}
+.meet-link:hover{background:#eef2ff}
+.tab-panel.present{position:fixed;inset:0;z-index:9000;overflow:auto;background:var(--surface);padding:12px 24px 40px}
+.tab-panel.present > :not(.present-bar){zoom:var(--pz,1.3)}
+.tab-panel.present .schedule-container{max-height:none !important;height:auto !important}
+.tab-panel.present .view-hint,.tab-panel.present details.view-more{display:none}
+.present-bar{position:sticky;top:0;z-index:5;display:flex;align-items:center;justify-content:space-between;gap:12px;padding:8px 0 10px;margin-bottom:6px;background:var(--surface);font-size:15px}
+.present-bar button{margin-left:6px}
+.tab-panel.present.hide-filters > .controls,.tab-panel.present.hide-filters > .wr-nav{display:none}
+.present-bar small{margin-right:8px;color:var(--muted)}
+.tab-panel.present.hide-filters > .present-bar{position:fixed;top:6px;right:12px;left:auto;width:auto;padding:0;margin:0;background:transparent;opacity:.3;z-index:9100}
+.tab-panel.present.hide-filters > .present-bar:hover{opacity:1}
+.tab-panel.present.hide-filters > .present-bar > b,.tab-panel.present.hide-filters > .present-bar small,.tab-panel.present.hide-filters > .present-bar button:not(#presentFiltersBtn){display:none}
 .lv-range{display:inline-flex;align-items:center;gap:6px}
 .gb.dense{gap:3px}
 .gb.dense .gb-pair{gap:var(--gg,3px)}
@@ -915,6 +1013,25 @@ html[data-theme=dark] .panel.warn h3,html[data-theme=dark] .panel.warn .attn li 
 .lv-legend i{display:inline-block;width:11px;height:11px;border-radius:3px;margin-right:5px;vertical-align:-1px}
 .gb{display:flex;align-items:flex-end;gap:8px}
 .gb-col{flex:1;min-width:0;display:flex;flex-direction:column;align-items:center}
+.wr-slide .gb-pair{height:var(--chh,170px)}
+.wr-line{height:var(--chh,280px)}
+.wr-line svg{width:100%;height:100%;display:block}
+.wr-hbars{height:var(--chh,260px);display:flex;flex-direction:column;justify-content:space-between}
+.wr-hb{flex:1;min-height:0;display:grid;grid-template-columns:minmax(120px,30%) minmax(0,1fr) 56px;gap:12px;align-items:center;margin:2px 0;font-size:13px}
+.wr-two2{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:22px;align-items:start}
+.wr-sumrow{display:grid;grid-template-columns:210px minmax(0,1fr);gap:16px;align-items:start}
+.wr-sumpanel{display:flex;flex-direction:column;gap:8px;margin-top:6px}
+.wr-sumpanel > small{color:var(--muted);font-size:12px;font-weight:600}
+.wr-st{border-left:5px solid var(--c);background:var(--paper,#f3f4f6);border-radius:8px;padding:6px 12px;display:flex;justify-content:space-between;align-items:baseline;gap:10px}
+.wr-st span{font-size:12px;color:var(--muted)}
+.wr-st b{font-size:22px;color:var(--ink)}
+.nosort th.wr-sth{cursor:pointer;user-select:none}
+.wr-sth i{font-style:normal;margin-left:4px;font-size:10px;opacity:.75}
+@media(max-width:900px){.wr-sumrow,.wr-two2{grid-template-columns:1fr}}
+.wr-hbl{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-weight:600}
+.wr-hbt{height:72%;max-height:30px;display:flex;background:var(--paper,#f3f4f6);border-radius:6px;overflow:hidden}
+.wr-hbt div{height:100%}
+.wr-hb b{text-align:right}
 .gb-pair{height:170px;width:100%;display:flex;align-items:flex-end;justify-content:center;gap:3px}
 .gb-bar{flex:1;max-width:28px;display:flex;flex-direction:column;justify-content:flex-end;align-items:center;height:100%}
 .gb-bar span{font-size:11px;font-weight:700;color:var(--navy);margin-bottom:2px}
@@ -965,6 +1082,8 @@ html[data-theme=dark] #dataUpdateNote .du-name{color:#cfdcff}
 .kpi-line b{color:var(--ink);font-size:14px}
 .kpi-goal{color:var(--blue);font-weight:700;font-size:13px}
 .kpi-text{margin-top:2px;color:var(--muted);font-size:13.5px;line-height:1.55}
+.kpi-wt{background:var(--blue);color:#fff;font-weight:800;font-size:13px;line-height:1;padding:4px 11px;border-radius:999px;letter-spacing:.2px;box-shadow:0 1px 3px rgba(37,99,235,.35)}
+.hd-wt{color:var(--blue);font-weight:700;text-transform:none;letter-spacing:0}
 .kpi-outro{margin:8px 0 0;padding-top:9px;border-top:1px solid var(--line);color:var(--muted);font-size:13px;font-style:italic}
 </style>
 </head>
@@ -1012,6 +1131,7 @@ html[data-theme=dark] #dataUpdateNote .du-name{color:#cfdcff}
     <div class="nav-group" data-group="Performance">
       <button type="button" class="nav-label" aria-expanded="false"><span>Performance</span><svg class="chev" viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></button>
       <div class="nav-items"><div>
+        <a class="tab-btn" href="#weeklyReportTab" data-tab="weeklyReportTab" data-title="Weekly report"><svg class="ni" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4" width="18" height="12" rx="1"/><path d="M8 20h8M12 16v4"/></svg><span>Weekly report</span></a>
         <a class="tab-btn" href="#scoreSumTab" data-tab="scoreSumTab"><svg class="ni" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 3v18h18"/><path d="M7 16V9M12 16V5M17 16v-4"/></svg><span>Summary</span></a>
         <a class="tab-btn" href="#agentSumTab" data-tab="agentSumTab" data-title="Agent Summary"><svg class="ni" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4 21v-1a6 6 0 0 1 6-6h4a6 6 0 0 1 6 6v1"/></svg><span>Agent summary</span></a>
         <a class="tab-btn" href="#qaTab" data-tab="qaTab"><svg class="ni" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><path d="m9 12 2 2 4-4"/></svg><span>Quality Assurance</span></a>
@@ -1037,8 +1157,9 @@ html[data-theme=dark] #dataUpdateNote .du-name{color:#cfdcff}
 <main class="main">
 <header class="page-head">
   <button class="menu-btn" aria-label="Open menu" onclick="document.body.classList.add('nav-open')">☰</button>
-  <div><div class="crumb" id="pageCrumb"></div><h1 id="pageTitle"></h1></div>
+  <div><div class="crumb" id="pageCrumb"></div><h1 id="pageTitle"></h1><div class="crumb" id="teamLbl" style="margin-top:2px"></div></div>
   <div class="head-tools">
+    <div class="team-seg" role="group" aria-label="Team"><button type="button" data-team="Phone" onclick="setTeam('Phone')">📞 Phone</button><button type="button" data-team="Chat" onclick="setTeam('Chat')">💬 Chat</button></div>
     <button id="refreshBtn" onclick="refreshAttendanceData(true)" title="Refresh data" aria-label="Refresh data">↻</button>
     <button id="realtimeBtn" onclick="toggleRealtime()">Live Mode</button>
     <div class="head-clock"><span id="liveClock">--:--:--</span><span id="lastUpdated"></span></div>
@@ -1048,21 +1169,7 @@ html[data-theme=dark] #dataUpdateNote .du-name{color:#cfdcff}
 
 <div id="statusBanner" class="note red" hidden></div>
 <div id="highAnnouncements" class="note red" style="white-space:pre-wrap" hidden></div>
-<details class="kpi-card" id="kpiCard" hidden>
-  <summary class="kpi-head"><span>🎯 Team targets for the month</span><span class="kpi-chev" aria-hidden="true"></span></summary>
-  <div class="kpi-body">
-    <p class="kpi-intro">The monthly targets your team is measured against, and what each number tells you.</p>
-    <ul class="kpi-list">
-    <li><div class="kpi-line"><b>Attendance</b><span class="kpi-goal">Aim for 95% or higher</span></div><div class="kpi-text">The share of scheduled days your agents showed up. Low attendance cuts into coverage, so watch for patterns in absences and late arrivals.</div></li>
-    <li><div class="kpi-line"><b>Call and Ticket Quality</b><span class="kpi-goal">Aim for 95% or higher</span></div><div class="kpi-text">The average score from call and ticket reviews. It shows how well agents follow quality standards, and low scores point to where coaching is needed.</div></li>
-    <li><div class="kpi-line"><b>FCR (First Contact Resolution)</b><span class="kpi-goal">Aim for 82% or higher</span></div><div class="kpi-text">How often agents resolve the cast member’s issue on first contact, with no follow-ups. A dip can signal knowledge gaps or process issues.</div></li>
-    <li><div class="kpi-line"><b>Work Rate</b><span class="kpi-goal">Aim for 75% or higher</span></div><div class="kpi-text">How much of logged-in time goes to actual work. About 25% of the day is already planned for breaks and other activities, so a rate below target is worth a look at adherence.</div></li>
-    <li><div class="kpi-line"><b>Ticket Compliance</b><span class="kpi-goal">Aim for 100% or higher</span></div><div class="kpi-text">Every call should have a ticket, and tickets should match or beat calls. Below 100% means undocumented calls, so follow up with the agent.</div></li>
-    <li><div class="kpi-line"><b>Misroute Rate</b><span class="kpi-goal">Aim for below 1.030%</span></div><div class="kpi-text">How often tickets land with the wrong team. The lower the better, and a high rate usually calls for a triage refresher.</div></li>
-    </ul>
-    <p class="kpi-outro">Spot gaps early, coach with purpose, and lift the whole team. 💪</p>
-  </div>
-</details>
+<details class="kpi-card" id="kpiCard" hidden></details>
 <div id="dataUpdateNote" role="status" hidden></div>
 
 <!-- ============ DASHBOARD ============ -->
@@ -1281,7 +1388,7 @@ html[data-theme=dark] #dataUpdateNote .du-name{color:#cfdcff}
 <section class="tab-panel" id="ptoTab" hidden>
   <div class="view-hint">🏖️ Leave (PTO) records submitted through the PTO update form: agent, date, reason and supervisor.<br>Pick a date or click All Dates, and click a column title to sort.</div>
   <div class="controls">
-    <input type="date" id="ptoDate" onchange="buildRecordTable('pto')">
+    <span class="per-host" id="ptoPerHost"></span>
     <select id="ptoSupervisor" onchange="buildRecordTable('pto')"><option>All Supervisors</option></select>
     <button onclick="clearRecordDate('pto')">All Dates</button>
     <input type="text" id="ptoSearch" placeholder="🔍 Search Agent..." onkeyup="buildRecordTable('pto')">
@@ -1298,7 +1405,7 @@ html[data-theme=dark] #dataUpdateNote .du-name{color:#cfdcff}
 <section class="tab-panel" id="calledOffTab" hidden>
   <div class="view-hint">🚦 Attendance exceptions submitted through the Attendance form: called off, NCNS, running late and left early, with the reason and supervisor.<br>Pick a date or click All Dates, and click a column title to sort.</div>
   <div class="controls">
-    <input type="date" id="calledOffDate" onchange="buildRecordTable('att')">
+    <span class="per-host" id="calledOffPerHost"></span>
     <select id="calledOffSupervisor" onchange="buildRecordTable('att')"><option>All Supervisors</option></select>
     <button onclick="clearRecordDate('att')">All Dates</button>
     <input type="text" id="calledOffSearch" placeholder="🔍 Search Agent..." onkeyup="buildRecordTable('att')">
@@ -1315,9 +1422,8 @@ html[data-theme=dark] #dataUpdateNote .du-name{color:#cfdcff}
 <section class="tab-panel" id="lateTab" hidden>
   <div class="view-hint">⏱️ Actual login and logout times submitted through the Late / early time form for agents who ran late or left early.<br>Minutes late and left early are worked out from the agent's shift; a ⚠️ means more than 4 hours or an agent not on the roster, so re-check the AM/PM, date and name.</div>
   <div class="controls">
-    <input type="date" id="lateDate" onchange="buildLateTable()">
+    <span class="per-host" id="latePerHost"></span>
     <select id="lateSupervisor" onchange="buildLateTable()"><option>All Supervisors</option></select>
-    <button onclick="$('lateDate').value='';buildLateTable()">All Dates</button>
     <input type="text" id="lateSearch" placeholder="🔍 Search Agent..." onkeyup="buildLateTable()">
     <button class="blue" data-tab="attendanceTimeFormTab">+ Submit Time</button>
   </div>
@@ -1339,20 +1445,46 @@ html[data-theme=dark] #dataUpdateNote .du-name{color:#cfdcff}
   </div>
 </section>
 
+<!-- ============ WEEKLY REPORT (slides) ============ -->
+<section class="tab-panel" id="weeklyReportTab" hidden>
+  <div class="view-hint">📑 One-page weekly report as slides: title, attendance, attendance trend, total number of calls and chats handled, AHT, top call drivers, QA and QA mark downs / what went well.<br>Pick <b>Monthly</b> or <b>Date range</b> (any dates from → to). It opens on the last completed month. Use ← → (or the buttons) to change slides and ‹ › to move to the previous / next week, month or period (a date range moves by its own length). The “last 4” trend slides compare the selected period with the 3 before it. QA is counted by call date. Each chart has its table underneath. In full screen, “Hide filters” (or press H) gives you just the slides.</div>
+  <div class="controls">
+    <span class="per-host" id="wrpPerHost"></span>
+    <button type="button" id="wrPrevBtn" onclick="shiftWeeklyReport(-1)" title="Previous month">‹</button>
+    <button type="button" id="wrNextBtn" onclick="shiftWeeklyReport(1)" title="Next month">›</button>
+    <span id="wrLegacy" hidden>
+      <select id="wrMode" onchange="wrOnMode()"><option value="month">Monthly</option><option value="range">Date range</option></select>
+      <input type="date" id="wrDate" onchange="buildWeeklyReport()" hidden>
+      <input type="month" id="wrMonth" onchange="buildWeeklyReport()">
+      <input type="date" id="wrPerDate" onchange="buildWeeklyReport()" hidden>
+      <span id="wrRangeBox" hidden><input type="date" id="wrFrom" onchange="buildWeeklyReport()"><input type="date" id="wrTo" onchange="buildWeeklyReport()"></span>
+    </span>
+    <small id="wrWeekLbl" style="color:var(--muted)"></small>
+    <button type="button" class="present-btn" onclick="togglePresent('weeklyReportTab')" title="Full screen with larger text for the meeting (Esc to exit)">⛶ Full screen</button>
+  </div>
+  <div class="wr-nav"><button type="button" class="wr-btn" onclick="wrGo(wrIdx - 1)" title="Previous slide (←)">←</button><span id="wrNavLbl"></span><button type="button" class="wr-btn" onclick="wrGo(wrIdx + 1)" title="Next slide (→)">→</button><span class="wr-dots" id="wrDots"></span></div>
+  <div id="wrSlides"></div>
+</section>
+
 <!-- ============ CALLED OFF & VACATION LEAVE TREND ============ -->
 <section class="tab-panel" id="leaveTrendTab" hidden>
   <div class="view-hint">📉 Called Off and Vacation Leave only, counted as agent-days on scheduled working days.<br>Pick <b>Monthly view</b> for a year, <b>Weekly view</b> for one Monday–Sunday week, <b>Daily view</b> for one month, or <b>Date range</b> for any dates from → to. Hover a bar for the details.</div>
   <div class="controls">
-    <select id="lvMode" onchange="buildLeaveTrend()"><option value="month">Monthly view</option><option value="week">Weekly view (Mon–Sun)</option><option value="day">Daily view</option><option value="range">Date range</option></select>
-    <button type="button" id="lvPrev" onclick="shiftLeaveTrend(-1)" title="Previous">‹</button>
-    <select id="lvYear" onchange="buildLeaveTrend()"></select>
-    <input type="month" id="lvMonth" onchange="buildLeaveTrend()">
-    <span id="lvWeekWrap" class="lv-range" hidden><input type="date" id="lvWeek" onchange="buildLeaveTrend()" title="Pick any date: the week runs Monday to Sunday"><small id="lvWeekLbl" style="color:var(--muted)"></small></span>
-    <span id="lvRange" class="lv-range" hidden><input type="date" id="lvFrom" onchange="buildLeaveTrend()" title="From"><b>to</b><input type="date" id="lvTo" onchange="buildLeaveTrend()" title="To"></span>
-    <button type="button" id="lvNext" onclick="shiftLeaveTrend(1)" title="Next">›</button>
+    <span class="per-host" id="lvpPerHost"></span>
+    <button type="button" id="lvPrev" onclick="shiftLeaveTrend(-1)" title="Previous month">‹</button>
+    <button type="button" id="lvNext" onclick="shiftLeaveTrend(1)" title="Next month">›</button>
+    <span id="lvLegacy" hidden>
+      <select id="lvMode" onchange="buildLeaveTrend()"><option value="day">Monthly</option><option value="range">Date range</option></select>
+      <select id="lvYear" onchange="buildLeaveTrend()"></select>
+      <input type="month" id="lvMonth" onchange="buildLeaveTrend()">
+      <span id="lvWeekWrap" class="lv-range" hidden><input type="date" id="lvWeek" onchange="buildLeaveTrend()"><small id="lvWeekLbl"></small></span>
+      <span id="lvRange" class="lv-range" hidden><input type="date" id="lvFrom" onchange="buildLeaveTrend()"><b>to</b><input type="date" id="lvTo" onchange="buildLeaveTrend()"></span>
+      <input type="date" id="lvPerDate" onchange="buildLeaveTrend()" hidden>
+    </span>
     <select id="lvSupervisor" onchange="buildLeaveTrend()"><option>All Supervisors</option></select>
     <input type="text" id="lvSearch" placeholder="🔍 Search Agent..." onkeyup="buildLeaveTrend()">
     <button type="button" class="blue" onclick="refreshAttendanceData(true)">↻ Refresh</button>
+    <button type="button" class="present-btn" onclick="togglePresent('leaveTrendTab')" title="Full screen with larger text for the meeting (Esc to exit)">⛶ Full screen</button>
   </div>
   <div class="panel" id="lvChart"></div>
   <h3 class="sum-h" id="lvSupTitle"></h3>
@@ -1365,7 +1497,7 @@ html[data-theme=dark] #dataUpdateNote .du-name{color:#cfdcff}
 
 <!-- ============ SCORECARD: SUMMARY ============ -->
 <section class="tab-panel" id="scoreSumTab" hidden>
-  <div class="view-hint">📈 Team summary: attendance, quality, performance score and volumes for the months you pick.<br>Choose one or more months (or Year to date) and a supervisor. Below the summary you'll find every agent, the Overall Metric Scorecard and the Performance Stack Ranking.</div>
+  <div class="view-hint">📈 Team summary: attendance, quality, performance score and volumes for the months you pick.<br>Choose one or more months (or Year to date) and a supervisor. Below the summary you'll find every agent, with links to the Stack ranking, Metric scorecard, Attendance trend and Quality Assurance pages.</div>
   <div class="controls">
     <div class="msel" id="ssMonthWrap">
       <button type="button" id="ssMonthBtn" class="msel-btn">Month ▾</button>
@@ -1374,6 +1506,7 @@ html[data-theme=dark] #dataUpdateNote .du-name{color:#cfdcff}
     <select id="ssSupervisor" onchange="buildScoreSummary()"><option>All Supervisors</option></select>
     <input type="text" id="ssSearch" placeholder="🔍 Search Agent..." onkeyup="buildScoreSummary()">
     <button type="button" class="blue" onclick="refreshAttendanceData(true)">↻ Refresh</button>
+    <button type="button" class="present-btn" onclick="togglePresent('scoreSumTab')" title="Full screen with larger text for the meeting (Esc to exit)">⛶ Full screen</button>
   </div>
   <div id="ssTopWrap" hidden>
     <div id="ssRange" class="range-banner"></div>
@@ -1402,20 +1535,15 @@ html[data-theme=dark] #dataUpdateNote .du-name{color:#cfdcff}
       <table id="ssTable" class="nosort"><thead></thead><tbody></tbody></table>
     </div>
   </div>
-  <h3 class="sum-h" id="ssMcsTitle" style="margin-top:16px">Overall Metric Scorecard</h3>
-  <div class="panel">
-    <div class="schedule-container" style="height:auto;max-height:70vh">
-      <table id="ssMcsTable" class="nosort"><thead></thead><tbody></tbody></table>
-    </div>
-  </div>
-  <h3 class="sum-h" id="ssStackTitle" style="margin-top:16px">Performance Stack Ranking</h3>
-  <div class="panel">
-    <div class="schedule-container" style="height:auto;max-height:70vh">
-      <table id="ssStackTable" class="nosort"><thead></thead><tbody></tbody></table>
-    </div>
-  </div>
+  <h3 class="sum-h" style="margin-top:16px">Weekly meeting</h3>
+  <div class="panel"><div class="meet-links">
+    <a class="meet-link" href="#metricTab" data-tab="metricTab">📊 Open Stack ranking →</a>
+    <a class="meet-link" href="#mcsTab" data-tab="mcsTab">📈 Open Metric scorecard →</a>
+    <a class="meet-link" href="#leaveTrendTab" data-tab="leaveTrendTab">📉 Open Attendance trend →</a>
+    <a class="meet-link" href="#qaTab" data-tab="qaTab">✅ Open Quality Assurance →</a>
+  </div></div>
   <details class="view-more"><summary>ℹ️ About the tables and export</summary>
-    <div class="view-hint">Click a column title to sort; 🚩 marks agents below target on 2+ measures.<br>In the Performance Stack Ranking, each agent is ranked by their total (averaged over the months ticked).<br>With several months ticked, click an agent (▸) in the Overall Metric Scorecard or Performance Stack Ranking to see their score for each month.<br>The Current Month Scorecard always shows the current month only, whatever months are ticked.</div>
+    <div class="view-hint">Click a column title to sort; 🚩 marks agents below target on 2+ measures.<br>The Current Month Scorecard always shows the current month only, whatever months are ticked.</div>
   </details>
 </section>
 
@@ -1431,19 +1559,30 @@ html[data-theme=dark] #dataUpdateNote .du-name{color:#cfdcff}
       <div class="msel-panel" id="agSumMonthPanel" hidden></div>
     </div>
     <button class="blue" onclick="refreshAttendanceData(true)">↻ Refresh</button>
+    <button type="button" class="present-btn" onclick="togglePresent('agentSumTab')" title="Full screen with larger text for the meeting (Esc to exit)">⛶ Full screen</button>
   </div>
+  <details class="kpi-card" id="kpiCardAgent" open></details>
   <div id="agSumBody"></div>
 </section>
 
 <section class="tab-panel" id="trackerTab" hidden>
-  <div class="view-hint">🗓️ Per-agent attendance for the month, scored as hours worked ÷ hours expected.<br>Hover a day to see the shift and the log-in / log-out times. Click % to sort; Download CSV exports the grid.</div>
+  <div class="view-hint">🗓️ Per-agent attendance for the month (or one Monday–Sunday week), scored as hours worked ÷ hours expected.<br>Hover a day to see the shift and the log-in / log-out times. Click % to sort; Download CSV exports the grid.</div>
   <div class="controls">
-    <button type="button" onclick="shiftTrackerMonth(-1)" title="Previous month">‹</button>
-    <input type="month" id="trackerMonth" onchange="buildTracker()">
-    <button type="button" onclick="shiftTrackerMonth(1)" title="Next month">›</button>
+    <span class="per-host" id="trkPerHost"></span>
+    <button type="button" id="trackerPrev" onclick="shiftTrackerMonth(-1)" title="Previous month">‹</button>
+    <button type="button" id="trackerNext" onclick="shiftTrackerMonth(1)" title="Next month">›</button>
+    <span id="trackerLegacy" hidden>
+      <select id="trackerView" onchange="buildTracker()"><option value="month">Monthly</option><option value="range">Date range</option></select>
+      <input type="month" id="trackerMonth" onchange="buildTracker()">
+      <input type="date" id="trackerWeek" onchange="buildTracker()" hidden>
+      <input type="date" id="trackerPerDate" onchange="buildTracker()" hidden>
+      <span id="trackerRangeBox" class="lv-range" hidden><input type="date" id="trackerFrom" onchange="buildTracker()"><b>to</b><input type="date" id="trackerTo" onchange="buildTracker()"></span>
+      <small id="trackerWeekLbl" hidden></small>
+    </span>
     <select id="trackerSupervisor" onchange="buildTracker()"><option>All Supervisors</option></select>
     <input type="text" id="trackerSearch" placeholder="🔍 Search Agent..." onkeyup="buildTracker()">
     <button type="button" class="blue" id="trackerDownloadBtn" onclick="downloadTracker()">⬇ Download CSV</button>
+    <button type="button" class="present-btn" onclick="togglePresent('trackerTab')" title="Full screen with larger text for the meeting (Esc to exit)">⛶ Full screen</button>
   </div>
   <div class="trk-info" id="trackerLegend"></div>
   <div id="trackerBody"></div>
@@ -1466,12 +1605,9 @@ html[data-theme=dark] #dataUpdateNote .du-name{color:#cfdcff}
 <section class="tab-panel" id="lbprrTab" hidden>
   <div class="view-hint">☕ Break, Overbreak, Lunch, Overlunch, Restroom and Project time per agent per shift (LBPRR sheet), with the Total Logged-in Hours from the LOLI Actual sheet.</div>
   <div class="controls">
-    <div class="msel" id="lbprrDateWrap">
-      <button type="button" id="lbprrDateBtn" class="msel-btn">All dates ▾</button>
-      <div class="msel-panel ut-panel" id="lbprrDatePanel" hidden></div>
-    </div>
+    <span class="per-host" id="lbprrPerHost"></span>
     <select id="lbprrSup" onchange="buildLbprr()"><option>All Supervisors</option></select>
-    <select id="lbprrAgent" onchange="buildLbprr()"><option value="">All Agents</option></select>
+    <div class="msel" id="lbprrAgentWrap"><button type="button" id="lbprrAgentBtn" class="msel-btn">All Agents ▾</button><div class="msel-panel mo-panel" id="lbprrAgentPanel" hidden></div></div>
     <input type="text" id="lbprrSearch" placeholder="🔍 Search Agent..." onkeyup="buildLbprr()">
     <button type="button" onclick="clearLbprr()">Clear filters</button>
     <button type="button" id="lbprrToggleAll" onclick="utToggleAll()" style="display:none">Expand all</button>
@@ -1502,14 +1638,16 @@ html[data-theme=dark] #dataUpdateNote .du-name{color:#cfdcff}
 <section class="tab-panel" id="qaTab" hidden>
   <div class="view-hint">✅ Quality Assurance scores by analyst, ranked by average score.<br>Tick one or more months (or Year to date); click an agent (▸) to open their audits.</div>
   <div class="controls">
+    <select id="qaPer" class="per-sel" onchange="perOnChange('qa','buildQA')" title="Report period"><option value="months">Monthly</option><option value="range">Date range</option></select><span id="qaRangeBox" hidden><input type="hidden" id="qaFrom"><input type="hidden" id="qaTo"></span>
     <div class="msel" id="qaMonthWrap">
       <button type="button" id="qaMonthBtn" class="msel-btn">Month ▾</button>
       <div class="msel-panel" id="qaMonthPanel" hidden></div>
     </div>
     <select id="qaSupervisor" onchange="buildQA()"><option>All Supervisors</option></select>
-    <select id="qaAgent" onchange="buildQA()"><option value="">All Agents</option></select>
+    <div class="msel" id="qaAgentWrap"><button type="button" id="qaAgentBtn" class="msel-btn">All Agents ▾</button><div class="msel-panel mo-panel" id="qaAgentPanel" hidden></div></div>
     <input type="text" id="qaSearch" placeholder="🔍 Search analyst or ticket..." onkeyup="buildQA()" style="width:280px">
     <button class="blue" onclick="refreshAttendanceData(true)">↻ Refresh</button>
+    <button type="button" class="present-btn" onclick="togglePresent('qaTab')" title="Full screen with larger text for the meeting (Esc to exit)">⛶ Full screen</button>
   </div>
   <div class="daily-summary">
     <div class="summary-box">👤 Agents: <span id="qaAgents">0</span></div>
@@ -1561,15 +1699,17 @@ html[data-theme=dark] #dataUpdateNote .du-name{color:#cfdcff}
 <!-- ============ SCORECARD: OVERALL METRIC ============ -->
 <section class="tab-panel" id="metricTab" hidden>
   <div class="view-hint">📊 Performance stack ranking per agent.<br>Tick one or more months (or Year to date); click an agent (▸) to open their monthly scores.</div>
+  <details class="kpi-card" id="kpiCardMetric" open></details>
   <div class="controls">
     <div class="msel" id="metricMonthWrap">
       <button type="button" id="metricMonthBtn" class="msel-btn">Month ▾</button>
       <div class="msel-panel" id="metricMonthPanel" hidden></div>
     </div>
     <select id="metricSupervisor" onchange="buildMetric()"><option>All Supervisors</option></select>
-    <select id="metricAgent" onchange="buildMetric()"><option value="">All Agents</option></select>
+    <div class="msel" id="metricAgentWrap"><button type="button" id="metricAgentBtn" class="msel-btn">All Agents ▾</button><div class="msel-panel mo-panel" id="metricAgentPanel" hidden></div></div>
     <input type="text" id="metricSearch" placeholder="🔍 Search Agent..." onkeyup="buildMetric()">
     <button class="blue" onclick="refreshAttendanceData(true)">↻ Refresh</button>
+    <button type="button" class="present-btn" onclick="togglePresent('metricTab')" title="Full screen with larger text for the meeting (Esc to exit)">⛶ Full screen</button>
   </div>
   <div class="daily-summary">
     <div class="summary-box">👤 Agents: <span id="metricCount">0</span></div>
@@ -1597,9 +1737,10 @@ html[data-theme=dark] #dataUpdateNote .du-name{color:#cfdcff}
       <div class="msel-panel" id="mcsMonthPanel" hidden></div>
     </div>
     <select id="mcsSupervisor" onchange="buildMcs()"><option>All Supervisors</option></select>
-    <select id="mcsAgent" onchange="buildMcs()"><option value="">All Agents</option></select>
+    <div class="msel" id="mcsAgentWrap"><button type="button" id="mcsAgentBtn" class="msel-btn">All Agents ▾</button><div class="msel-panel mo-panel" id="mcsAgentPanel" hidden></div></div>
     <input type="text" id="mcsSearch" placeholder="🔍 Search Agent..." onkeyup="buildMcs()">
     <button class="blue" onclick="refreshAttendanceData(true)">↻ Refresh</button>
+    <button type="button" class="present-btn" onclick="togglePresent('mcsTab')" title="Full screen with larger text for the meeting (Esc to exit)">⛶ Full screen</button>
   </div>
   <div class="daily-summary">
     <div class="summary-box">👤 Agents: <span id="mcsCount">0</span></div>
@@ -1755,7 +1896,11 @@ const URLS = {
   qaScoring: sheetUrl(340509074),          // "QA Scoring" tab: QA# | Question | Yes | No (the wording of Q1 - Q25)
   metric: sheetUrl(2096143764),            // "metric scorecard" tab (Performance Stack Ranking)
   agentScores: sheetUrl(1351966528),       // "agent" tab (Metric Scorecard: actual scores)
-  daily: scheduleUrl(1383082920)           // "Schedule By Date" tab
+  daily: scheduleUrl(1383082920),          // "Schedule By Date" tab
+  dailyAgent: sheetUrl(2100785679),        // "Daily Agent" tab: Date | Agent Name | Team Name | Inbound Handled | Avg Talk Time
+  callDrivers: sheetUrl(1118528506),       // "Call Drivers" tab: Date | Agent Name | Configuration Item (one row per call)
+  ptoWeekly: sheetUrl(890116302),          // "PTOWEEKLY" tab: Analyst Name | Supervisor | Date (one row = one agent on PTO that day)
+  attPoints: sheetUrl(1957477245)          // "AttendancePoints" tab: Date | Call Out | Left Early | No Call No Show | Running Late | Total (team counts per day)
 };
 const SCHEDULE_TABS = { est: '1891248054', ph: '1520744940' };
 const tabLabel = gid => `gid ${gid}`;
@@ -2043,6 +2188,7 @@ async function loadAttendance() {
       SHORT_DISPUTE_GID ? fetchCSV(sheetUrl(SHORT_DISPUTE_GID), { raw: true }).catch(() => []) : Promise.resolve([])
     ]);
     ptoList = ptoList.map(maskLeaveReason);
+    RAW.pto = ptoList; RAW.co = calledOffList; RAW.at = attTimeList; applyTeamFilter();
     disputeIdx = buildDisputeIndex(disputeRows);
     shortIdx = buildShortIndex(shortRows);
     loadErrors.dispute = disputeInfo.error ? `Couldn't load the dispute form responses (${disputeInfo.error}) - check DISPUTE_GID and sharing`
@@ -2111,9 +2257,9 @@ function normalizeScheduleRow(r) {
 
 const loadSchedules = () => guard('schedules', "Couldn't load schedules from Google Sheets", async () => {
   const [est, ph] = await Promise.all(Object.values(SCHEDULE_TABS).map(async gid =>
-    (await fetchCSV(scheduleUrl(gid), { need: ['Name', 'Monday'] })).map(normalizeScheduleRow).filter(r => r.Name)));
+    (await fetchTable(scheduleUrl(gid), ['Name', 'Monday'])).map(normalizeScheduleRow).filter(r => r.Name)));
   if (!est.length) throw new Error(`tab ${tabLabel(SCHEDULE_TABS.est)} is empty`);
-  estData = est; phData = ph;
+  RAW.est = est; RAW.ph = ph; applyTeamFilter();
 });
 
 function buildDailyMap(rows) {
@@ -2133,16 +2279,202 @@ function buildDailyMap(rows) {
 }
 
 const loadDaily = () => guard('daily', 'Couldn\'t load "Schedule By Date"', async () => {
-  const rows = await fetchCSV(URLS.daily, { raw: true });
-  const h = rows.findIndex(r => clean(r[0]).toLowerCase() === 'date');
-  if (h < 0) throw new Error(`first cell is "${clean(rows[0]?.[0]).slice(0, 40)}" - check the gid and sharing`);
-  const heads = rows[h].map(clean);
-  dailyMap = buildDailyMap(rows.slice(h + 1).map(r => Object.fromEntries(heads.map((k, i) => [k, r[i] ?? '']))));
+  RAW.dailyRows = await fetchTable(URLS.daily, ['Date', 'Name']); applyTeamFilter();
+});
+
+/* Daily Agent tab: Date | Agent Name | Team Name | Inbound Handled (= calls handled) | Avg Talk Time (= AHT, h:mm:ss)
+   One row per agent per day. Team Name containing "Phone" or "Chat" decides the team. Headers are matched by name. */
+let dailyAgentRows = [];
+const daKey = x => String(x ?? '').toLowerCase().replace(/[^a-z0-9]/g, '');
+/* Roster tabs are read by header NAME, in any column order: the header row is found wherever it is, spelling / case / spaces are ignored
+   and a few other names are accepted (e.g. "Supervisor Name", "Team Lead" -> Supervisor; "Agent Name" -> Name). */
+const HDR_ALIASES = (() => {
+  const a = {}, add = (canon, ...alts) => [canon, ...alts].forEach(x => a[daKey(x)] = canon);
+  add('Name', 'Agent', 'Agent Name', 'Analyst', 'Analyst Name', 'Employee', 'Employee Name');
+  add('Supervisor', 'Supervisor Name', 'Sup', 'Team Lead', 'TL', 'Manager', 'Leader');
+  add('Date'); add('Shift');
+  add('Team', 'Team Name', 'Skill', 'LOB', 'Line of Business', 'Queue', 'Campaign', 'Department');
+  WEEK.forEach(d => add(d, d.slice(0, 3)));
+  TIME_COLS.forEach(c => add(c));
+  return a;
+})();
+async function fetchTable(url, need) {
+  const rows = await fetchCSV(url, { raw: true });
+  const heads = r => r.map(c => HDR_ALIASES[daKey(c)] || clean(c));
+  const h = rows.findIndex(r => { const k = heads(r); return need.every(n => k.includes(n)); });
+  if (h < 0) throw new Error(`no ${need.map(n => '"' + n + '"').join(' + ')} header row found - check the gid and that the sheet is shared`);
+  const hd = heads(rows[h]);
+  return rows.slice(h + 1).map(r => { const o = {}; hd.forEach((k, i) => { if (k && (!(k in o) || (o[k] === '' && r[i]))) o[k] = r[i] ?? ''; }); return o; });
+}
+
+/* =====================================================================
+   PHONE / CHAT TEAM SWITCH
+   Every tab is shared; a team column ("DITSC L1 English - Phone" / "DITSC L1 English - Chat") says who a row belongs to.
+   A row without a team column takes the team of that agent in the roster. Anyone not found counts as Phone.
+   The loaders keep the full data in RAW and applyTeamFilter() puts only the chosen team into the working lists.
+   The Weekly report always builds from both teams.
+   ===================================================================== */
+const TEAM_LABEL = { Phone: 'DITSC L1 English - Phone', Chat: 'DITSC L1 English - Chat' };
+const TEAM_KEYS = ['team', 'teamname', 'skill', 'lob', 'lineofbusiness', 'queue', 'campaign', 'department'];
+const teamOfText = v => { const t = String(v ?? '').trim(); return !t ? '' : /chat/i.test(t) ? 'Chat' : /phone|voice/i.test(t) ? 'Phone' : ''; };
+const rowTeamRaw = r => { for (const k of Object.keys(r || {})) if (TEAM_KEYS.includes(daKey(k))) { const t = teamOfText(r[k]); if (t) return t; } return ''; };
+let curTeam = 'Phone', teamIdx = new Map();
+try { const t = localStorage.getItem('dashTeam'); if (t === 'Phone' || t === 'Chat') curTeam = t; } catch (e) {}
+const RAW = {};
+function buildTeamIdx() {
+  const m = new Map();
+  [...(RAW.est || []), ...(RAW.ph || [])].forEach(r => { const t = rowTeamRaw(r); if (t && r.Name) m.set(normName(r.Name), t); });
+  teamIdx = m;
+}
+const rowTeam = r => rowTeamRaw(r) || teamIdx.get(normName(r?.Name ?? r?.['Analyst Name'] ?? r?.['Agent Name'] ?? '')) || 'Phone';
+function applyTeamFilter(team = curTeam) {
+  const f = a => team === 'All' ? a : a.filter(r => rowTeam(r) === team);
+  if (RAW.est) { buildTeamIdx(); estData = f(RAW.est); phData = f(RAW.ph || []); }
+  if (RAW.pto) ptoList = f(RAW.pto);
+  if (RAW.co) calledOffList = f(RAW.co);
+  if (RAW.at) attTimeList = f(RAW.at);
+  if (RAW.dailyRows) dailyMap = buildDailyMap(f(RAW.dailyRows));
+  /* QA, Stack ranking and Overall Metric Scorecard: team from the roster, else the tab's own Skill column, else Phone */
+  const keep = n => team === 'All' || (teamIdx.get(normName(n)) || tabSkill().get(normName(n)) || 'Phone') === team;
+  if (RAW.qa) qaList = RAW.qa.filter(r => keep(r['Analyst Name']));
+  if (RAW.metric) metricRows = RAW.metric.filter(r => keep(r[metricIdx.agent]));
+  if (RAW.mcs) mcsRows = RAW.mcs.filter(r => keep(r[mcsI.agent]));
+}
+/* ---------- Skill column (Phone / Chat) on the performance tables ----------
+   Added to the Score Summary, QA, Stack Ranking and Overall Metric Scorecard tables, right after the agent column.
+   Team comes from the roster; for agents the roster doesn't list it falls back to the tab's own Skill column. */
+let tabSkillCache = { key: '', map: new Map() };
+function tabSkill() {
+  const qaAll = RAW.qa || qaList, metricAll = RAW.metric || metricRows, mcsAll = RAW.mcs || mcsRows;
+  const key = [qaAll.length, metricAll.length, mcsAll.length].join('|');
+  if (tabSkillCache.key === key) return tabSkillCache.map;
+  const m = new Map();
+  qaAll.forEach(r => { const t = rowTeamRaw(r), n = r['Analyst Name']; if (t && n) m.set(normName(n), t); });
+  const scan = (heads, rows, ai) => {
+    const i = heads.findIndex(h => TEAM_KEYS.includes(daKey(h)));
+    if (i < 0 || ai < 0) return;
+    rows.forEach(r => { const t = teamOfText(r[i]); if (t && r[ai]) m.set(normName(r[ai]), t); });
+  };
+  scan(metricHeads, metricAll, metricIdx.agent); scan(mcsHeads, mcsAll, mcsI.agent);
+  tabSkillCache = { key, map: m };
+  return m;
+}
+const skillLookup = name => teamIdx.get(normName(name)) || tabSkill().get(normName(name)) || '';
+const SKILL_TABLES = ['ssTable', 'ssMcsTable', 'ssStackTable', 'qaTable', 'metricTable', 'mcsTable'];
+function skillOfCell(c0) {
+  const cl = c0.cloneNode(true);
+  cl.querySelectorAll('small,.caret,.rank').forEach(x => x.remove());
+  const n = cl.textContent.replace(/\([^)]*\)\s*$/, '').replace(/[^\p{L}\p{N}\s.,'’-]/gu, ' ').replace(/\s+/g, ' ').trim();
+  return n ? skillLookup(n) : '';
+}
+function addSkillCols() {
+  SKILL_TABLES.forEach(id => {
+    const t = $(id); if (!t || !t.tHead || !t.tBodies[0]) return;
+    const hr = t.tHead.rows[0]; if (!hr) return;
+    if (!hr.querySelector(':scope > .sk-th')) { const th = document.createElement('th'); th.className = 'sk-th'; th.textContent = 'Skill'; hr.cells[0].after(th); }
+    [...t.tBodies[0].rows].forEach(tr => {
+      if (tr.querySelector(':scope > .sk-td')) return;
+      const c0 = tr.cells[0]; if (!c0 || c0.colSpan > 1) return;           // "No agents found" rows
+      const td = document.createElement('td'); td.className = 'sk-td';
+      const sk = skillOfCell(c0);
+      if (sk) td.innerHTML = `<span class="sk-chip sk-${sk.toLowerCase()}">${sk === 'Chat' ? '💬' : '📞'} ${sk}</span>`;
+      c0.after(td);
+    });
+  });
+}
+function initSkillCols() {
+  const mo = new MutationObserver(addSkillCols);                          // runs after each re-render of these tables
+  SKILL_TABLES.forEach(id => { const t = $(id); if (t && t.tHead && t.tBodies[0]) { mo.observe(t.tHead, { childList: true }); mo.observe(t.tBodies[0], { childList: true }); } });
+  addSkillCols();
+}
+function syncTeamButtons() {
+  document.querySelectorAll('.team-seg button').forEach(b => { const on = b.dataset.team === curTeam; b.classList.toggle('on', on); b.setAttribute('aria-pressed', on); });
+  const l = $('teamLbl'); if (l) l.textContent = TEAM_LABEL[curTeam] || '';
+}
+function setTeam(t) {
+  if (t === curTeam) return;
+  curTeam = t; try { localStorage.setItem('dashTeam', t); } catch (e) {}
+  applyTeamFilter(); syncTeamButtons(); renderAll();
+}
+function daSecs(v) {                                  // "0:19:35" -> 1175, "19:35" -> 1175, 0.0136 (day fraction) -> 1175
+  if (v == null || v === '') return null;
+  if (typeof v === 'number') return v < 1 ? Math.round(v * 86400) : v;
+  const t = String(v).trim(); if (!t) return null;
+  if (/^\d+(\.\d+)?$/.test(t)) { const n = parseFloat(t); return n < 1 ? Math.round(n * 86400) : n; }
+  const p = t.split(':').map(Number);
+  if (p.some(isNaN)) return null;
+  return p.length === 3 ? p[0] * 3600 + p[1] * 60 + p[2] : p.length === 2 ? p[0] * 60 + p[1] : null;
+}
+function daDate(v) {                                  // "2026/11/01" or "2026-11-01" or "11/1/2026"
+  const t = String(v ?? '').trim(), m = t.match(/^(\d{4})[\/-](\d{1,2})[\/-](\d{1,2})/);
+  return m ? m[1] + '-' + m[2].padStart(2, '0') + '-' + m[3].padStart(2, '0') : normalizeDate(t);
+}
+const loadDailyAgent = () => guard('dailyAgent', "Couldn't load the Daily Agent tab", async () => {
+  const rows = await fetchCSV(URLS.dailyAgent, { raw: true });
+  const h = rows.findIndex(r => r.some(c => daKey(c) === 'date') && r.some(c => daKey(c) === 'agentname'));
+  if (h < 0) throw new Error('no "Date" / "Agent Name" header found - check the tab gid and sharing');
+  const heads = rows[h].map(daKey), col = (...ks) => heads.findIndex(x => ks.includes(x));
+  const iD = col('date'), iA = col('agentname'), iT = col('teamname', 'team', 'skill', 'skillname'), iC = col('inboundhandled', 'callshandled'), iH = col('avgtalktime', 'aht');
+  dailyAgentRows = rows.slice(h + 1).map(r => {
+    const team = clean(r[iT]), calls = parseFloat(String(r[iC] ?? '').replace(/,/g, ''));
+    return { d: daDate(r[iD]), agent: clean(r[iA]), team: /chat/i.test(team) ? 'chat' : /phone/i.test(team) ? 'phone' : '', calls: isNaN(calls) ? 0 : calls, aht: daSecs(r[iH]) };
+  }).filter(x => x.d && x.agent && x.team);
+});
+
+/* Call Drivers tab: Date | Agent Name | Configuration Item. One row = one call; the drivers are counted by Configuration Item. */
+let callDriverRows = [], callDriverHasSkill = false;
+const loadCallDrivers = () => guard('callDrivers', "Couldn't load the Call Drivers tab", async () => {
+  const rows = await fetchCSV(URLS.callDrivers, { raw: true });
+  const h = rows.findIndex(r => r.some(c => daKey(c) === 'date') && r.some(c => daKey(c) === 'configurationitem'));
+  if (h < 0) throw new Error('no "Date" / "Configuration Item" header found - check the tab gid and sharing');
+  const heads = rows[h].map(daKey), iD = heads.indexOf('date'), iA = heads.indexOf('agentname'), iC = heads.indexOf('configurationitem'), iT = heads.findIndex(x => ['skill', 'skillname', 'skills', 'queue', 'teamname', 'team'].includes(x));
+  callDriverHasSkill = iT >= 0;
+  callDriverRows = rows.slice(h + 1).map(r => { const t = iT >= 0 ? clean(r[iT]) : ''; return { d: daDate(r[iD]), agent: iA >= 0 ? clean(r[iA]) : '', item: clean(r[iC]), team: /chat/i.test(t) ? 'chat' : /phone|voice/i.test(t) ? 'phone' : '' }; }).filter(x => x.d);
+});
+
+/* AttendancePoints tab: Date | Call Out | Left Early | No Call No Show | Running Late | Total  (team counts per day; several rows for one date are added up)
+   The Weekly report uses it for the team's Called Off (Call Out + No Call No Show) and Late / Left early (Left Early + Running Late). */
+let attPointMap = new Map(), attPointVer = 0;
+const loadAttendancePoints = () => guard('attPoints', "Couldn't load the AttendancePoints tab", async () => {
+  const rows = await fetchCSV(URLS.attPoints, { raw: true });
+  const h = rows.findIndex(r => r.some(c => daKey(c) === 'date') && r.some(c => daKey(c) === 'callout'));
+  if (h < 0) throw new Error('no "Date" / "Call Out" header found - check the tab gid and sharing');
+  const heads = rows[h].map(daKey), ix = k => heads.indexOf(k), iD = ix('date'), iC = ix('callout'), iL = ix('leftearly'), iN = ix('nocallnoshow'), iR = ix('runninglate'), iT = ix('total');
+  const num = v => { const n = parseFloat(String(v ?? '').replace(/,/g, '')); return isNaN(n) ? 0 : n; };
+  const m = new Map();
+  rows.slice(h + 1).forEach(r => {
+    const d = daDate(r[iD]); if (!d) return;
+    const e = m.get(d) || { co: 0, le: 0, ncns: 0, late: 0, total: 0 };
+    e.co += iC >= 0 ? num(r[iC]) : 0; e.le += iL >= 0 ? num(r[iL]) : 0; e.ncns += iN >= 0 ? num(r[iN]) : 0; e.late += iR >= 0 ? num(r[iR]) : 0; e.total += iT >= 0 ? num(r[iT]) : 0;
+    m.set(d, e);
+  });
+  attPointMap = m; attPointVer++;
+});
+
+/* PTOWEEKLY tab: Analyst Name | Supervisor | Date. One row = one agent on PTO that day (the same agent twice on a date counts once).
+   The Weekly report uses it for PTO, in total and per supervisor. */
+let ptoWeeklyMap = new Map(), ptoWeeklyVer = 0;
+const loadPtoWeekly = () => guard('ptoWeekly', "Couldn't load the PTOWEEKLY tab", async () => {
+  const rows = await fetchCSV(URLS.ptoWeekly, { raw: true });
+  const h = rows.findIndex(r => r.some(c => daKey(c) === 'date') && r.some(c => daKey(c) === 'analystname'));
+  if (h < 0) throw new Error('no "Analyst Name" / "Date" header found - check the tab gid and sharing');
+  const heads = rows[h].map(daKey), iA = heads.indexOf('analystname'), iS = heads.indexOf('supervisor'), iD = heads.indexOf('date');
+  const m = new Map(), seen = new Set();
+  rows.slice(h + 1).forEach(r => {
+    const d = daDate(r[iD]), n = clean(r[iA]); if (!d || !n) return;
+    const k = normName(n) + '|' + d; if (seen.has(k)) return; seen.add(k);
+    let sp = iS >= 0 ? clean(r[iS]) : ''; if (!sp) { const ag = findAgent(n); sp = ag ? (ag.Supervisor || '') : ''; }
+    const e = m.get(d) || { n: 0, by: {} };
+    e.n++; const key = (sp || '—').toLowerCase(); e.by[key] = (e.by[key] || 0) + 1;
+    m.set(d, e);
+  });
+  ptoWeeklyMap = m; ptoWeeklyVer++;
 });
 
 /* QA tab: Analyst Name | Supervisor | CallDate | TicketNumber | Notes | Score | ... */
 const loadQA = () => guard('qa', "Couldn't load the QA tab", async () => {
-  qaList = (await fetchCSV(URLS.qa, { need: 'Analyst Name' })).filter(r => String(r['Analyst Name'] ?? '').trim());
+  RAW.qa = (await fetchCSV(URLS.qa, { need: 'Analyst Name' })).filter(r => String(r['Analyst Name'] ?? '').trim());
+  qaList = RAW.qa; applyTeamFilter();
 });
 
 /* QA Scoring tab: QA# | Question | Yes | No  ->  the wording of each question (Q1 - Q25) plus its Yes / No scoring values */
@@ -2172,7 +2504,8 @@ const loadMetric = () => guard('metric', "Couldn't load the Performance Stack Ra
   const find = re => metricHeads.findIndex(x => re.test(x));
   metricIdx = { month: find(/^month$/i), agent: find(/^agent name$/i), sup: find(/^supervisor$/i), total: find(/^total$/i) };
   metricWeights = h > 0 ? rows[h - 1].map(clean) : [];
-  metricRows = rows.slice(h + 1).filter(r => clean(r[metricIdx.agent])).map(r => metricHeads.map((_, i) => clean(r[i])));
+  RAW.metric = rows.slice(h + 1).filter(r => clean(r[metricIdx.agent])).map(r => metricHeads.map((_, i) => clean(r[i])));
+  metricRows = RAW.metric; applyTeamFilter();
   if (!metricSortSet && metricIdx.total >= 0) {            // first load: highest TOTAL first
     sortState.metric = { col: metricIdx.total, asc: false };
     metricSortSet = true;
@@ -2202,7 +2535,7 @@ async function refreshAttendanceData(notify = false, scores = true) {
   if (btn) { btn.disabled = true; btn.classList.add('spinning'); }
   try {
     await Promise.all([loadAttendance(), loadSchedules(), loadDaily(),
-      ...(scores ? [loadQA(), loadQAScoring(), loadMetric(), loadMcs()] : []),
+      ...(scores ? [loadQA(), loadQAScoring(), loadMetric(), loadMcs(), loadDailyAgent(), loadCallDrivers(), loadAttendancePoints(), loadPtoWeekly()] : []),
       ...(notify && typeof loadDataUpdates === 'function' ? [loadDataUpdates()] : [])]);   // also re-read the "Data as of" dates
   } finally { if (btn) { btn.disabled = false; btn.classList.remove('spinning'); } }
   renderAll();
@@ -2222,6 +2555,7 @@ const TAB_RENDERERS = {
   lateTab: buildLateTable,
   scoreSumTab: buildScoreSummary,
   leaveTrendTab: buildLeaveTrend,
+  weeklyReportTab: buildWeeklyReport,
   agentSumTab: buildAgentSummary,
   trackerTab: buildTracker,
   qaTab: buildQA,
@@ -2269,7 +2603,8 @@ function toggleRealtime() {
 
 function updateRealtime() {
   const now = estNow(), today = ymd(now);
-  ['selectedDate', 'ptoDate', 'calledOffDate', 'scheduleDate'].forEach(id => $(id).value = today);
+  ['selectedDate', 'scheduleDate'].forEach(id => $(id).value = today);
+  perSetRange('pto', today, today); perSetRange('calledOff', today, today);
   $('interval').value = `${pad(now.getHours())}:${now.getMinutes() >= 30 ? '30' : '00'}`;
   renderAll();
 }
@@ -3087,8 +3422,8 @@ const recordCell = (r, c) => {
   return !v || up(v) === 'FALSE' ? '—' : esc(convertShiftRange(v));
 };
 const RECORD_VIEWS = {
-  pto: { table: 'ptoTable',       list: () => ptoList,       sup: 'ptoSupervisor',       date: 'ptoDate',       search: 'ptoSearch',       empty: 'No PTO records found' },
-  att: { table: 'calledOffTable', list: () => calledOffList, sup: 'calledOffSupervisor', date: 'calledOffDate', search: 'calledOffSearch', empty: 'No Called Off records found' }
+  pto: { table: 'ptoTable',       list: () => ptoList,       sup: 'ptoSupervisor',       date: 'ptoDate',       per: 'ptoPer',       search: 'ptoSearch',       empty: 'No PTO records found' },
+  att: { table: 'calledOffTable', list: () => calledOffList, sup: 'calledOffSupervisor', date: 'calledOffDate', per: 'calledOffPer', search: 'calledOffSearch', empty: 'No Called Off records found' }
 };
 
 function buildRecordTable(kind) {
@@ -3098,7 +3433,7 @@ function buildRecordTable(kind) {
   table.tHead.innerHTML = '<tr>' + Object.entries(RECORD_COLS)
     .map(([c, title]) => `<th onclick="sortBy('${kind}','${c}')">${title}</th>`).join('') + '</tr>';
 
-  const sup = $(v.sup).value, date = $(v.date).value, q = up($(v.search).value);
+  const sup = $(v.sup).value, R = perRecRange(v.per, v.date), q = up($(v.search).value);
   const { col, asc } = sortState[kind];
   const dir = asc ? 1 : -1;
 
@@ -3114,7 +3449,7 @@ function buildRecordTable(kind) {
   const rows = withSup.filter(r =>
     (sup === ALL || r.Supervisor === sup) &&
     (!q || up(r.Name).includes(q)) &&
-    (!date || normalizeDate(r['EST Date']) === date)
+    perInRange(normalizeDate(r['EST Date']), R)
   );
 
   if (col) rows.sort((a, b) => col === 'EST Date'
@@ -3126,7 +3461,8 @@ function buildRecordTable(kind) {
 }
 
 function clearRecordDate(kind) {
-  $(RECORD_VIEWS[kind].date).value = '';
+  const v = RECORD_VIEWS[kind];
+  $(v.per).value = 'all'; $(v.date).value = ''; $(v.date).hidden = true;
   buildRecordTable(kind);
 }
 
@@ -3167,9 +3503,9 @@ function lateRows() {
 }
 
 function buildLateTable() {
-  const sup = $('lateSupervisor').value, date = $('lateDate').value, q = up($('lateSearch').value);
+  const sup = $('lateSupervisor').value, R = perRecRange('latePer', 'lateDate'), q = up($('lateSearch').value);
   const rows = lateRows()
-    .filter(x => (sup === ALL || x.supervisor === sup) && (!date || x.date === date) && (!q || up(x.name).includes(q)))
+    .filter(x => (sup === ALL || x.supervisor === sup) && perInRange(x.date, R) && (!q || up(x.name).includes(q)))
     .sort((a, b) => b.date.localeCompare(a.date) || a.name.localeCompare(b.name));
 
   const t = v => { const n = normTime(v); return n ? fmtAMPM(n) : '—'; };
@@ -3255,11 +3591,49 @@ function fillAgentSelect(selId, names) {
   if (list.includes(prev)) sel.value = prev;
   return sel.value;
 }
+/* Agent filter with tick boxes: tick one or more agents; nothing ticked = All Agents.
+   Returns the Set of ticked agents (normName keys). The list follows the other filters; ticked agents that drop out of it are unticked. */
+const agMulti = {};
+function fillAgentMulti(id, names, rebuild) {
+  const st = agMulti[id] || (agMulti[id] = { sel: new Set(), key: '', wired: false });
+  st.rebuild = rebuild;
+  const list = [...new Map(names.filter(Boolean).map(n => [normName(n), String(n).trim()])).values()].sort((a, b) => a.localeCompare(b));
+  const have = new Set(list.map(n => normName(n)));
+  [...st.sel].forEach(k => { if (!have.has(k)) st.sel.delete(k); });
+  const panel = $(id + 'Panel'), btn = $(id + 'Btn');
+  if (!st.wired) {
+    st.wired = true;
+    btn.addEventListener('click', e => {
+      e.stopPropagation();
+      Object.keys(agMulti).forEach(o => { if (o !== id) $(o + 'Panel').hidden = true; });
+      panel.hidden = !panel.hidden;
+    });
+    $(id + 'Wrap').addEventListener('click', e => e.stopPropagation());
+    document.addEventListener('click', () => { panel.hidden = true; });
+    panel.addEventListener('change', e => {
+      const t = e.target;
+      if (t.dataset.all !== undefined) st.sel.clear();
+      else if (t.dataset.n) t.checked ? st.sel.add(t.dataset.n) : st.sel.delete(t.dataset.n);
+      st.rebuild();
+    });
+  }
+  const key = list.join('\u0001');
+  if (st.key !== key) {                       // only rebuild the list when the agents changed, so the panel keeps its scroll position
+    st.key = key;
+    panel.innerHTML = '<label class="ytd"><input type="checkbox" data-all> All Agents</label>' +
+      list.map(n => `<label><input type="checkbox" data-n="${esc(normName(n))}"> ${esc(n)}</label>`).join('');
+  }
+  panel.querySelectorAll('input[data-n]').forEach(c => { c.checked = st.sel.has(c.dataset.n); });
+  panel.querySelector('input[data-all]').checked = !st.sel.size;
+  btn.textContent = (!st.sel.size ? 'All Agents' : st.sel.size === 1 ? (list.find(n => st.sel.has(normName(n))) || 'All Agents') : st.sel.size + ' agents') + ' ▾';
+  return st.sel;
+}
 
 /* Quality Assurance: ranked like the Performance Stack Ranking.
    Tick one or more months (or Year to date). Each agent is one row (average score, audits, latest call);
    open it to see the audits, or - with several months ticked - the months, and open a month to see its audits. */
 function buildQA() {
+  calMount('qa', buildQA);
   const all = qaList.map((x, qid) => {
     const date = normalizeDate(x.CallDate);
     return { analyst: String(x['Analyst Name'] ?? '').trim(), supervisor: String(x.Supervisor ?? '').trim(), date, ym: date.slice(0, 7),
@@ -3268,12 +3642,14 @@ function buildQA() {
 
   qaMonths = [...new Set(all.map(x => x.ym))].sort();
   if (!qaSelInit && qaMonths.length) { qaSel = new Set([qaMonths[qaMonths.length - 1]]); qaSelInit = true; }
+  const qaR = perRangeOf('qa');
+  if (qaR) qaSel = new Set(perMonthsTouched(qaR));
   qaSel = new Set([...qaSel].filter(m => qaMonths.includes(m)));
   if (!qaSel.size && qaMonths.length) qaSel.add(qaMonths[qaMonths.length - 1]);
   $('qaMonthWrap').hidden = !qaMonths.length;
   renderQaMonthPicker();
   const multi = qaSel.size > 1;
-  const picked = all.filter(x => qaSel.has(x.ym));
+  const picked = all.filter(x => qaSel.has(x.ym) && perInRange(x.date, qaR));
 
   /* Supervisor list follows the ticked months */
   const supSel = $('qaSupervisor'), prevSup = supSel.value;
@@ -3281,10 +3657,10 @@ function buildQA() {
   supSel.innerHTML = `<option>${ALL}</option>` + sups.map(s => `<option>${esc(s)}</option>`).join('');
   if (sups.includes(prevSup)) supSel.value = prevSup;
   const sup = supSel.value, q = up($('qaSearch').value);
-  const ag = fillAgentSelect('qaAgent', picked.filter(x => sup === ALL || x.supervisor === sup).map(x => x.analyst));
+  const ags = fillAgentMulti('qaAgent', picked.filter(x => sup === ALL || x.supervisor === sup).map(x => x.analyst), buildQA);
 
   const rows = picked
-    .filter(x => (sup === ALL || x.supervisor === sup) && (!ag || normName(x.analyst) === normName(ag)) && (!q || up(`${x.analyst} ${x.ticket}`).includes(q)))
+    .filter(x => (sup === ALL || x.supervisor === sup) && (!ags.size || ags.has(normName(x.analyst))) && (!q || up(`${x.analyst} ${x.ticket}`).includes(q)))
     .sort((a, b) => b.date.localeCompare(a.date) || a.analyst.localeCompare(b.analyst));
 
   const avgOf = list => {
@@ -3627,6 +4003,7 @@ const METRIC_BANDS = {
   'fcr':                     { good: 10, mid: 6,  tip: 'Green: 10 pts (FCR >=82%) | Amber: 6-8 pts (60-81%) | Red: <=4 pts' },
   'work rate':               { good: 25, mid: 15, tip: 'Green: 25 pts (work rate >=75%) | Amber: 15-20 pts (70-74%) | Red: <=10 pts' },
   'misroute rate':           { good: 5,  mid: 2,  tip: 'Green: 5 pts (misroute <1.030%) | Amber: 2-3 pts (1.031-1.99%) | Red: 0 pts' },
+  'compliance':              { good: 5,  mid: 3,  tip: 'Green: 5 pts (compliance >=97%) | Amber: 3-4 pts (80-96%) | Red: <=2 pts (<80%)' },
   'total':                   { good: 85, mid: 60, tip: 'Green: >=85 pts | Amber: 60-84 pts | Red: <60 pts' }
 };
 const metricBand = i => METRIC_BANDS[String(metricHeads[i] || '').toLowerCase().trim()] || null;
@@ -3638,14 +4015,261 @@ function mcsBand(head, v, months) {
   if (typeof n !== 'number') return '';
   if (k === 'qa') return n >= 95 ? 'good' : n >= 85 ? 'mid' : 'low';
   if (k === 'workingrate') return n >= 75 ? 'good' : n >= 70 ? 'mid' : 'low';
-  if (k === 'compliance') return n >= 100 ? 'good' : 'low';
+  if (k === 'compliance') return n >= 97 ? 'good' : n >= 80 ? 'mid' : 'low';      // 5 pts >=97% | 4-3 pts 80-96% | 2-1 pts below 80%
   if (k === 'misroutes') return months > 1 ? '' : n < 1.03 ? 'good' : n < 2 ? 'mid' : 'low';   // several months are added up, so the per-month target no longer applies
   if (k.startsWith('fcrcount')) return n >= 82 ? 'good' : n >= 60 ? 'mid' : 'low';
   return '';
 }
 
 /* Columns shown in the Performance Stack Ranking table, in this order (matched by header name) */
-const METRIC_SHOW = ['agent name', 'attendance', 'call and ticket quality', 'fcr', 'misroute rate', 'work rate', 'total', 'supervisor'];
+const METRIC_SHOW = ['agent name', 'attendance', 'call and ticket quality', 'fcr', 'work rate', 'compliance', 'misroute rate', 'total', 'supervisor'];
+/* Columns that only exist for certain months: header name -> month number (11 = November). Shown only while that month is ticked. */
+const METRIC_MONTH_ONLY = { 'compliance': [11] };
+const metricMonthNums = labels => labels.map(l => SS_MON.findIndex(x => String(l).toLowerCase().includes(x)) + 1);
+const metricShowCols = monthNums => METRIC_SHOW.filter(n => !METRIC_MONTH_ONLY[n] || METRIC_MONTH_ONLY[n].some(m => monthNums.includes(m)))
+  .map(n => metricHeads.findIndex(h => h.toLowerCase().trim() === n)).filter(i => i >= 0);
+
+/* Scorecard weights (points out of 100) by month: November onward (Compliance added) and October backwards.
+   A set is used only when every ticked month belongs to it; a mix of the two shows no weights. */
+const METRIC_WEIGHT_SETS = [
+  { months: [11], w: { 'attendance': 35, 'call and ticket quality': 25, 'work rate': 15, 'fcr': 15, 'compliance': 5, 'misroute rate': 5, 'total': 100 } },
+  { months: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10], w: { 'attendance': 35, 'call and ticket quality': 25, 'work rate': 25, 'fcr': 10, 'misroute rate': 5, 'total': 100 } }
+];
+const metricWeightsFor = monthNums => monthNums.length ? (METRIC_WEIGHT_SETS.find(st => monthNums.every(m => st.months.includes(m))) || {}).w || null : null;
+const metricWeightHtml = (i, monthNums) => {
+  const sheetW = metricWeights[i] || '';
+  if (/^\d+(\.\d+)?%$/.test(sheetW)) return `<small>${esc(sheetW)}</small>`;       // a weight typed in the sheet wins
+  const W = metricWeightsFor(monthNums), w = W && W[String(metricHeads[i] || '').toLowerCase().trim()];
+  return w != null ? `<span class="hd-wt">(${w})</span>` : '';
+};
+
+/* "Team targets for the month": one card, filled into every .kpi-card on the page */
+const KPI_ITEMS = [
+  ['Attendance', 'attendance', 'Aim for 95% or higher', 'The share of scheduled days your agents showed up. Low attendance cuts into coverage, so watch for patterns in absences and late arrivals.'],
+  ['Call and Ticket Quality', 'call and ticket quality', 'Aim for 95% or higher', 'The average score from call and ticket reviews. It shows how well agents follow quality standards, and low scores point to where coaching is needed.'],
+  ['FCR (First Contact Resolution)', 'fcr', 'Aim for 82% or higher', 'How often agents resolve the cast member’s issue on first contact, with no follow-ups. A dip can signal knowledge gaps or process issues.'],
+  ['Work Rate', 'work rate', 'Aim for 75% or higher', 'How much of logged-in time goes to actual work. About 25% of the day is already planned for breaks and other activities, so a rate below target is worth a look at adherence.'],
+  ['Ticket Compliance', 'compliance', 'Aim for 97% or higher', 'Every call should have a ticket. Below 97% means undocumented calls, so follow up with the agent.'],
+  ['Misroute Rate', 'misroute rate', 'Aim for below 1.030%', 'How often tickets land with the wrong team. The lower the better, and a high rate usually calls for a triage refresher.']
+];
+/* Months ticked on the page this card sits on (the weights follow them) */
+function kpiMonthNums(card) {
+  try {
+    if (card.id === 'kpiCardMetric') return metricMonthNums([...metricSel]);
+    if (card.id === 'kpiCardAgent') return [...agSumSel].map(ym => +ym.slice(5, 7));
+    if (card.id === 'kpiCard') return [...ssSel].map(ym => +ym.slice(5, 7));
+  } catch (e) {}
+  return [];
+}
+function renderKpiCards() {
+  document.querySelectorAll('details.kpi-card').forEach(d => {
+    const W = metricWeightsFor(kpiMonthNums(d));
+    d.innerHTML = '<summary class="kpi-head"><span>🎯 Team targets for the month</span><span class="kpi-chev" aria-hidden="true"></span></summary>' +
+      '<div class="kpi-body"><p class="kpi-intro">The monthly targets your team is measured against, and what each number tells you.</p><ul class="kpi-list">' +
+      KPI_ITEMS.map(([n, k, g, t]) => `<li><div class="kpi-line"><b>${n}</b><span class="kpi-goal">${g}</span>${W && W[k] != null ? `<span class="kpi-wt" title="Points this metric is worth in the stack ranking">${W[k]} pts</span>` : ''}</div><div class="kpi-text">${t}</div></li>`).join('') +
+      '</ul><p class="kpi-outro">Spot gaps early, coach with purpose, and lift the whole team. 💪</p></div>';
+  });
+}
+if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', renderKpiCards); else renderKpiCards();
+
+/* =====================================================================
+   PERIOD FILTER: Year to date / Month to date / Week to date (Mon–Sun) / Date.
+   Every period runs up to today (EST). The monthly score pages use the months the period touches.
+   ===================================================================== */
+const PER_PRESETS = ['ytd', 'mtd', 'wtd', 'date'];
+const perIsPreset = m => PER_PRESETS.includes(m);
+function perRange(mode, dateStr) {
+  const t = parseYMD(ymd(estNow())), today = ymd(t);
+  if (mode === 'ytd') return { from: `${t.getFullYear()}-01-01`, to: today };
+  if (mode === 'mtd') return { from: `${t.getFullYear()}-${pad(t.getMonth() + 1)}-01`, to: today };
+  if (mode === 'wtd') return { from: ymd(new Date(t.getFullYear(), t.getMonth(), t.getDate() - (t.getDay() + 6) % 7)), to: today };
+  const d = dateStr || today;
+  return { from: d, to: d };
+}
+const perInRange = (d, R) => !R || (R.test ? R.test(d) : d >= R.from && d <= R.to);
+function perMonthsTouched(R) {
+  const out = []; let [y, m] = R.from.slice(0, 7).split('-').map(Number); const [y2, m2] = R.to.slice(0, 7).split('-').map(Number);
+  while (y < y2 || (y === y2 && m <= m2)) { out.push(`${y}-${pad(m)}`); if (++m > 12) { m = 1; y++; } }
+  return out;
+}
+/* Period picked on a monthly score page (null = "Pick months", the month ticks decide) */
+function perSyncMonthPicker(p) {
+  const w = $(p + 'MonthWrap'), s = $(p + 'Per');
+  if (!w || !s) return;
+  if (s.value === 'months') delete w.dataset.perHide; else w.dataset.perHide = '1';
+}
+const perRangeOf = p => {
+  const s = $(p + 'Per');
+  if (!s || !s.value || s.value === 'months') return null;
+  let a = $(p + 'From').value, b = $(p + 'To').value; if (!a || !b) return null;
+  if (a > b) [a, b] = [b, a];
+  return { from: a, to: b };
+};
+function perOnChange(p, fn) {
+  const box = $(p + 'RangeBox');
+  if (box) {
+    box.hidden = $(p + 'Per').value !== 'range';
+    calMount(p, window[fn]); calDefaults(p); calSync(p);
+  }
+  perSyncMonthPicker(p);
+  window[fn]();
+}
+/* Ticking months by hand goes back to "Pick months" */
+document.addEventListener('change', e => {
+  const panel = e.target.closest && e.target.closest('.msel-panel');
+  if (!panel || !/MonthPanel$/.test(panel.id)) return;
+  const p = panel.id.replace(/MonthPanel$/, ''), s = $(p + 'Per');
+  if (s && s.value !== 'months') { s.value = 'months'; if ($(p + 'RangeBox')) $(p + 'RangeBox').hidden = true; perSyncMonthPicker(p); }
+}, true);
+
+/* =====================================================================
+   PERIOD PICKER: PTO, Called Off, Late, Break/Lunch, Leave Trend, Tracker, Weekly Report
+   Monthly    = tick one or more months, or Year to date
+   Date range = one calendar: click the first day, then the last day (the days in between are highlighted)
+   ===================================================================== */
+const PERP = {};
+const PERP_FN = { pto: () => buildRecordTable('pto'), calledOff: () => buildRecordTable('att'), late: () => buildLateTable(), lbprr: () => buildLbprr(), lvp: () => buildLeaveTrend(), trk: () => buildTracker(), wrp: () => buildWeeklyReport() };
+const perFmtMonth = ym => { const [y, m] = ym.split('-').map(Number); return new Date(y, m - 1, 1).toLocaleDateString('en-US', { month: 'short', year: 'numeric' }); };
+const perFmtDay = (d, yr) => parseYMD(d).toLocaleDateString('en-US', yr ? { month: 'short', day: 'numeric', year: 'numeric' } : { month: 'short', day: 'numeric' });
+function perMonthRange(ym) { const [y, m] = ym.split('-').map(Number); return { from: `${ym}-01`, to: ymd(new Date(y, m, 0)) }; }
+const perCurMonth = () => ymd(estNow()).slice(0, 7);
+const perPrevMonth = () => { const t = estNow(); return ymd(new Date(t.getFullYear(), t.getMonth() - 1, 1)).slice(0, 7); };
+/* Months offered in the list = the months that have data on file for that page (newest first) */
+const perDm = (rows, f) => (rows || []).map(f);
+const PERP_DATES = {
+  pto: () => perDm(ptoList, r => normalizeDate(r['EST Date'])),
+  calledOff: () => perDm(calledOffList, r => normalizeDate(r['EST Date'])),
+  late: () => perDm(lateRows(), x => x.date),
+  lbprr: () => perDm(lbprrRows(), x => x.date),
+  lvp: () => [...perDm(ptoList, r => normalizeDate(r['EST Date'])), ...perDm(calledOffList, r => normalizeDate(r['EST Date']))],
+  trk: () => [...loliIdx.values()].flatMap(a => a.map(x => x.date)),
+  wrp: () => [...[...loliIdx.values()].flatMap(a => a.map(x => x.date)), ...perDm(ptoList, r => normalizeDate(r['EST Date'])), ...perDm(calledOffList, r => normalizeDate(r['EST Date'])), ...perDm(callDriverRows, x => x.d)]
+};
+function perMonthList(p, st) {
+  let ds = []; try { ds = PERP_DATES[p] ? PERP_DATES[p]() : []; } catch (e) {}
+  const set = new Set(ds.map(d => String(d || '').slice(0, 7)).filter(m => /^\d{4}-\d{2}$/.test(m)));
+  if (st) st.months.forEach(m => set.add(m));              // a month you ticked stays in the list
+  if (!set.size) set.add(perCurMonth());
+  return [...set].sort().reverse();
+}
+const perIsSingle = st => !!st && st.mode === 'month' && !st.ytd && st.months.size === 1;
+
+/* ---- one-calendar range picker (writes the hidden <p>From / <p>To inputs) ---- */
+function calDefaults(p) { const t = ymd(estNow()); if (!$(p + 'From').value) $(p + 'From').value = t.slice(0, 8) + '01'; if (!$(p + 'To').value) $(p + 'To').value = t; }
+function calSync(p) {
+  const b = $(p + 'CalBtn'); if (!b) return;
+  const a = $(p + 'From').value, c = $(p + 'To').value;
+  b.textContent = '📅 ' + (!a ? 'Pick dates' : a === c ? perFmtDay(a, true) : a.slice(0, 4) === c.slice(0, 4) ? perFmtDay(a) + ' – ' + perFmtDay(c, true) : perFmtDay(a, true) + ' – ' + perFmtDay(c, true)) + ' ▾';
+}
+function calMount(p, onChange) {
+  const box = $(p + 'RangeBox'); if (!box || box.dataset.cal) return;
+  box.dataset.cal = '1'; box.classList.add('msel');
+  box.insertAdjacentHTML('beforeend', `<button type="button" class="msel-btn cal-btn" id="${p}CalBtn"></button><div class="msel-panel cal-pop" id="${p}CalPanel" hidden></div>`);
+  const btn = $(p + 'CalBtn'), pop = $(p + 'CalPanel'), fromI = $(p + 'From'), toI = $(p + 'To');
+  let vy = 0, vm = 0, picking = false, hov = '';
+  const setView = d => { const t = parseYMD(d || ymd(estNow())); vy = t.getFullYear(); vm = t.getMonth(); };
+  function draw() {
+    const first = new Date(vy, vm, 1), start = new Date(vy, vm, 1 - (first.getDay() + 6) % 7), today = ymd(estNow());
+    let lo = fromI.value, hi = toI.value;
+    if (picking && hov) { lo = fromI.value; hi = hov; if (hi < lo) [lo, hi] = [hi, lo]; }
+    const cells = [];
+    for (let i = 0; i < 42; i++) {
+      const d = new Date(start.getFullYear(), start.getMonth(), start.getDate() + i), k = ymd(d);
+      const cls = ['cal-d', d.getMonth() !== vm ? 'dim' : '', k === today ? 'td' : '', k === lo ? 's' : '', k === hi ? 'e' : '', k > lo && k < hi ? 'in' : ''].filter(Boolean).join(' ');
+      cells.push(`<div class="${cls}" data-d="${k}">${d.getDate()}</div>`);
+    }
+    pop.innerHTML = `<div class="cal-head"><span class="cal-nav" data-nav="-1" title="Previous month">‹</span><b>${first.toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}</b><span class="cal-nav" data-nav="1" title="Next month">›</span></div>` +
+      `<div class="cal-grid">${['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'].map(w => `<div class="cal-w">${w}</div>`).join('')}${cells.join('')}</div>` +
+      `<div class="cal-hint">${picking ? 'Now click the last day' : 'Click the first day, then the last day'}</div>`;
+  }
+  box.addEventListener('click', e => e.stopPropagation());
+  btn.addEventListener('click', () => {
+    pop.hidden = !pop.hidden;
+    if (pop.hidden) return;
+    document.querySelectorAll('.mo-panel,.cal-pop').forEach(x => { if (x !== pop) x.hidden = true; });
+    calDefaults(p); setView(fromI.value); picking = false; hov = ''; draw();
+    pop.style.left = ''; pop.style.right = '';
+    if (pop.getBoundingClientRect().right > window.innerWidth - 8) { pop.style.left = 'auto'; pop.style.right = '0'; }
+  });
+  pop.addEventListener('click', e => {
+    const nav = e.target.closest('[data-nav]');
+    if (nav) { vm += +nav.dataset.nav; if (vm < 0) { vm = 11; vy--; } if (vm > 11) { vm = 0; vy++; } draw(); return; }
+    const c = e.target.closest('[data-d]'); if (!c) return;
+    const d = c.dataset.d;
+    if (!picking) { fromI.value = toI.value = d; picking = true; }
+    else { const a = fromI.value; if (d < a) { toI.value = a; fromI.value = d; } else toI.value = d; picking = false; pop.hidden = true; }
+    hov = ''; calSync(p); draw(); onChange();
+  });
+  pop.addEventListener('mouseover', e => { if (!picking) return; const c = e.target.closest('[data-d]'); if (c && c.dataset.d !== hov) { hov = c.dataset.d; draw(); } });
+  calSync(p);
+}
+document.addEventListener('click', () => document.querySelectorAll('.mo-panel,.cal-pop').forEach(x => x.hidden = true));
+
+/* ---- Monthly (several months / Year to date) + Date range, mounted into <span id="<p>PerHost"> ---- */
+function perpState(p) {
+  if (PERP[p]) return PERP[p];
+  const host = $(p + 'PerHost'); if (!host) return null;
+  const st = PERP[p] = { mode: 'month', ytd: false, months: new Set([p === 'wrp' ? perPrevMonth() : perCurMonth()]) };
+  host.innerHTML = `<select id="${p}Per" class="per-sel" title="Report period"><option value="month">Monthly</option><option value="range">Date range</option></select>` +
+    `<div class="msel" id="${p}MoWrap"><button type="button" class="msel-btn" id="${p}MoBtn"></button><div class="msel-panel mo-panel" id="${p}MoPanel" hidden></div></div>` +
+    `<span id="${p}RangeBox" hidden><input type="hidden" id="${p}From"><input type="hidden" id="${p}To"></span>`;
+  const fire = () => { perpSync(p); (PERP_FN[p] || (() => {}))(); };
+  $(p + 'Per').addEventListener('change', e => { st.mode = e.target.value; if (st.mode === 'range') calDefaults(p); fire(); });
+  $(p + 'MoWrap').addEventListener('click', e => e.stopPropagation());
+  $(p + 'MoBtn').addEventListener('click', () => {
+    const pn = $(p + 'MoPanel'); document.querySelectorAll('.mo-panel,.cal-pop').forEach(x => { if (x !== pn) x.hidden = true; });
+    perpSync(p);                                              // refresh the month list from the data loaded so far
+    pn.hidden = !pn.hidden;
+  });
+  $(p + 'MoPanel').addEventListener('change', e => {
+    const i = e.target;
+    if (i.dataset.ytd !== undefined) { st.ytd = i.checked; if (i.checked) st.months.clear(); else if (!st.months.size) st.months.add(perCurMonth()); }
+    else if (i.dataset.m) { i.checked ? st.months.add(i.dataset.m) : st.months.delete(i.dataset.m); if (i.checked) st.ytd = false; if (!st.months.size && !st.ytd) st.months.add(perCurMonth()); }
+    fire();
+  });
+  calMount(p, fire);
+  perpSync(p);
+  return st;
+}
+function perpSync(p) {
+  const st = PERP[p]; if (!st) return;
+  $(p + 'Per').value = st.mode;
+  $(p + 'MoWrap').hidden = st.mode !== 'month'; $(p + 'RangeBox').hidden = st.mode !== 'range';
+  const n = st.months.size;
+  $(p + 'MoBtn').textContent = (st.ytd ? 'Year to date' : n === 1 ? perFmtMonth([...st.months][0]) : n + ' months') + ' ▾';
+  const pn = $(p + 'MoPanel'), keep = pn.scrollTop;
+  pn.innerHTML = `<label class="ytd"><input type="checkbox" data-ytd ${st.ytd ? 'checked' : ''}> 📅 Year to date</label>` +
+    perMonthList(p, st).map(m => `<label><input type="checkbox" data-m="${m}" ${!st.ytd && st.months.has(m) ? 'checked' : ''}> ${perFmtMonth(m)}</label>`).join('');
+  pn.scrollTop = keep;
+  calSync(p);
+}
+/* The chosen period: from / to (the whole stretch) and test(date) (exactly the ticked months, Year to date or range) */
+function perpR(p) {
+  const st = perpState(p); if (!st) return null;
+  const today = ymd(estNow());
+  if (st.mode === 'range') {
+    calDefaults(p);
+    let a = $(p + 'From').value, b = $(p + 'To').value; if (a > b) [a, b] = [b, a];
+    return { from: a, to: b, test: d => d >= a && d <= b };
+  }
+  if (st.ytd) { const a = today.slice(0, 4) + '-01-01'; return { from: a, to: today, test: d => d >= a && d <= today }; }
+  const ms = [...st.months].sort(), set = new Set(ms);
+  return { from: `${ms[0]}-01`, to: perMonthRange(ms[ms.length - 1]).to, test: d => set.has(d.slice(0, 7)) };
+}
+const perRecRange = selId => perpR(selId.replace(/Per$/, ''));
+function perSetRange(p, from, to) {
+  const st = perpState(p); if (!st) return;
+  st.mode = 'range'; $(p + 'From').value = from; $(p + 'To').value = to; perpSync(p);
+}
+function perpReset(p) {
+  const st = perpState(p); if (!st) return;
+  st.mode = 'month'; st.ytd = false; st.months = new Set([perCurMonth()]); $(p + 'From').value = $(p + 'To').value = ''; perpSync(p);
+}
+function perpShift(p, d, fn) {
+  const st = PERP[p]; if (!perIsSingle(st)) return;
+  const [y, m] = [...st.months][0].split('-').map(Number), t = new Date(y, m - 1 + d, 1);
+  st.months = new Set([`${t.getFullYear()}-${pad(t.getMonth() + 1)}`]); perpSync(p); fn();
+}
 
 function buildMetric() {
   const table = $('metricTable');
@@ -3662,10 +4286,12 @@ function buildMetric() {
   /* Month picker: default = last month in the sheet (same as before) */
   const months = metricMonthList();
   if (!metricSelInit && months.length) { metricSel = new Set([months[months.length - 1]]); metricSelInit = true; }
+  { const R = perRangeOf('metric'); if (R) { const t = perMonthsTouched(R); metricSel = new Set(months.filter(l => t.some(ym => ssMonthMatches(l, ym)))); } }
   metricSel = new Set([...metricSel].filter(m => months.includes(m)));
   if (!metricSel.size && months.length) metricSel.add(months[months.length - 1]);
   $('metricMonthWrap').hidden = !months.length;
   renderMetricMonthPicker(months);
+  renderKpiCards();
 
   const inMonth = metricRows.filter(r => !months.length || metricSel.has(r[I.month]));
   const data = metricSel.size > 1 ? metricAggregate(inMonth) : inMonth;
@@ -3676,9 +4302,9 @@ function buildMetric() {
   supSel.innerHTML = `<option>${ALL}</option>` + sups.map(s => `<option>${esc(s)}</option>`).join('');
   if (sups.includes(prevSup)) supSel.value = prevSup;
   const sup = supSel.value, q = up($('metricSearch').value);
-  const ag = fillAgentSelect('metricAgent', data.filter(r => sup === ALL || supOf(r) === sup).map(r => r[I.agent]));
+  const ags = fillAgentMulti('metricAgent', data.filter(r => sup === ALL || supOf(r) === sup).map(r => r[I.agent]), buildMetric);
 
-  const rows = data.filter(r => (sup === ALL || supOf(r) === sup) && (!ag || normName(r[I.agent]) === normName(ag)) && (!q || up(r[I.agent]).includes(q)));
+  const rows = data.filter(r => (sup === ALL || supOf(r) === sup) && (!ags.size || ags.has(normName(r[I.agent]))) && (!q || up(r[I.agent]).includes(q)));
   const maxOf = metricHeads.map((_, i) => metricMax(i));
 
   /* Top 3 podium (always by TOTAL, whatever column the table is sorted by) */
@@ -3724,10 +4350,10 @@ function buildMetric() {
   }
 
   /* Only the columns in METRIC_SHOW are displayed */
-  const cols = METRIC_SHOW.map(n => metricHeads.findIndex(h => h.toLowerCase().trim() === n)).filter(i => i >= 0);
+  const cols = metricShowCols(metricMonthNums([...metricSel]));
   const isPct = v => /^\d+(\.\d+)?%$/.test(v || '');
   table.tHead.innerHTML = '<tr>' + cols.map(i =>
-    `<th onclick="sortBy('metric',${i})">${esc(metricHeads[i])}${isPct(metricWeights[i]) ? `<small>${esc(metricWeights[i])}</small>` : ''}</th>`
+    `<th onclick="sortBy('metric',${i})">${esc(metricHeads[i])}${metricWeightHtml(i, metricMonthNums([...metricSel]))}</th>`
   ).join('') + '</tr>';
 
   /* One table cell. agentHtml replaces the agent cell's content (rank + name, or a month label). */
@@ -3809,7 +4435,8 @@ const loadMcs = () => guard('mcs', "Couldn't load the Overall Metric Scorecard t
     if (i < 0) mcsMissing.push(name);
     else if (!mcsCols.includes(i)) mcsCols.push(i);
   });
-  mcsRows = rows.slice(h + 1).filter(r => clean(r[mcsI.agent])).map(r => mcsHeads.map((_, i) => clean(r[i])));
+  RAW.mcs = rows.slice(h + 1).filter(r => clean(r[mcsI.agent])).map(r => mcsHeads.map((_, i) => clean(r[i])));
+  mcsRows = RAW.mcs; applyTeamFilter();
 });
 
 let mcsSel = new Set(), mcsSelInit = false;
@@ -3897,6 +4524,7 @@ function buildMcs() {
   let months = I.month >= 0 ? [...new Set(mcsRows.map(r => r[I.month]).filter(Boolean))] : [];
   if (months.every(m => !isNaN(Date.parse(m + ' 1, 2000')))) months.sort((a, b) => Date.parse(a + ' 1, 2000') - Date.parse(b + ' 1, 2000'));
   if (!mcsSelInit && months.length) { mcsSel = new Set([months[months.length - 1]]); mcsSelInit = true; }
+  { const R = perRangeOf('mcs'); if (R) { const t = perMonthsTouched(R); mcsSel = new Set(months.filter(l => t.some(ym => ssMonthMatches(l, ym)))); } }
   mcsSel = new Set([...mcsSel].filter(m => months.includes(m)));
   if (!mcsSel.size && months.length) mcsSel.add(months[months.length - 1]);
   const view = mcsSel.size > 1 ? 'agent' : 'summary';      // several months: monthly rows + Total row per agent
@@ -3911,9 +4539,9 @@ function buildMcs() {
   supSel.innerHTML = `<option>${ALL}</option>` + sups.map(s => `<option>${esc(s)}</option>`).join('');
   if (sups.includes(prevSup)) supSel.value = prevSup;
   const sup = supSel.value, q = up($('mcsSearch').value);
-  const ag = fillAgentSelect('mcsAgent', (view === 'agent' ? picked : inMonth).filter(r => sup === ALL || supOf(r) === sup).map(r => r[I.agent]));
+  const ags = fillAgentMulti('mcsAgent', (view === 'agent' ? picked : inMonth).filter(r => sup === ALL || supOf(r) === sup).map(r => r[I.agent]), buildMcs);
 
-  const rows = (view === 'agent' ? picked : inMonth).filter(r => (sup === ALL || supOf(r) === sup) && (!ag || normName(r[I.agent]) === normName(ag)) && (!q || up(r[I.agent]).includes(q)));
+  const rows = (view === 'agent' ? picked : inMonth).filter(r => (sup === ALL || supOf(r) === sup) && (!ags.size || ags.has(normName(r[I.agent]))) && (!q || up(r[I.agent]).includes(q)));
 
   table.classList.toggle('nosort', view === 'agent');
   if (view === 'agent') {
@@ -4144,10 +4772,11 @@ function lbprrRows() {
   return out.sort((a, b) => b.date.localeCompare(a.date) || a.name.localeCompare(b.name));
 }
 function lbprrFiltered(all) {
-  const sup = $('lbprrSup').value, agent = $('lbprrAgent').value, q = up($('lbprrSearch').value);
+  const sup = $('lbprrSup').value, ags = agMulti.lbprrAgent ? agMulti.lbprrAgent.sel : new Set(), q = up($('lbprrSearch').value);
+  const R = perRecRange('lbprrPer');
   const rows = (all || lbprrRows()).filter(x =>
-    (!utSel.m.size || utSel.m.has(x.date.slice(0, 7))) && (!utSel.d.size || utSel.d.has(x.date)) &&
-    (sup === ALL || x.sup === sup) && (!agent || x.name === agent) && (!q || up(x.name).includes(q)));
+    perInRange(x.date, R) &&
+    (sup === ALL || x.sup === sup) && (!ags.size || ags.has(normName(x.name))) && (!q || up(x.name).includes(q)));
   /* Sort by the clicked header; blank cells (and 0:00:00 Overbreak / Overlunch) always go last */
   const { k, asc } = utSortState, text = k === 'name' || k === 'date';
   const val = x => text ? x[k] : (s => (s === 0 && (k === 'ob' || k === 'ol')) ? null : s)(utSecs(x[k]));
@@ -4165,29 +4794,8 @@ function utTotals(list) {
     return (s || (k !== 'ob' && k !== 'ol')) ? utFmt(s) : '';
   });
 }
-function utRenderPanel(all) {
-  const ms = [...new Set(all.map(x => x.date.slice(0, 7)))].sort().reverse();
-  const ds = [...new Set(all.map(x => x.date))].sort().reverse();
-  const box = (t, k, label) => `<label><input type="checkbox" data-t="${t}" data-k="${k}" ${utSel[t].has(k) ? 'checked' : ''}> ${esc(label)}</label>`;
-  const p = $('lbprrDatePanel'), keep = p.querySelector('.ut-dates')?.scrollTop || 0;
-  p.innerHTML =
-    `<div class="ut-h"><span>Month</span><button type="button" data-clear="1">Clear</button></div>` + ms.map(m => box('m', m, utMonthLabel(m))).join('') +
-    `<div class="ut-h"><span>Dates</span></div><div class="ut-dates">` + ds.map(d => box('d', d, fmtDate(parseYMD(d)))).join('') + `</div>`;
-  const sc = p.querySelector('.ut-dates'); if (sc) sc.scrollTop = keep;
-  const n = utSel.m.size + utSel.d.size;
-  $('lbprrDateBtn').textContent = (n ? [['m', 'month'], ['d', 'date']].filter(([t]) => utSel[t].size)
-      .map(([t, w]) => `${utSel[t].size} ${w}${utSel[t].size > 1 ? 's' : ''}`).join(' · ') : 'All dates') + ' ▾';
-}
 function utInitOnce() {
   if (utInit) return; utInit = true;
-  $('lbprrDateBtn').addEventListener('click', e => { e.stopPropagation(); $('lbprrDatePanel').hidden = !$('lbprrDatePanel').hidden; });
-  $('lbprrDateWrap').addEventListener('click', e => e.stopPropagation());
-  document.addEventListener('click', () => $('lbprrDatePanel').hidden = true);
-  $('lbprrDatePanel').addEventListener('change', e => {
-    const i = e.target; if (!i.dataset.t) return;
-    i.checked ? utSel[i.dataset.t].add(i.dataset.k) : utSel[i.dataset.t].delete(i.dataset.k);
-    buildLbprr();
-  });
   $('lbprrTable').tHead.addEventListener('click', e => {
     const th = e.target.closest('th'); if (!th || !th.dataset.sort) return;
     const k = th.dataset.sort;
@@ -4200,7 +4808,6 @@ function utInitOnce() {
     const n = tr.dataset.ag; utOpen.has(n) ? utOpen.delete(n) : utOpen.add(n);
     buildLbprr();
   });
-  $('lbprrDatePanel').addEventListener('click', e => { if (e.target.dataset.clear) { Object.values(utSel).forEach(s => s.clear()); buildLbprr(); } });
 }
 function utToggleAll() {
   const all = utGroupNames.length && utGroupNames.every(n => utOpen.has(n));
@@ -4209,23 +4816,21 @@ function utToggleAll() {
 }
 function clearLbprr() {
   Object.values(utSel).forEach(s => s.clear());
-  $('lbprrSup').value = ALL; $('lbprrAgent').value = ''; $('lbprrSearch').value = '';
+  perpReset('lbprr');
+  $('lbprrSup').value = ALL; if (agMulti.lbprrAgent) agMulti.lbprrAgent.sel.clear(); $('lbprrSearch').value = '';
   buildLbprr();
 }
 function buildLbprr() {
   utInitOnce();
   const all = lbprrRows();
   /* Supervisor + Agent drop-downs (the agent list follows the chosen supervisor; the current choice is kept) */
-  const supSel = $('lbprrSup'), agSel = $('lbprrAgent');
+  const supSel = $('lbprrSup');
   const sups = [...new Set(estData.map(x => x.Supervisor).filter(Boolean))].sort();
   const prevSup = supSel.value || ALL;
   supSel.innerHTML = `<option>${ALL}</option>` + sups.map(s => `<option>${esc(s)}</option>`).join('');
   supSel.value = sups.includes(prevSup) ? prevSup : ALL;
   const names = [...new Set(all.filter(x => supSel.value === ALL || x.sup === supSel.value).map(x => x.name))].sort((a, b) => a.localeCompare(b));
-  const prevAg = agSel.value;
-  agSel.innerHTML = `<option value="">All Agents</option>` + names.map(n => `<option value="${esc(n)}">${esc(n)}</option>`).join('');
-  agSel.value = names.includes(prevAg) ? prevAg : '';
-  utRenderPanel(all);
+  fillAgentMulti('lbprrAgent', names, buildLbprr);
 
   $('lbprrTable').tHead.querySelectorAll('th').forEach(th => th.querySelector('.ut-arr').textContent = th.dataset.sort === utSortState.k ? (utSortState.asc ? '▲' : '▼') : '');
   const rows = lbprrFiltered(all), v = s => s ? esc(s) : '—';
@@ -4238,7 +4843,7 @@ function buildLbprr() {
       ${(() => { const cls = utClass('hours', x.hours); return `<td${cls ? ` class="${cls}"` : ''}><strong>${v(x.hours)}</strong></td>`; })()}
     </tr>`;
   /* Several dates picked (dates, months or years that cover more than one day): group by agent, one row per date, then that agent's Total */
-  const grouped = (utSel.d.size || utSel.m.size) && new Set(rows.map(x => x.date)).size > 1;
+  const grouped = new Set(rows.map(x => x.date)).size > 1;
   let html;
   if (!rows.length) {
     html = `<tr><td colspan="7">${lbprrError ? 'Couldn\u2019t load the LBPRR tab (' + esc(lbprrError) + ') \u2013 check the tab name and sharing' : 'No records found'}</td></tr>`;
@@ -4963,9 +5568,11 @@ function buildAgentSummary() {
     agSumSel = new Set([(withScores.length ? withScores : D.yms).slice(-1)[0]]);
     agSumSelInit = true;
   }
+  { const R = perRangeOf('agSum'); if (R) agSumSel = new Set(perMonthsTouched(R)); }
   agSumSel = new Set([...agSumSel].filter(m => D.yms.includes(m)));
   if (!agSumSel.size) agSumSel.add(D.yms[D.yms.length - 1]);
   renderAgSumMonthPicker();
+  renderKpiCards();
   const a = D.agents.find(x => x.name === sel.value);
   if (!a) { box.innerHTML = '<div class="my-lbl">Pick an agent to see their summary.</div>'; return; }
   try { localStorage.setItem(AGSUM_KEY, a.name); } catch (e) {}
@@ -5027,7 +5634,7 @@ function buildAgentSummary() {
 
   /* Performance Stack Ranking: same as the table above (the agent's rows for the ticked months and a Total / average row for several months) */
   const I = metricIdx;
-  const stackCols = METRIC_SHOW.map(n => metricHeads.findIndex(h => h.toLowerCase().trim() === n)).filter(i => i >= 0 && i !== I.agent && i !== I.sup);
+  const stackCols = metricShowCols(selYm.map(ym => +ym.slice(5, 7))).filter(i => i !== I.agent && i !== I.sup);
   const myM = metricRows.filter(r => normName(r[I.agent]) === normName(a.name)).sort((p, q) => rankM(p[I.month]) - rankM(q[I.month]));
   const mTicked = myM.filter(r => inSel(r, I.month));
   const stackCell = (r, i) => {
@@ -5036,7 +5643,7 @@ function buildAgentSummary() {
     return /no data/i.test(v || '') ? '<td class="nodata">No Data</td>' : `<td class="${i === I.total ? 'overall' : ''}${sc}"${bd ? ` title="${esc(bd.tip)}"` : ''}>${esc(v) || '—'}</td>`;
   };
   const stackRow = (label, r, attr) => `<tr${attr || ''}><td>${label}</td>${stackCols.map(i => stackCell(r, i)).join('')}</tr>`;
-  const stack = mTicked.length && stackCols.length ? `<table id="agSumStack" class="nosort"><thead><tr><th>Month</th>${stackCols.map(i => `<th>${esc(metricHeads[i])}${/^\d+(\.\d+)?%$/.test(metricWeights[i] || '') ? `<small>${esc(metricWeights[i])}</small>` : ''}</th>`).join('')}</tr></thead><tbody>${
+  const stack = mTicked.length && stackCols.length ? `<table id="agSumStack" class="nosort"><thead><tr><th>Month</th>${stackCols.map(i => `<th>${esc(metricHeads[i])}${metricWeightHtml(i, selYm.map(ym => +ym.slice(5, 7)))}</th>`).join('')}</tr></thead><tbody>${
     mTicked.map(r => stackRow(esc(r[I.month] || '—'), r)).join('') +
     (multi && mTicked.length > 1 ? stackRow('Total / average', metricAggregate(mTicked)[0]).replace('<tr>', '<tr class="agsum-total">') : '')
   }</tbody></table>`
@@ -5135,8 +5742,501 @@ function trackerGridHtml(rows, monthOf, days, today) {
     <tbody>${totalRow}${body}</tbody></table></div></div>`;
 }
 
+/* The phone layout has a sticky page header: tell the filter bars how tall it is so they stick just under it */
+(function trackHeaderHeight() {
+  const init = () => {
+    const h = document.querySelector('.page-head');
+    if (!h) return;
+    const set = () => document.documentElement.style.setProperty('--headh', h.offsetHeight + 'px');
+    set();
+    window.addEventListener('resize', set);
+    if (window.ResizeObserver) new ResizeObserver(set).observe(h);
+  };
+  document.readyState === 'loading' ? document.addEventListener('DOMContentLoaded', init) : init();
+})();
+/* =====================================================================
+   WEEKLY REPORT (slides): week at a glance, attendance, attendance trend, QA, Stack ranking
+   Attendance = same rules as the Attendance tracker; Called Off / Vacation Leave = same counts as the Attendance trend tab (up to today only);
+   QA = audits whose call date falls in the week; Stack ranking is monthly, so it shows the month to date.
+   ===================================================================== */
+let wrInit = false, wrIdx = 0;
+const wrCache = { key: '', map: new Map() };
+const wrMon = ds => { const b = parseYMD(ds); return new Date(b.getFullYear(), b.getMonth(), b.getDate() - (b.getDay() + 6) % 7); };
+const wrAdd = (dt, n) => new Date(dt.getFullYear(), dt.getMonth(), dt.getDate() + n);
+const wrDays = mon => Array.from({ length: 7 }, (_, i) => ymd(wrAdd(mon, i)));
+const wrFmt = dt => dt.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+const WR_MAX = 366;
+let wrPrev = null, wrClip = false;
+const wrMonthDays = ym => { const [y, m] = ym.split('-').map(Number); return Array.from({ length: new Date(y, m, 0).getDate() }, (_, i) => ymd(new Date(y, m - 1, i + 1))); };
+function wrSync() {
+  const st = perpState('wrp'); if (!st) return false;
+  const single = perIsSingle(st);
+  if (single) { $('wrMode').value = 'month'; $('wrMonth').value = [...st.months][0]; }
+  else { const R = perpR('wrp'); $('wrMode').value = 'range'; $('wrFrom').value = R.from; $('wrTo').value = R.to; }
+  return single;
+}
+function wrCurDays() {
+  wrSync();
+  const raw = $('wrMode').value, now = estNow();
+  if (perIsPreset(raw)) { if (!$('wrPerDate').value) $('wrPerDate').value = ymd(now); const R = perRange(raw, $('wrPerDate').value); $('wrFrom').value = R.from; $('wrTo').value = R.to; }
+  const mode = perIsPreset(raw) ? 'range' : raw;
+  wrClip = false;
+  if (mode === 'month') {
+    if (!$('wrMonth').value) $('wrMonth').value = ymd(new Date(now.getFullYear(), now.getMonth() - 1, 1)).slice(0, 7);      // last completed month
+    return wrMonthDays($('wrMonth').value);
+  }
+  if (mode === 'range') {
+    const m0 = wrAdd(wrMon(ymd(now)), -7);                                                                                  // last completed week
+    if (!$('wrFrom').value) $('wrFrom').value = ymd(m0);
+    if (!$('wrTo').value) $('wrTo').value = ymd(wrAdd(m0, 6));
+    let a = $('wrFrom').value, b = $('wrTo').value;
+    if (a > b) { const t = a; a = b; b = t; }
+    const out = [];
+    for (let d = parseYMD(a); ymd(d) <= b; d = wrAdd(d, 1)) { if (out.length >= WR_MAX) { wrClip = true; break; } out.push(ymd(d)); }
+    return out;
+  }
+  if (!$('wrDate').value) $('wrDate').value = ymd(wrAdd(now, -7));                                                          // opens on the last completed week
+  return wrDays(wrMon($('wrDate').value));
+}
+function wrOnMode() {
+  if (wrPrev) { const a = wrPrev[0], b = wrPrev[wrPrev.length - 1]; $('wrDate').value = a; $('wrMonth').value = a.slice(0, 7); $('wrFrom').value = a; $('wrTo').value = b; }   // keep the period you were looking at
+  buildWeeklyReport();
+}
+function shiftWeeklyReport(d) { perpShift('wrp', d, buildWeeklyReport); }
+function wrGo(i) {
+  const sl = document.querySelectorAll('#wrSlides .wr-slide');
+  if (!sl.length) return;
+  wrIdx = Math.max(0, Math.min(sl.length - 1, i));
+  sl.forEach((x, k) => x.classList.toggle('on', k === wrIdx));
+  $('wrNavLbl').textContent = (wrIdx + 1) + ' / ' + sl.length + ' · ' + (sl[wrIdx].dataset.title || '');
+  $('wrDots').innerHTML = Array.from(sl, (_, k) => `<i class="${k === wrIdx ? 'on' : ''}" onclick="wrGo(${k})"></i>`).join('');
+  wrFitSoon();
+}
+/* Make the chart fill the screen: when a table is hidden the chart grows into the empty space (and shrinks back when the
+   table is shown). Measured, so it works in full screen (any A−/A+ zoom) and in the normal page. Never smaller than 170px. */
+function wrFit() {
+  const sl = document.querySelector('#wrSlides .wr-slide.on');
+  if (!sl || sl.classList.contains('wr-cover') || !sl.querySelector('.gb-pair, .wr-hbars, .wr-line') || activeTab !== 'weeklyReportTab') return;
+  const MIN = sl.querySelector('.wr-hbars') ? 280 : sl.querySelector('.wr-line') ? 260 : 170, MAX = 1000, content = sl.lastElementChild, target = window.innerHeight - 44;
+  const setH = h => sl.style.setProperty('--chh', Math.round(h) + 'px');
+  const bot = () => content.getBoundingClientRect().bottom;
+  let h = MIN;
+  for (let pass = 0; pass < 3; pass++) {
+    setH(h); const b0 = bot();
+    setH(h + 60); const k = (bot() - b0) / 60;           // px moved on screen per 1px of chart height (includes any zoom)
+    if (!(k > 0.05)) { h = MIN; break; }
+    const next = Math.max(MIN, Math.min(MAX, h + (target - b0) / k));
+    if (Math.abs(next - h) < 2) { h = next; break; }
+    h = next;
+  }
+  setH(h);
+}
+/* Sortable supervisor tables on the weekly report: click a column heading (click again to reverse) */
+const wrSort = {};
+function wrApplySort(key) {
+  const t = document.getElementById('wrT_' + key); if (!t) return;
+  const st = wrSort[key], ths = t.querySelectorAll('th.wr-sth');
+  ths.forEach((th, i) => { th.querySelector('i').textContent = st && st.col === i ? (st.asc ? '▲' : '▼') : ''; });
+  if (!st) return;
+  const body = t.tBodies[0], rows = [...body.querySelectorAll('tr:not(.wr-total)')], tot = body.querySelector('tr.wr-total');
+  const val = r => r.cells[st.col].dataset.v, num = v => v !== '' && !isNaN(Number(v));
+  const isNum = rows.every(r => val(r) === '' || num(val(r)));
+  rows.sort((a, b) => {
+    const x = val(a), y = val(b);
+    if (x === '' || y === '') return x === y ? 0 : x === '' ? 1 : -1;          // blanks always last
+    const c = isNum ? Number(x) - Number(y) : x.localeCompare(y);
+    return st.asc ? c : -c;
+  });
+  rows.forEach(r => body.appendChild(r));
+  if (tot) body.appendChild(tot);
+}
+function wrSortBy(key, col) {
+  const st = wrSort[key], t = document.getElementById('wrT_' + key);
+  const firstNumeric = t && t.querySelector('tbody tr:not(.wr-total) td:nth-child(' + (col + 1) + ')') && col > 0;
+  wrSort[key] = st && st.col === col ? { col, asc: !st.asc } : { col, asc: !firstNumeric };    // text A-Z first, numbers high-to-low first
+  wrApplySort(key);
+}
+let wrLine = true;                                   // trend slides: smooth line chart (true) or bars (false)
+function wrToggleStyle() { wrLine = !wrLine; buildWeeklyReport(); }
+let wrFitRaf = 0;
+function wrFitSoon() { cancelAnimationFrame(wrFitRaf); wrFitRaf = requestAnimationFrame(() => requestAnimationFrame(wrFit)); }
+window.addEventListener('resize', wrFitSoon);
+document.addEventListener('fullscreenchange', wrFitSoon);
+document.addEventListener('keydown', e => {
+  if (activeTab !== 'weeklyReportTab' || /^(INPUT|SELECT|TEXTAREA)$/.test((e.target && e.target.tagName) || '')) return;
+  if (e.key === 'ArrowRight') { wrGo(wrIdx + 1); e.preventDefault(); }
+  else if (e.key === 'ArrowLeft') { wrGo(wrIdx - 1); e.preventDefault(); }
+});
+
+const wrShow = { att: true, qa: true, attT: true, calls: true, callsT: true, aht: true, drv: true };   // true = table shown         // supervisor tables: shown or hidden (default shown; Hide = graph only)
+function wrToggle(key) {
+  wrShow[key] = !wrShow[key];
+  const box = $('wrBox_' + key), btn = $('wrBtn_' + key);
+  if (box) box.hidden = !wrShow[key];
+  if (btn) btn.textContent = (wrShow[key] ? 'Hide' : 'Show') + ' ' + (btn.dataset.lbl || 'supervisor table');
+  wrFitSoon();                                       // the chart grows to fill the space the table left (or shrinks back)
+}
+function buildWeeklyReport() {
+  if (curTeam === 'All') return buildWeeklyReportInner();
+  applyTeamFilter('All');                       // the Weekly report covers Phone and Chat together
+  try { buildWeeklyReportInner(); } finally { applyTeamFilter(curTeam); }
+}
+function buildWeeklyReportInner() {
+  const box = $('wrSlides'), now = estNow(), today = ymd(now);
+  const wrSingle = wrSync();
+  const raw = $('wrMode').value, days = wrCurDays(), mode = perIsPreset(raw) ? 'range' : raw, nd = days.length, dLast = days[nd - 1], mon = parseYMD(days[0]), sun = parseYMD(dLast);
+  wrPrev = days;
+  $('wrPrevBtn').hidden = $('wrNextBtn').hidden = !wrSingle;
+  const U = mode === 'month' ? ['month', 'months', 'Month'] : mode === 'range' ? ['period', 'periods', 'Period'] : ['week', 'weeks', 'Week'];
+  const tw = 'this ' + U[0], sameYr = mon.getFullYear() === sun.getFullYear();
+  const rangeLbl = mode === 'month' ? mon.toLocaleDateString('en-US', { month: 'long', year: 'numeric' }) : sameYr ? wrFmt(mon) + ' – ' + wrFmt(sun) + ', ' + sun.getFullYear() : wrFmt(mon) + ', ' + mon.getFullYear() + ' – ' + wrFmt(sun) + ', ' + sun.getFullYear();
+  const thisLbl = mode === 'week' ? 'This week (Mon–Sun)' : mode === 'month' ? rangeLbl : 'Selected period';
+  const opsTitle = mode === 'week' ? 'Weekly Operations Review' : mode === 'month' ? 'Monthly Operations Review' : 'Operations Review';
+  $('wrWeekLbl').textContent = mode === 'week' ? 'Mon ' + wrFmt(mon) + ' – Sun ' + wrFmt(sun) : mode === 'month' ? nd + ' days' : nd + ' day' + (nd === 1 ? '' : 's') + ' · ' + rangeLbl + (wrClip ? ' (limited to ' + WR_MAX + ' days)' : '');
+  if (!estData.length) { box.innerHTML = '<div class="empty" style="--c:#6c757d">Schedule data must be loaded first</div>'; $('wrNavLbl').textContent = ''; $('wrDots').innerHTML = ''; return; }
+
+  const ckey = [estData.length, ptoList.length, calledOffList.length, attTimeList.length, qaList.length, dailyAgentRows.length, callDriverRows.length, attPointVer, ptoWeeklyVer, today].join('|');
+  if (wrCache.key !== ckey) { wrCache.key = ckey; wrCache.map.clear(); }
+  const idx = { pto: indexRecords(ptoList), att: indexAttendance(calledOffList, attTimeList) };
+  const idxCo = indexRecords(calledOffList), idxPto = idx.pto, lck = ALL + '|';
+  const names = new Set(estData.map(r => normName(r.Name)));
+  const display = new Map(estData.map(r => [normName(r.Name), r.Name]));
+  const qaRows = qaList.map((x, id) => ({ id, d: normalizeDate(x.CallDate), n: normName(x['Analyst Name']), v: qaPct(x.Score) })).filter(x => x.v != null && names.has(x.n));
+  const qaAvg = (from, to, set) => ssAvg(qaRows.filter(x => x.d >= from && x.d <= to && (!set || set.has(x.n))).map(x => x.v));
+  const attOf = (rows, dd) => { let hw = 0, he = 0, late = 0; rows.forEach(r => { const c = trackerSummary(dd.map(d => attendanceFor(r, d, today, idx))); hw += c.hoursWorked; he += c.hoursExp; late += c.partial; }); return { att: he ? hw / he * 100 : null, late }; };
+
+  /* Called Off + Late / Left early: every row of the Called Off tab, counted by its EST Date (the same rows the tab lists).
+     Late / Left Early rows count as Late / Left early; every other row (Called Off, NCNS ...) counts as Called Off. */
+  const recByDate = new Map();
+  calledOffList.forEach(x => {
+    const d = normalizeDate(x['EST Date']); if (!d) return;
+    let sp = String(x.Supervisor ?? '').trim();
+    if (!sp) { const ag = findAgent(x.Name); sp = ag ? (rowFor(ag, d).Supervisor || '') : ''; }
+    const code = matchType(ATT_TYPES, x.Reason, ATT_OTHER).code;
+    if (!recByDate.has(d)) recByDate.set(d, []);
+    recByDate.get(d).push({ sp: sp || '—', late: code === 'LATE' || code === 'LE' });
+  });
+  const recOn = d => {
+    const co = {}, le = {}; let nc = 0, nl = 0;
+    (recByDate.get(d) || []).forEach(x => { const t = x.late ? le : co; t[x.sp] = (t[x.sp] || 0) + 1; if (x.late) nl++; else nc++; });
+    return { nc, nl, co, le };
+  };
+
+  const teamPeriod = dd => {
+    const k = 'p|' + dd[0] + '|' + dd[dd.length - 1];
+    if (wrCache.map.has(k)) return wrCache.map.get(k);
+    const a = attOf(estData, dd);
+    let co = 0, vl = 0, sched = 0, lateTot = 0;
+    const perDay = dd.map(d => {
+      const x = lvDay(d, estData, idxCo, idxPto, lck), r = recOn(d), ap = attPointMap.size ? (attPointMap.get(d) || { co: 0, le: 0, ncns: 0, late: 0 }) : null;
+      const nC = ap ? ap.co + ap.ncns : r.nc, nL = ap ? ap.le + ap.late : r.nl;        // AttendancePoints tab when it has data, else the Called Off tab
+      const pw = ptoWeeklyMap.size ? (ptoWeeklyMap.get(d) || { n: 0, by: {} }) : null, nV = pw ? pw.n : x.vl.length;      // PTOWEEKLY tab when it has data, else the PTO list
+      co += nC; vl += nV; sched += x.sched; lateTot += nL;
+      return { co: nC, vl: nV, vlBy: pw ? pw.by : null, late: nL, coBy: r.co, leBy: r.le, by: lvDayBy(x) };
+    });
+    const out = { mon: parseYMD(dd[0]), days: dd, att: a.att, late: lateTot, co, vl, sched, perDay, qa: qaAvg(dd[0], dd[dd.length - 1]) };
+    wrCache.map.set(k, out);
+    return out;
+  };
+  const W = teamPeriod(days);
+  const tym = (dLast.slice(0, 7) < today.slice(0, 7) ? dLast : today).slice(0, 7), tymLabel = ssYmLabel(tym);
+  const monthFrom = tym + '-01', monthTo = tym + '-31';
+  const supNames = uniqueSupervisors().sort((a, b) => a.localeCompare(b));
+  const bySup = supNames.map(sp => {
+    const rows = estData.filter(r => r.Supervisor === sp), set = new Set(rows.map(r => normName(r.Name))), a = attOf(rows, days);
+    let co = 0, vl = 0, late = 0; W.perDay.forEach(p => { const x = p.by[sp]; if (p.vlBy) vl += p.vlBy[sp.toLowerCase()] || 0; else if (x) vl += x.vl; co += p.coBy[sp] || 0; late += p.leBy[sp] || 0; });
+    return { sp, att: a.att, late, co, vl, qaWeek: qaAvg(days[0], dLast, set), qaMonth: qaAvg(monthFrom, monthTo, set) };
+  });
+  const qaMonthTeam = qaAvg(monthFrom, monthTo);
+
+  /* QA this week: top 3 agents, and the questions answered No (mark downs) / Yes (went well) the most */
+  const wkQa = qaRows.filter(x => x.d >= days[0] && x.d <= dLast);
+  const perAgent = new Map();
+  wkQa.forEach(x => { if (!perAgent.has(x.n)) perAgent.set(x.n, []); perAgent.get(x.n).push(x.v); });
+  const supOf = new Map(estData.map(r => [normName(r.Name), r.Supervisor]));
+  const topAgents = [...perAgent.entries()].map(([n, l]) => ({ name: display.get(n) || n, sup: supOf.get(n) || '', avg: ssAvg(l), cnt: l.length }))
+    .sort((a, b) => b.avg - a.avg || b.cnt - a.cnt || a.name.localeCompare(b.name)).slice(0, 3);
+  const qStats = qaQuestionStats(wkQa);
+  const topQ = kind => qStats.filter(q => q[kind] > 0).sort((a, b) => b[kind] - a[kind] || (kind === 'no' ? b.rate - a.rate : b.yrate - a.yrate) || a.n - b.n).slice(0, 5);
+
+  /* ---- small helpers ---- */
+  const col = (k, v) => v == null ? '#6b7280' : BAND_COL[bandOf(k, v)];
+  const val = (k, v, f) => v == null ? '—' : `<b style="color:${col(k, v)}">${f(v)}</b>`;
+  const pct1 = v => v.toFixed(1) + '%';
+  const head = title => `<div class="wr-head"><div><small>DITSC L1 English (Phone &amp; Chat) · Weekly report</small><h2>${esc(title)}</h2></div><div class="wr-week">${esc(rangeLbl)}</div></div>`;
+  const slide = (title, body) => `<section class="wr-slide" data-title="${esc(title)}">${head(title)}${body}</section>`;
+  const table = (cols, rowsHtml) => `<div class="schedule-container" style="height:auto;max-height:none"><table class="nosort"><thead><tr>${cols.map(c => `<th>${c}</th>`).join('')}</tr></thead><tbody>${rowsHtml}</tbody></table></div>`;
+  const pairsChart = (items, gbStyle) => {     // Called Off + PTO bars
+    const max = Math.max(1, ...items.map(p => Math.max(p.co, p.vl)));
+    const bar = (p, k, lab) => `<div class="gb-bar" title="${esc(p.title)}: ${p[k]} ${lab} day${p[k] === 1 ? '' : 's'}">${p[k] ? `<span>${p[k]}</span>` : ''}<div style="height:${p[k] ? Math.max(3, p[k] / max * 100) : 0}%;background:${LV_COL[k]}"></div></div>`;
+    return `<div class="lv-legend"><span><i style="background:${LV_COL.co}"></i>Called Off</span><span><i style="background:${LV_COL.vl}"></i>PTO</span></div>
+      <div class="gb dense" style="${gbStyle};justify-content:center">${items.map(p => `<div class="gb-col"><div class="gb-pair">${bar(p, 'co', 'Called Off')}${bar(p, 'vl', 'PTO')}</div><div class="bar-lbl">${esc(p.lbl)}</div>${p.sub ? `<div class="gb-sub">${esc(p.sub)}</div>` : ''}</div>`).join('')}</div>`;
+  };
+  const LATE_COL = '#f59e0b';
+  const triChart = (items, gbStyle) => {      // Called Off + PTO + Late / Left early bars
+    const max = Math.max(1, ...items.map(p => Math.max(p.co, p.vl, p.late)));
+    const bar = (p, k, lab, c) => `<div class="gb-bar" title="${esc(p.title)}: ${p[k]} ${lab}">${p[k] ? `<span>${p[k]}</span>` : ''}<div style="height:${p[k] ? Math.max(3, p[k] / max * 100) : 0}%;background:${c}"></div></div>`;
+    return `<div class="lv-legend"><span><i style="background:${LV_COL.co}"></i>Called Off</span><span><i style="background:${LV_COL.vl}"></i>PTO</span><span><i style="background:${LATE_COL}"></i>Late / Left early</span></div>
+      <div class="gb dense" style="${gbStyle};justify-content:center">${items.map(p => `<div class="gb-col"><div class="gb-pair">${bar(p, 'co', 'Called Off', LV_COL.co)}${bar(p, 'vl', 'PTO', LV_COL.vl)}${bar(p, 'late', 'Late / Left early', LATE_COL)}</div><div class="bar-lbl">${esc(p.lbl)}</div>${p.sub ? `<div class="gb-sub">${esc(p.sub)}</div>` : ''}</div>`).join('')}</div>`;
+  };
+  const statPanel = (title, tiles) => `<div class="wr-sumpanel"><small>${esc(title)}</small>${tiles.map(t => `<div class="wr-st" style="--c:${t[2]}"><span>${t[0]}</span><b>${t[1]}</b></div>`).join('')}</div>`;
+  const sumPanel = (title, co, vl, late) => statPanel(title, [['Called Off', co, LV_COL.co], ['PTO', vl, LV_COL.vl], ['Late / Left early', late, LATE_COL]]);
+  const sTable = (key, cols, rows, totalRow) => `<div class="schedule-container" style="height:auto;max-height:none"><table class="nosort" id="wrT_${key}"><thead><tr>${cols.map((c, i) => `<th class="wr-sth" title="Click to sort" onclick="wrSortBy('${key}',${i})">${c}<i></i></th>`).join('')}</tr></thead><tbody>${rows.map(r => `<tr>${r.map(c => `<td data-v="${esc(c.v == null ? '' : String(c.v))}">${c.h}</td>`).join('')}</tr>`).join('')}${totalRow}</tbody></table></div>`;
+  const oneChart = (items, f) => `<div class="gb dense" style="--bw:50px;--cw:150px;--gg:5px;justify-content:center">${items.map(it => `<div class="gb-col"><div class="gb-pair"><div class="gb-bar" title="${esc(it.title)}">${it.v != null ? `<span>${f(it.v)}</span>` : ''}<div style="height:${it.v != null ? Math.max(2, Math.min(100, it.v)) : 0}%;background:var(--blue)"></div></div></div><div class="bar-lbl">${esc(it.lbl)}</div></div>`).join('')}</div>`;
+  const tgl = (key, lbl = 'supervisor table') => `<button type="button" class="wr-btn wr-tgl" id="wrBtn_${key}" data-lbl="${lbl}" onclick="wrToggle('${key}')">${wrShow[key] ? 'Hide' : 'Show'} ${lbl}</button>`;
+
+  /* ---- calls + AHT from the Daily Agent tab (AHT of a period = Avg Talk Time weighted by calls handled) ---- */
+  const mmss = v => { if (v == null) return '—'; const t = Math.round(v), m = Math.floor(t / 60), x = t % 60; return m + ':' + String(x).padStart(2, '0'); };
+  const daAgg = (from, to, team) => {
+    let calls = 0, w = 0, wc = 0;
+    dailyAgentRows.forEach(x => { if (x.d < from || x.d > to || (team && x.team !== team)) return; calls += x.calls; if (x.aht != null && x.calls > 0) { w += x.aht * x.calls; wc += x.calls; } });
+    return { calls, aht: wc ? w / wc : null };
+  };
+  const PH_COL = '#2563eb', CH_COL = '#f2a65a';
+  const duo = (items, f, gbStyle) => {        // Phone + Chat bars side by side
+    const max = Math.max(1, ...items.map(p => Math.max(p.ph || 0, p.ch || 0)));
+    const bar = (p, k, lab, c) => `<div class="gb-bar" title="${esc(p.title)}: ${esc(lab)} ${f(p[k])}">${p[k] ? `<span>${f(p[k])}</span>` : ''}<div style="height:${p[k] ? Math.max(3, p[k] / max * 100) : 0}%;background:${c}"></div></div>`;
+    return `<div class="lv-legend"><span><i style="background:${PH_COL}"></i>Phone</span><span><i style="background:${CH_COL}"></i>Chat</span></div>
+      <div class="gb dense" style="${gbStyle};justify-content:center">${items.map(p => `<div class="gb-col"><div class="gb-pair">${bar(p, 'ph', 'Phone', PH_COL)}${bar(p, 'ch', 'Chat', CH_COL)}</div><div class="bar-lbl">${esc(p.lbl)}</div>${p.sub ? `<div class="gb-sub">${esc(p.sub)}</div>` : ''}</div>`).join('')}</div>`;
+  };
+  /* Smooth (spline) line chart: dotted grid, round markers, value labels. series = [{ name, color, vals }] */
+  const styleBtn = () => `<div style="text-align:right"><button type="button" class="wr-btn wr-tgl" style="margin:0 0 6px" onclick="wrToggleStyle()">${wrLine ? 'Show as bars' : 'Show as line'}</button></div>`;
+  const lineChart = (labels, series, fmt, zero) => {
+    const vals = series.flatMap(x => x.vals).filter(v => v != null);
+    if (!vals.length) return '<div class="wr-note">No data for these weeks.</div>';
+    const W = 900, H = 320, L = 64, R = 30, T = 30, B = 48, n = labels.length;
+    let lo = Math.min(...vals), hi = Math.max(...vals);
+    if (zero) { lo = 0; hi = hi > 0 ? hi * 1.2 : 1; } else { const sp = (hi - lo) || Math.abs(hi) * 0.1 || 1; lo -= sp * 0.6; hi += sp * 0.6; }
+    const raw = (hi - lo) / 4, mag = Math.pow(10, Math.floor(Math.log10(raw))), st = [1, 2, 2.5, 5, 10].map(m => m * mag).find(v => v >= raw);
+    lo = zero ? 0 : Math.floor(lo / st) * st; hi = Math.ceil(hi / st) * st;
+    const X = i => L + (W - L - R) * (i + 0.5) / n, Y = v => T + (H - T - B) * (1 - (v - lo) / (hi - lo));
+    const clamp = (v, a, b) => Math.max(Math.min(a, b), Math.min(Math.max(a, b), v));
+    const curve = pts => {
+      let d = `M${pts[0][0].toFixed(1)},${pts[0][1].toFixed(1)}`;
+      for (let i = 0; i < pts.length - 1; i++) {
+        const p0 = pts[i - 1] || pts[i], p1 = pts[i], p2 = pts[i + 1], p3 = pts[i + 2] || p2;
+        const c1y = clamp(p1[1] + (p2[1] - p0[1]) / 6, p1[1], p2[1]), c2y = clamp(p2[1] - (p3[1] - p1[1]) / 6, p1[1], p2[1]);
+        d += ` C${(p1[0] + (p2[0] - p0[0]) / 6).toFixed(1)},${c1y.toFixed(1)} ${(p2[0] - (p3[0] - p1[0]) / 6).toFixed(1)},${c2y.toFixed(1)} ${p2[0].toFixed(1)},${p2[1].toFixed(1)}`;
+      }
+      return d;
+    };
+    let g = '';
+    for (let t = lo; t <= hi + st / 1000; t += st) g += `<line x1="${L}" x2="${W - R}" y1="${Y(t).toFixed(1)}" y2="${Y(t).toFixed(1)}" style="stroke:var(--line,#d1d5db)" stroke-width="1.5" stroke-dasharray="2 5" stroke-linecap="round"/><text x="${L - 10}" y="${(Y(t) + 4).toFixed(1)}" text-anchor="end" font-size="12" style="fill:var(--muted,#6b7280)">${esc(fmt(t))}</text>`;
+    const lstep = Math.ceil(n / 12);
+    labels.forEach((l, i) => { if (i % lstep && i !== n - 1) return; g += `<text x="${X(i).toFixed(1)}" y="${H - 16}" text-anchor="middle" font-size="13" style="fill:var(--muted,#6b7280)">${esc(l)}</text>`; });
+    const used = labels.map(() => []);
+    series.forEach(sr => {
+      let seg = [];
+      const flush = () => { if (seg.length > 1) g += `<path d="${curve(seg)}" fill="none" style="stroke:${sr.color}" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"/>`; seg = []; };
+      sr.vals.forEach((v, i) => { if (v == null) flush(); else seg.push([X(i), Y(v)]); });
+      flush();
+      sr.vals.forEach((v, i) => {
+        if (v == null) return;
+        let ly = Y(v) - 12; while (used[i].some(u => Math.abs(u - ly) < 14)) ly -= 14; used[i].push(ly);
+        g += `<circle cx="${X(i).toFixed(1)}" cy="${Y(v).toFixed(1)}" r="5.5" style="stroke:${sr.color};fill:var(--surface,#fff)" stroke-width="3"><title>${esc(labels[i])} · ${esc(sr.name)}: ${esc(fmt(v))}</title></circle>${n <= 16 ? `<text x="${X(i).toFixed(1)}" y="${ly.toFixed(1)}" text-anchor="middle" font-size="13" font-weight="700" style="fill:var(--navy,#0f3b4c)">${esc(fmt(v))}</text>` : ''}`;
+      });
+    });
+    const legend = series.length > 1 ? `<div class="lv-legend">${series.map(x => `<span><i style="background:${x.color}"></i>${esc(x.name)}</span>`).join('')}</div>` : '';
+    return `${legend}<div class="wr-line"><svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Trend chart">${g}</svg></div>`;
+  };
+  const bk = [], longFmt = { weekday: 'short', month: 'short', day: 'numeric' };
+  if (nd <= 31) days.forEach((d, i) => { const dt = parseYMD(d); bk.push({ i0: i, i1: i, from: d, to: d, line: nd <= 10 ? dayName(d).slice(0, 3) + ' ' + dt.getDate() : String(dt.getDate()), lbl: nd <= 10 ? dayName(d).slice(0, 3) : String(dt.getDate()), sub: nd <= 10 ? String(dt.getDate()) : '', title: dt.toLocaleDateString('en-US', longFmt) }); });
+  else { let st = 0; days.forEach((d, i) => { if (i === nd - 1 || parseYMD(days[i + 1]).getDay() === 1) { const t = wrFmt(parseYMD(days[st])); bk.push({ i0: st, i1: i, from: days[st], to: d, line: t, lbl: t, sub: '', title: t + ' - ' + wrFmt(parseYMD(d)) }); st = i + 1; } }); }
+  bk.forEach(x => { x.co = 0; x.vl = 0; x.late = 0; for (let i = x.i0; i <= x.i1; i++) { const q = W.perDay[i]; x.co += q.co; x.vl += q.vl; x.late += q.late; } });
+  const dayLbls = bk.map(x => x.line), many = bk.length > 10;
+  const stTri = many ? '--bw:12px;--cw:44px;--gg:2px' : '--bw:40px;--cw:120px;--gg:4px', stDuo = many ? '--bw:16px;--cw:44px;--gg:2px' : '--bw:40px;--cw:130px;--gg:4px';
+  const upTo = fn => bk.map(x => x.from > today ? null : fn(x));       // days that have not happened yet leave a gap in the line
+  const noDa = !dailyAgentRows.length ? '<div class="wr-note">No data found in the Daily Agent tab yet.</div>' : '';
+  const cnt = v => Math.round(v).toLocaleString('en-US');
+
+  /* ---- last 4 weeks ending with the picked week ---- */
+  const perDays = back => {                                                  // the selected period (back = 0) and the ones before it
+    if (mode === 'month') { const [y, m] = days[0].split('-').map(Number); return wrMonthDays(ymd(new Date(y, m - 1 - back, 1)).slice(0, 7)); }
+    if (mode === 'range') { const st = wrAdd(mon, -nd * back); return Array.from({ length: nd }, (_, i) => ymd(wrAdd(st, i))); }
+    return wrDays(wrAdd(mon, -7 * back));
+  };
+  const weeks = [3, 2, 1, 0].map(k => teamPeriod(perDays(k)));
+  const prevAtt = teamPeriod(perDays(4)).att;                           // week before the first of the 4, for its change
+  const attPts = (cur, prev) => {                                           // one colour; the arrow shows direction
+    if (cur == null || prev == null) return '';
+    const r = Math.round((cur - prev) * 10) / 10;
+    return r === 0 ? ' <small style="color:var(--muted)">(no change)</small>' : ` <small style="color:var(--muted)">(${r > 0 ? '▲ +' : '▼ −'}${Math.abs(r).toFixed(1)} pts)</small>`;
+  };
+  const multiYr = mode === 'range' && weeks[0].mon.getFullYear() !== sun.getFullYear();
+  const wkRange = w => { const x = parseYMD(w.days[0]), y = parseYMD(w.days[w.days.length - 1]); return mode === 'month' ? x.toLocaleDateString('en-US', { month: 'short', year: 'numeric' }) : wrFmt(x) + ' - ' + wrFmt(y) + (multiYr ? ', ' + y.getFullYear() : ''); };          // Sep 21 - Sep 27
+
+  /* ---- slides ---- */
+  const S = [];
+  S.push(`<section class="wr-slide wr-cover" data-title="${esc(opsTitle)}">
+    <div class="wr-circles" aria-hidden="true"><i class="c1"></i><i class="c2"></i><i class="c3"></i></div>
+    <div class="wr-cover-txt"><small>DITSC L1 English (Phone &amp; Chat)</small><h1>${esc(opsTitle)}</h1>
+      <p>${esc(rangeLbl)}</p><p>Attendance · Calls &amp; Chats · AHT · Call Drivers · Quality Assurance</p></div></section>`);
+
+  S.push(slide('Attendance this ' + U[0],
+    `<div class="wr-stack"><div><div class="wr-sumrow">${sumPanel(thisLbl, W.co, W.vl, W.late)}<div>${styleBtn()}${wrLine ? lineChart(dayLbls, [{ name: 'Called Off', color: LV_COL.co, vals: upTo(x => x.co) }, { name: 'PTO', color: LV_COL.vl, vals: upTo(x => x.vl) }, { name: 'Late / Left early', color: LATE_COL, vals: upTo(x => x.late) }], cnt, true) : triChart(bk.map(x => ({ co: x.co, vl: x.vl, late: x.late, lbl: x.lbl, sub: x.sub, title: x.title })), stTri)}</div></div><div class="wr-note">• Attendance % = Actual Hours ÷ Expected Hours<br>• Impacts: Called Off, NCNS, Late, and Left Early<br>• Excludes: PTO and OFF days<br>• Source: SCOTT</div></div>
+    <div>${tgl('att')}<div id="wrBox_att" style="margin-top:12px"${wrShow.att ? '' : ' hidden'}>${sTable('att', ['Supervisor', 'Attendance', 'Called Off', 'PTO', 'Late / Left early'],
+      bySup.map(x => [{ h: esc(x.sp), v: x.sp }, { h: val('att', x.att, pct1), v: x.att }, { h: x.co, v: x.co }, { h: x.vl, v: x.vl }, { h: x.late, v: x.late }]),
+      `<tr class="wr-total" style="font-weight:800"><td>Team</td><td>${val('att', W.att, pct1)}</td><td>${W.co}</td><td>${W.vl}</td><td>${W.late}</td></tr>`)}</div></div></div>`));
+
+  S.push(slide('Attendance trend · last 4 ' + U[1],
+    `<div class="wr-stack"><div><div class="wr-sumrow">${sumPanel('Selected ' + U[0] + ' (' + wkRange(W) + ')', W.co, W.vl, W.late)}<div>${styleBtn()}${wrLine ? lineChart(weeks.map(wkRange), [{ name: 'Called Off', color: LV_COL.co, vals: weeks.map(w => w.co) }, { name: 'PTO', color: LV_COL.vl, vals: weeks.map(w => w.vl) }, { name: 'Late / Left early', color: LATE_COL, vals: weeks.map(w => w.late) }], cnt, true) : triChart(weeks.map(w => ({ co: w.co, vl: w.vl, late: w.late, lbl: wkRange(w), sub: '', title: wkRange(w) })), '--bw:40px;--cw:170px;--gg:4px')}</div></div><div class="wr-note">• Attendance % = Actual Hours ÷ Expected Hours<br>• Impacts: Called Off, NCNS, Late, and Left Early<br>• Excludes: PTO and OFF days<br>• Source: SCOTT</div></div>
+    <div>${tgl('attT', 'table')}<div id="wrBox_attT" style="margin-top:12px"${wrShow.attT ? '' : ' hidden'}>${table([U[2], 'Called Off', 'PTO', 'Late / Left early', 'Attendance'],
+      weeks.map((w, i) => `<tr${w === W ? ' style="font-weight:700"' : ''}><td style="white-space:nowrap">${esc(wkRange(w))}</td><td>${w.co}</td><td>${w.vl}</td><td>${w.late}</td><td>${w.att == null ? '—' : '<b>' + pct1(w.att) + '</b>'}${attPts(w.att, i ? weeks[i - 1].att : prevAtt)}</td></tr>`).join(''))}</div></div></div>`));
+
+  /* Calls + AHT slides (Daily Agent tab) */
+  const dayAgg = bk.map(x => ({ ph: daAgg(x.from, x.to, 'phone'), ch: daAgg(x.from, x.to, 'chat') }));
+  const wkT = { ph: daAgg(days[0], dLast, 'phone'), ch: daAgg(days[0], dLast, 'chat'), all: daAgg(days[0], dLast) };
+  S.push(slide('Total number of Calls and Chats handled',
+    `<div class="wr-stack"><div>${noDa}<div class="wr-sumrow">${statPanel(thisLbl, [['Phone calls', cnt(wkT.ph.calls), PH_COL], ['Chats', cnt(wkT.ch.calls), CH_COL]])}<div>${styleBtn()}${wrLine ? lineChart(dayLbls, [{ name: 'Phone', color: PH_COL, vals: upTo(x => dayAgg[bk.indexOf(x)].ph.calls) }, { name: 'Chat', color: CH_COL, vals: upTo(x => dayAgg[bk.indexOf(x)].ch.calls) }], cnt, true) : duo(dayAgg.map((p, i) => ({ ph: p.ph.calls, ch: p.ch.calls, lbl: bk[i].lbl, sub: bk[i].sub, title: bk[i].title })), cnt, stDuo)}</div></div>
+      </div></div>`));
+
+  const daWeeks = weeks.map(w => ({ w, ph: daAgg(ymd(w.mon), ymd(wrAdd(w.mon, 6)), 'phone'), ch: daAgg(ymd(w.mon), ymd(wrAdd(w.mon, 6)), 'chat'), all: daAgg(ymd(w.mon), ymd(wrAdd(w.mon, 6))) }));
+  S.push(slide('Total number of Calls and Chats handled · last 4 ' + U[1],
+    `<div class="wr-stack"><div>${styleBtn()}${wrLine ? lineChart(daWeeks.map(x => wkRange(x.w)), [{ name: 'Phone', color: PH_COL, vals: daWeeks.map(x => x.ph.calls) }, { name: 'Chat', color: CH_COL, vals: daWeeks.map(x => x.ch.calls) }], cnt, true) : duo(daWeeks.map(x => ({ ph: x.ph.calls, ch: x.ch.calls, lbl: wkRange(x.w), title: wkRange(x.w) })), cnt, '--bw:54px;--cw:170px;--gg:6px')}</div>
+    <div>${tgl('callsT', 'table')}<div id="wrBox_callsT" style="margin-top:12px"${wrShow.callsT ? '' : ' hidden'}>${table([U[2], 'Phone calls', 'Chat', 'Total handled'],
+      daWeeks.map(x => `<tr${x.w === W ? ' style="font-weight:700"' : ''}><td style="white-space:nowrap">${esc(wkRange(x.w))}</td><td>${cnt(x.ph.calls)}</td><td>${cnt(x.ch.calls)}</td><td>${cnt(x.all.calls)}</td></tr>`).join(''))}</div></div></div>`));
+
+  S.push(slide('AHT · last 4 ' + U[1],
+    `<div class="wr-stack"><div>${styleBtn()}${wrLine ? lineChart(daWeeks.map(x => wkRange(x.w)), [{ name: 'Phone', color: PH_COL, vals: daWeeks.map(x => x.ph.aht) }, { name: 'Chat', color: CH_COL, vals: daWeeks.map(x => x.ch.aht) }], mmss, false) : duo(daWeeks.map(x => ({ ph: x.ph.aht, ch: x.ch.aht, lbl: wkRange(x.w), title: wkRange(x.w) })), mmss, '--bw:54px;--cw:170px;--gg:6px')}
+      <div class="wr-note">AHT (m:ss) = Weighted Average Handle Time based on interactions handled, reported separately for Phone and Chat.</div></div>
+    <div>${tgl('aht', 'table')}<div id="wrBox_aht" style="margin-top:12px"${wrShow.aht ? '' : ' hidden'}>${table([U[2], 'Phone AHT', 'Chat AHT', 'Overall AHT'],
+      daWeeks.map(x => `<tr${x.w === W ? ' style="font-weight:700"' : ''}><td style="white-space:nowrap">${esc(wkRange(x.w))}</td><td>${mmss(x.ph.aht)}</td><td>${mmss(x.ch.aht)}</td><td>${mmss(x.all.aht)}</td></tr>`).join(''))}</div></div></div>`));
+
+  /* Top call drivers: Configuration Item counted over the week (one row = one call), split Phone / Chat.
+     The team comes from a Team column in the Call Drivers tab if it has one, else from the agent's team in the Daily Agent tab. */
+  const TOP_DRIVERS = 10;
+  const teamOnDay = new Map(), teamOfAgent = new Map();
+  dailyAgentRows.forEach(x => { const n = normName(x.agent); teamOnDay.set(n + '|' + x.d, x.team); teamOfAgent.set(n, x.team); });
+  const drvMap = new Map(); let drvTotal = 0, drvUnk = 0;
+  callDriverRows.forEach(x => {
+    if (x.d < days[0] || x.d > dLast || !x.item) return;
+    drvTotal++;
+    const n = normName(x.agent), team = x.team || teamOnDay.get(n + '|' + x.d) || teamOfAgent.get(n) || '';
+    if (!team) drvUnk++;
+    const k = x.item.toLowerCase(), e = drvMap.get(k) || { name: x.item, phone: 0, chat: 0, unk: 0 };
+    e[team || 'unk']++; drvMap.set(k, e);
+  });
+  const drvAll = [...drvMap.values()].map(e => ({ ...e, n: e.phone + e.chat + e.unk }));
+  const byN = (list, f) => list.filter(e => f(e) > 0).sort((a, b) => f(b) - f(a) || a.name.localeCompare(b.name)).slice(0, TOP_DRIVERS);
+  const drvTop = byN(drvAll, e => e.n), drvPh = byN(drvAll, e => e.phone), drvCh = byN(drvAll, e => e.chat);
+  const drvMax = drvTop.length ? drvTop[0].n : 1;
+  const seg = (n, c, nm) => n ? `<div style="width:${n / drvMax * 100}%;background:${c}" title="${nm}: ${n}"></div>` : '';
+  const drvTbl = (list, key) => list.length ? table(['#', 'Call driver', 'Count'], list.map((x, i) => `<tr><td>${i + 1}</td><td>${esc(x.name)}</td><td>${cnt(x[key])}</td></tr>`).join('')) : '<div class="wr-note">No call drivers logged ' + tw + '.</div>';
+  S.push(slide('Top call drivers',
+    `<div class="wr-stack"><div>${!callDriverRows.length ? '<div class="wr-note">No data found in the Call Drivers tab yet.</div>' : !drvTop.length ? '<div class="wr-note">No call drivers logged ' + tw + '.</div>' :
+      `<div class="lv-legend"><span><i style="background:${PH_COL}"></i>Phone</span><span><i style="background:${CH_COL}"></i>Chat</span>${drvUnk ? '<span><i style="background:#9ca3af"></i>Not matched</span>' : ''}</div>
+      <div class="wr-hbars">${drvTop.map(x => `<div class="wr-hb" title="${esc(x.name)}: ${x.n}"><span class="wr-hbl">${esc(x.name)}</span><div class="wr-hbt">${seg(x.phone, PH_COL, 'Phone')}${seg(x.chat, CH_COL, 'Chat')}${seg(x.unk, '#9ca3af', 'Not matched')}</div><b>${cnt(x.n)}</b></div>`).join('')}</div>`}
+      <div class="wr-note">Top ${TOP_DRIVERS} Configuration Items for the ${U[0]}, based on ${cnt(drvTotal)} recorded interaction${drvTotal === 1 ? '' : 's'}.<br>Phone and Chat volumes are classified according to the assigned Skill/Team.${drvUnk ? ` ${cnt(drvUnk)} could not be matched to Phone or Chat.` : ''}</div></div>
+    <div>${tgl('drv', 'tables')}<div id="wrBox_drv" style="margin-top:12px"${wrShow.drv ? '' : ' hidden'}><div class="wr-two2">
+      <div><h3 class="wr-h3" style="color:${PH_COL}">📞 Phone · Top ${TOP_DRIVERS}</h3>${drvTbl(drvPh, 'phone')}</div>
+      <div><h3 class="wr-h3" style="color:#c26a12">💬 Chat · Top ${TOP_DRIVERS}</h3>${drvTbl(drvCh, 'chat')}</div></div></div></div></div>`));
+
+  const plain = v => v == null ? '—' : `<b>${pct1(v)}</b>`;       // QA slide: no colour bands
+  S.push(slide('Quality Assurance',
+    `<div class="wr-stack"><div>${styleBtn()}${wrLine ? lineChart(weeks.map(wkRange), [{ name: 'QA average', color: 'var(--blue)', vals: weeks.map(w => w.qa) }], v => v.toFixed(1) + '%', false) : oneChart(weeks.map(w => ({ v: w.qa, lbl: wkRange(w), title: wkRange(w) + ': QA average' })), v => v.toFixed(1) + '%')}
+      <div class="wr-note">QA Score = Average audit score based on call audits completed during the reporting ${U[0]}.<br>No bar is shown for ${U[1]} without completed audits.</div></div>
+    <div><h3 class="wr-h3">⭐ Top 3 agents ${tw}</h3>${topAgents.length ? table(['#', 'Agent', 'Supervisor', 'QA average', 'Audits'], topAgents.map((a, i) => `<tr><td>${i + 1}</td><td>${esc(a.name)}</td><td>${esc(a.sup)}</td><td>${plain(a.avg)}</td><td>${a.cnt}</td></tr>`).join('')) : '<div class="wr-note">No QA audits with a call date ' + tw + '.</div>'}</div>
+    <div>${tgl('qa')}<div id="wrBox_qa" style="margin-top:12px"${wrShow.qa ? '' : ' hidden'}>${sTable('qa', ['Supervisor', 'This ' + U[0], esc(tymLabel) + ' (month to date)'],
+        bySup.map(x => [{ h: esc(x.sp), v: x.sp }, { h: plain(x.qaWeek), v: x.qaWeek }, { h: plain(x.qaMonth), v: x.qaMonth }]),
+        `<tr class="wr-total" style="font-weight:800"><td>Team</td><td>${plain(W.qa)}</td><td>${plain(qaMonthTeam)}</td></tr>`)}</div></div></div>`));
+
+  const nAud = wkQa.length, audWord = nAud === 1 ? 'audit' : 'audits';
+  const qList = (kind, rows) => rows.length ? rows.map(q => {
+    const t = qaLines(qaQText(q.label)).join(' ');
+    return `<div class="wr-q"><b>${esc(q.label)}</b><span>${esc(t.length > 150 ? t.slice(0, 147) + '…' : t)}</span><small><strong>${q[kind]} ${kind === 'no' ? 'No' : 'Yes'}</strong> out of ${nAud} ${audWord}</small></div>`;
+  }).join('') : '<div class="wr-note">No Yes / No answers found for ' + tw + '.</div>';
+  S.push(slide('QA mark downs & what went well',
+    `<div class="wr-two"><div><h3 class="wr-h3" style="color:#dc3545">🔻 Top 5 mark downs</h3>${qList('no', topQ('no'))}</div>
+    <div><h3 class="wr-h3" style="color:#28a745">✅ Top 5 went well</h3>${qList('yes', topQ('yes'))}</div></div>
+    <div class="wr-note">Out of the ${nAud} ${audWord} with a call date ${tw}. Mark downs are the questions answered “No” the most, went well are the ones answered “Yes” the most (N/A and blank answers are not counted).</div>`));
+
+  box.innerHTML = S.join('');
+  ['att', 'qa'].forEach(wrApplySort);
+  wrGo(wrIdx);
+}
+
+/* Days shown on the tracker: the picked month, or one Monday-to-Sunday week */
+function trackerDays() {
+  trkSync();
+  const tv = $('trackerView').value;
+  if (tv === 'range') {
+    const t = ymd(estNow());
+    if (!$('trackerFrom').value) $('trackerFrom').value = t.slice(0, 8) + '01';
+    if (!$('trackerTo').value) $('trackerTo').value = t;
+    let a = $('trackerFrom').value, b = $('trackerTo').value; if (a > b) [a, b] = [b, a];
+    const out = [];
+    for (let d = parseYMD(a); ymd(d) <= b && out.length < 366; d = new Date(d.getFullYear(), d.getMonth(), d.getDate() + 1)) out.push(ymd(d));
+    return out;
+  }
+  if (perIsPreset(tv)) {
+    const R = perRange(tv, $('trackerPerDate').value), out = [];
+    for (let d = parseYMD(R.from); ymd(d) <= R.to; d = new Date(d.getFullYear(), d.getMonth(), d.getDate() + 1)) out.push(ymd(d));
+    return out;
+  }
+  if (tv === 'week') {
+    const b = parseYMD($('trackerWeek').value || ymd(estNow())), mon = new Date(b.getFullYear(), b.getMonth(), b.getDate() - (b.getDay() + 6) % 7);
+    return Array.from({ length: 7 }, (_, i) => ymd(new Date(mon.getFullYear(), mon.getMonth(), mon.getDate() + i)));
+  }
+  const [y, m] = $('trackerMonth').value.split('-').map(Number);
+  return Array.from({ length: new Date(y, m, 0).getDate() }, (_, i) => ymd(new Date(y, m - 1, i + 1)));
+}
+/* Full-screen meeting view: the page fills the screen with larger text (A− / A+ to adjust, Esc or ✕ to exit) */
+let presentId = null, presentZoom = 1.3, presentHideFilters = false;
+function togglePresent(id) { presentId === id ? exitPresent() : enterPresent(id); }
+function enterPresent(id) {
+  const sec = $(id);
+  if (!sec) return;
+  if (presentId) exitPresent();
+  presentId = id;
+  sec.classList.add('present');
+  sec.style.setProperty('--pz', presentZoom);
+  const link = document.querySelector(`.side [data-tab="${id}"]`), bar = document.createElement('div');
+  bar.className = 'present-bar';
+  bar.innerHTML = '<b></b><span>' + (id === 'weeklyReportTab' ? '<small>← → change slide · H hide/show filters</small>' : '') + '<button type="button" id="presentFiltersBtn" onclick="presentFilters()" title="Hide or show the filters">Hide filters</button><button type="button" onclick="presentZoomBy(-0.1)" title="Smaller text">A−</button><button type="button" onclick="presentZoomBy(0.1)" title="Larger text">A+</button><button type="button" onclick="exitPresent()">✕ Exit full screen</button></span>';
+  bar.firstChild.textContent = (link && (link.dataset.title || link.textContent.trim())) || '';
+  sec.prepend(bar);
+  sec.classList.toggle('hide-filters', presentHideFilters);
+  $('presentFiltersBtn').textContent = presentHideFilters ? 'Show filters' : 'Hide filters';
+  document.body.style.overflow = 'hidden';
+  wrFitSoon();
+  if (sec.requestFullscreen) sec.requestFullscreen().catch(() => {});      // browsers that can't go full screen keep the full-window view
+}
+function exitPresent() {
+  if (!presentId) return;
+  const sec = $(presentId);
+  presentId = null;
+  if (sec) { sec.classList.remove('present', 'hide-filters'); sec.style.removeProperty('--pz'); const bar = sec.querySelector(':scope > .present-bar'); if (bar) bar.remove(); }
+  document.body.style.overflow = '';
+  wrFitSoon();
+  if (document.fullscreenElement && document.exitFullscreen) document.exitFullscreen().catch(() => {});
+}
+function presentFilters() {
+  presentHideFilters = !presentHideFilters;
+  if (presentId) $(presentId).classList.toggle('hide-filters', presentHideFilters);
+  const b = $('presentFiltersBtn'); if (b) b.textContent = presentHideFilters ? 'Show filters' : 'Hide filters';
+  wrFitSoon();
+}
+function presentZoomBy(d) {
+  presentZoom = Math.min(2, Math.max(0.8, +(presentZoom + d).toFixed(2)));
+  if (presentId) $(presentId).style.setProperty('--pz', presentZoom);
+  wrFitSoon();
+}
+document.addEventListener('fullscreenchange', () => { if (!document.fullscreenElement && presentId) exitPresent(); });
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape' && presentId) exitPresent();
+  else if ((e.key === 'h' || e.key === 'H') && presentId && !e.ctrlKey && !e.metaKey && !e.altKey && !/^(INPUT|SELECT|TEXTAREA)$/.test((e.target && e.target.tagName) || '')) presentFilters();
+});
+
 function buildTracker() {
   const body = $('trackerBody');
+  const trkSingle = trkSync();
+  const tv = $('trackerView').value, wk = tv === 'week', pre = perIsPreset(tv);
+  const rg = tv === 'range';
+  $('trackerPrev').hidden = $('trackerNext').hidden = !trkSingle;
+  $('trackerMonth').hidden = tv !== 'month'; $('trackerRangeBox').hidden = !rg; $('trackerWeek').hidden = true; $('trackerPerDate').hidden = true; $('trackerWeekLbl').hidden = !rg;
+  if (!$('trackerWeek').value) $('trackerWeek').value = ymd(estNow());
+  if (!$('trackerPerDate').value) $('trackerPerDate').value = ymd(estNow());
+  if (rg) { const wd = trackerDays(), f = d => parseYMD(d).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }); $('trackerWeekLbl').textContent = f(wd[0]) + ' – ' + f(wd[wd.length - 1]) + ' (' + wd.length + ' day' + (wd.length === 1 ? '' : 's') + ')'; }
   const rosterN = estData.filter(r => loliIdx.has(normName(r.Name))).length;
   const fmtLong = d => parseYMD(d).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
   const LEG = [
@@ -5163,8 +6263,7 @@ function buildTracker() {
     body.innerHTML = '<div class="empty" style="--c:#6c757d">Pick a month (schedule data must be loaded)</div>';
     return;
   }
-  const [y, m] = ym.split('-').map(Number);
-  const days = Array.from({ length: new Date(y, m, 0).getDate() }, (_, i) => ymd(new Date(y, m - 1, i + 1)));
+  const days = trackerDays();
   const today = ymd(estNow());
   const sup = $('trackerSupervisor').value;
   const q = up($('trackerSearch').value);
@@ -5184,8 +6283,7 @@ function downloadTracker() {
   const ym = $('trackerMonth').value;
   if (!ym || !estData.length) return toast('Nothing to download yet');
 
-  const [y, m] = ym.split('-').map(Number);
-  const days = Array.from({ length: new Date(y, m, 0).getDate() }, (_, i) => ymd(new Date(y, m - 1, i + 1)));
+  const days = trackerDays();
   const today = ymd(estNow());
   const sup = $('trackerSupervisor').value;
   const q = up($('trackerSearch').value);
@@ -5222,7 +6320,7 @@ function downloadTracker() {
   rows.push([]);
   rows.push(['P = Present, U = Upcoming, LATE / LE / SH = Late / Left early / Short hours (* = estimated half shift), NCNS / CO = Called off, VL / SL / ML / BRV = Leave, OFF = Off']);
 
-  const filename = `attendance-tracker-${ym}.csv`;
+  const filename = `attendance-tracker-${$('trackerView').value === 'range' ? $('trackerView').value + '-' + days[0] + '_to_' + days[days.length - 1] : $('trackerView').value === 'week' ? days[0] + '-week' : ym}.csv`;
   const csv = '\uFEFF' + rows.map(r => r.map(csvCell).join(',')).join('\r\n');   // BOM keeps Excel happy with UTF-8
   const a = document.createElement('a');
   a.href = URL.createObjectURL(new Blob([csv], { type: 'text/csv;charset=utf-8' }));
@@ -5234,12 +6332,14 @@ function downloadTracker() {
   toast('⬇ Downloaded ' + filename);
 }
 
-function shiftTrackerMonth(delta) {
-  const [y, m] = ($('trackerMonth').value || ymd(estNow()).slice(0, 7)).split('-').map(Number);
-  const d = new Date(y, m - 1 + delta, 1);
-  $('trackerMonth').value = `${d.getFullYear()}-${pad(d.getMonth() + 1)}`;
-  buildTracker();
+function trkSync() {
+  const st = perpState('trk'); if (!st) return false;
+  const single = perIsSingle(st);
+  if (single) { $('trackerView').value = 'month'; $('trackerMonth').value = [...st.months][0]; }
+  else { const R = perpR('trk'); $('trackerView').value = 'range'; $('trackerFrom').value = R.from; $('trackerTo').value = R.to; }
+  return single;
 }
+function shiftTrackerMonth(delta) { perpShift('trk', delta, buildTracker); }
 
 /* =====================================================================
    SCORECARD SUMMARY
@@ -5394,10 +6494,10 @@ function buildSsStack(selYms, bySup, q) {
     return (dir * (typeof x === 'string' || typeof y === 'string' ? String(x).localeCompare(String(y)) : x - y)) || String(a[I.agent]).localeCompare(String(b[I.agent]));
   });
 
-  const cols = METRIC_SHOW.map(n => metricHeads.findIndex(h => h.toLowerCase().trim() === n)).filter(i => i >= 0);
+  const cols = metricShowCols(selYms.map(ym => +ym.slice(5, 7)));
   const isPct = v => /^\d+(\.\d+)?%$/.test(v || '');
   const arrow = i => sc === i ? (col >= 0 ? (asc ? ' ▲' : ' ▼') : ' ▼') : '';
-  table.tHead.innerHTML = '<tr>' + cols.map(i => `<th onclick="ssStackSortBy(${i})">${esc(metricHeads[i])}${arrow(i)}${isPct(metricWeights[i]) ? `<small>${esc(metricWeights[i])}</small>` : ''}</th>`).join('') + '</tr>';
+  table.tHead.innerHTML = '<tr>' + cols.map(i => `<th onclick="ssStackSortBy(${i})">${esc(metricHeads[i])}${arrow(i)}${metricWeightHtml(i, selYms.map(ym => +ym.slice(5, 7)))}</th>`).join('') + '</tr>';
 
   wireSsGroups();
   const byAg = new Map();
@@ -5483,33 +6583,28 @@ function lvDay(date, rows, idxCo, idxPto, ck) {
 const lvAddBy = (t, sp, co, vl, sched) => { const x = t[sp] ||= { co: 0, vl: 0, sched: 0 }; x.co += co; x.vl += vl; x.sched += sched; };
 const lvDayBy = d => { const t = {}; Object.keys(d.sb).forEach(sp => lvAddBy(t, sp, d.cb[sp] || 0, d.vb[sp] || 0, d.sb[sp])); return t; };
 const lvMergeBy = (t, b) => Object.keys(b).forEach(sp => lvAddBy(t, sp, b[sp].co, b[sp].vl, b[sp].sched));
-function shiftLeaveTrend(d) {
-  if ($('lvMode').value === 'week') {
-    const t = parseYMD($('lvWeek').value || ymd(estNow()));
-    t.setDate(t.getDate() + 7 * d);
-    $('lvWeek').value = ymd(t);
-  } else if ($('lvMode').value === 'day') {
-    const [y, m] = ($('lvMonth').value || ymd(estNow()).slice(0, 7)).split('-').map(Number), t = new Date(y, m - 1 + d, 1);
-    $('lvMonth').value = `${t.getFullYear()}-${pad(t.getMonth() + 1)}`;
-  } else {
-    const ys = $('lvYear'), i = ys.selectedIndex - d;      // the list runs newest first
-    if (i >= 0 && i < ys.options.length) ys.selectedIndex = i;
-  }
-  buildLeaveTrend();
+function lvSync() {
+  const st = perpState('lvp'); if (!st) return false;
+  const single = perIsSingle(st);
+  if (single) { $('lvMode').value = 'day'; $('lvMonth').value = [...st.months][0]; }
+  else { const R = perpR('lvp'); $('lvMode').value = 'range'; $('lvFrom').value = R.from; $('lvTo').value = R.to; }
+  return single;
 }
+function shiftLeaveTrend(d) { perpShift('lvp', d, buildLeaveTrend); }
 function buildLeaveTrend() {
-  const now = estNow(), cy = now.getFullYear(), mode = $('lvMode').value, range = mode === 'range', week = mode === 'week', daily = mode !== 'month';
+  const lvSingle = lvSync();
+  const now = estNow(), cy = now.getFullYear(), rawMode = $('lvMode').value, pre = perIsPreset(rawMode), mode = pre ? 'range' : rawMode, range = mode === 'range', week = mode === 'week', daily = mode !== 'month';
   if (!lvInit) {
-    lvInit = true; $('lvMonth').value = ymd(now).slice(0, 7);
-    $('lvFrom').value = ymd(now).slice(0, 7) + '-01'; $('lvTo').value = ymd(now); $('lvWeek').value = ymd(now);
+    lvInit = true; $('lvWeek').value = ymd(now);
   }
+  if (pre) { if (!$('lvPerDate').value) $('lvPerDate').value = ymd(now); const R = perRange(rawMode, $('lvPerDate').value); $('lvFrom').value = R.from; $('lvTo').value = R.to; }
   const yrs = new Set([cy]);
   [...ptoList, ...calledOffList].forEach(x => { const y = +normalizeDate(x['EST Date']).slice(0, 4); if (y > 2000 && y < 2100) yrs.add(y); });
   const ys = $('lvYear'), prevY = ys.value;
   ys.innerHTML = [...yrs].sort((a, b) => b - a).map(y => `<option>${y}</option>`).join('');
   ys.value = [...ys.options].some(o => o.value === prevY) ? prevY : String(cy);
-  ys.hidden = mode !== 'month'; $('lvMonth').hidden = mode !== 'day'; $('lvRange').hidden = !range; $('lvWeekWrap').hidden = !week;
-  $('lvPrev').hidden = $('lvNext').hidden = range;
+  ys.hidden = mode !== 'month'; $('lvMonth').hidden = mode !== 'day'; $('lvRange').hidden = rawMode !== 'range'; $('lvPerDate').hidden = rawMode !== 'date'; $('lvWeekWrap').hidden = !week;
+  $('lvPrev').hidden = $('lvNext').hidden = !lvSingle;
   if (!$('lvMonth').value) $('lvMonth').value = ymd(now).slice(0, 7);
 
   if (!estData.length) { $('lvChart').innerHTML = '<div class="empty" style="--c:#6c757d">Schedule data must be loaded first</div>'; $('lvTable').tHead.innerHTML = ''; $('lvTable').tBodies[0].innerHTML = ''; $('lvTableTitle').textContent = ''; return; }
@@ -5699,9 +6794,11 @@ function buildScoreSummary() {
   const nowD = estNow();
   ssMonths = Array.from({ length: nowD.getMonth() + 1 }, (_, i) => `${nowD.getFullYear()}-${pad(i + 1)}`);
   if (!ssSelInit) { ssSel = new Set([ssMonths[ssMonths.length - 1]]); ssSelInit = true; }
+  { const R = perRangeOf('ss'); if (R) ssSel = new Set(perMonthsTouched(R)); }
   ssSel = new Set([...ssSel].filter(m => ssMonths.includes(m)));
   if (!ssSel.size) ssSel.add(ssMonths[ssMonths.length - 1]);
   renderSsMonthPicker();
+  renderKpiCards();
   const selYms = ssMonths.filter(m => ssSel.has(m)), ym = selYms[selYms.length - 1];   // ym = latest ticked month
   $('ssLegend').innerHTML =
     '<span class="trk-chip st-present">Green: on target</span><span class="trk-chip st-partial">Amber: below target</span><span class="trk-chip st-absent">Red: well below</span>' +
@@ -5712,8 +6809,6 @@ function buildScoreSummary() {
   if (!ym || !estData.length) {
     head.innerHTML = '';
     body.innerHTML = '<tr><td>Pick a month (schedule data must be loaded)</td></tr>';
-    $('ssMcsTable').tHead.innerHTML = ''; $('ssMcsTable').tBodies[0].innerHTML = '';
-    $('ssStackTable').tHead.innerHTML = ''; $('ssStackTable').tBodies[0].innerHTML = '';
     $('ssTopWrap').hidden = true;
     return;
   }
@@ -5878,8 +6973,6 @@ function buildScoreSummary() {
   /* Current-month scorecard: always this month, whatever months are ticked above */
   buildSsCurrent(bySup, q, idx, today);
 
-  buildSsMcs(selYms, bySup, q);
-  buildSsStack(selYms, bySup, q);
 }
 
 /* =====================================================================
@@ -5919,18 +7012,20 @@ window.addEventListener('DOMContentLoaded', async () => {
   buildIntervalOptions();
   initMinTarget(); initForecastSettings(); initPhoneSettings();
   initMenus();
+  initSkillCols();
   initMetricMonth();
   initGroupToggle();
   initQa();
   initMcsMonth();
 
   const today = ymd(estNow());
-  ['selectedDate', 'ptoDate', 'calledOffDate', 'scheduleDate', 'forecastDate', 'phoneDate']
+  ['selectedDate', 'scheduleDate', 'forecastDate', 'phoneDate']
     .forEach(id => $(id).value = today);
+  perSetRange('pto', today, today); perSetRange('calledOff', today, today);
   $('trackerMonth').value = today.slice(0, 7);
-  renderDisputeForm();
+  renderDisputeForm(); syncTeamButtons();
 
-  await Promise.all([loadSchedules(), loadAttendance(), loadDaily(), loadQA(), loadQAScoring(), loadMetric(), loadMcs()]);
+  await Promise.all([loadSchedules(), loadAttendance(), loadDaily(), loadQA(), loadQAScoring(), loadMetric(), loadMcs(), loadDailyAgent(), loadCallDrivers(), loadAttendancePoints(), loadPtoWeekly()]);
   renderAll();
   showTabFromHash();
 
@@ -6176,6 +7271,7 @@ window.addEventListener('load', () => setPageHead(activeTab));
   /* Pickers with no onchange handler are refreshed by their own button, so do that instead */
   const ACTION = { selectedDate: () => runLookup(), forecastDate: () => refreshForecast() };
   document.querySelectorAll('input[type="date"]').forEach(inp => {
+    if (inp.closest('.controls') && !['selectedDate', 'forecastDate', 'phoneDate', 'scheduleDate'].includes(inp.id)) return;   // period filters have their own pickers
     const mk = (dir, glyph, title) => {
       const b = document.createElement('button');
       b.type = 'button'; b.textContent = glyph; b.title = title; b.setAttribute('aria-label', title);
