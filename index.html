@@ -3555,12 +3555,20 @@ function buildRosterView() {
    TEAM ROSTER (agents per supervisor)
    ===================================================================== */
 function buildTeamView() {
-  const sup = $('teamSupervisor').value;
+  /* Team roster always lists ALL agents (Phone + Chat), whatever the Phone / Chat switch is set to */
+  const all = RAW.est && RAW.est.length ? RAW.est : estData;
+  const supSel = $('teamSupervisor'), prevSup = supSel.value;
+  supSel.innerHTML = `<option>${ALL}</option>` + [...new Set(all.map(x => x.Supervisor).filter(Boolean))].sort((a, b) => a.localeCompare(b)).map(s => `<option>${esc(s)}</option>`).join('');
+  if ([...supSel.options].some(o => o.value === prevSup)) supSel.value = prevSup;
+  const sup = supSel.value;
   const q = up($('teamSearch').value);
-  const groups = {};
-  estData.forEach(r => {
-    if (q && !up(r.Name).includes(q)) return;
-    (groups[r.Supervisor || 'Unassigned'] ??= []).push(r.Name);
+  const groups = {}, seen = new Set();
+  all.forEach(r => {
+    if (!r.Name || (q && !up(r.Name).includes(q))) return;
+    const sp = r.Supervisor || 'Unassigned', key = sp + '|' + normName(r.Name);
+    if (seen.has(key)) return;
+    seen.add(key);
+    (groups[sp] ??= []).push(r.Name);
   });
   const entries = Object.entries(groups)
     .filter(([s]) => sup === ALL || s === sup)
