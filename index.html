@@ -1621,7 +1621,7 @@ html[data-theme=dark] #dataUpdateNote .du-name{color:#cfdcff}
     <div class="summary-box">📋 Records: <span id="lbprrCount">0</span></div>
   </div>
   <div class="ut-legend">
-    <span><i style="background:#fecaca"></i>Break over 0:45:00 · Lunch over 1:00:00</span>
+    <span><i style="background:#fecaca"></i>Break 0:46:00 or more · Lunch 1:01:00 or more</span>
     <span><i style="background:#fef08a"></i>Total Logged-in Hours below 11:00:00</span>
     
   </div>
@@ -4727,9 +4727,9 @@ const SHIFT_HOURS_DEFAULT = 11;
 /* ---------- Unavailable Time page: Break / Overbreak / Lunch / Overlunch / Restroom / Project (LBPRR tab) + Total Logged-in Hours (LOLI Actual tab) ----------
    Columns are found by their header words, so the order in the sheet doesn't matter. Times are shown as written in the sheet.
    Total Logged-in Hours is looked up in the LOLI Actual tab by agent name + shift date.
-   Colour legend: Break > 0:45:00 and Lunch > 1:00:00 = red; Total Logged-in Hours < 11:00:00 = yellow; Overbreak / Overlunch of 0:00:00 are left blank. */
+   Colour legend: Break >= 0:46:00 and Lunch >= 1:01:00 = red; Total Logged-in Hours < 11:00:00 = yellow; Overbreak / Overlunch of 0:00:00 are left blank. */
 const LBPRR_COLS = [['brk', 'Break'], ['lunch', 'Lunch'], ['rest', 'Restroom'], ['proj', 'Project']];
-const UT_BREAK_MAX = 45 * 60, UT_LUNCH_MAX = 60 * 60, UT_HOURS_MIN = 11 * 3600;
+const UT_BREAK_RED = 46 * 60, UT_LUNCH_RED = 61 * 60, UT_HOURS_MIN = 11 * 3600;
 const utSel = { m: new Set(), d: new Set() };
 let utInit = false;
 const utOpen = new Set();   // agents whose daily rows are expanded (multi-date view)
@@ -4742,8 +4742,8 @@ const utMonthLabel = ym => new Date(+ym.slice(0, 4), +ym.slice(5, 7) - 1, 1).toL
 const utShow = (k, v) => (k === 'ob' || k === 'ol') && utSecs(v) === 0 ? '' : v;
 function utClass(k, v) {
   const s = utSecs(v); if (s == null) return '';
-  if (k === 'brk' && s > UT_BREAK_MAX) return 'ut-red';
-  if (k === 'lunch' && s > UT_LUNCH_MAX) return 'ut-red';
+  if (k === 'brk' && s >= UT_BREAK_RED) return 'ut-red';
+  if (k === 'lunch' && s >= UT_LUNCH_RED) return 'ut-red';
   if (k === 'hours' && s < UT_HOURS_MIN) return 'ut-yel';
   return '';
 }
