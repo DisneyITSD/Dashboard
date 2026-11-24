@@ -3568,7 +3568,7 @@ function buildTeamView() {
     const sp = r.Supervisor || 'Unassigned', key = sp + '|' + normName(r.Name);
     if (seen.has(key)) return;
     seen.add(key);
-    (groups[sp] ??= []).push(r.Name);
+    (groups[sp] ??= []).push({ name: r.Name, team: rowTeam(r) });
   });
   const entries = Object.entries(groups)
     .filter(([s]) => sup === ALL || s === sup)
@@ -3580,7 +3580,7 @@ function buildTeamView() {
   $('teamList').innerHTML = entries.length ? entries.map(([name, agents]) => `
     <div class="group" style="--c:${supColor(name) || '#6c757d'}">
       <div class="group-title"><span>🧑‍💼 ${esc(name)}</span><small>${agents.length} agent${agents.length === 1 ? '' : 's'}</small></div>
-      <ol>${agents.sort((a, b) => a.localeCompare(b)).map(a => `<li>${esc(a)}</li>`).join('')}</ol>
+      <ol>${agents.sort((a, b) => a.name.localeCompare(b.name)).map(a => `<li>${esc(a.name)} <span class="sk-chip sk-${a.team.toLowerCase()}">${a.team === 'Chat' ? '💬' : '📞'} ${a.team}</span></li>`).join('')}</ol>
     </div>`).join('')
     : '<div class="empty" style="--c:#6c757d">No agents found</div>';
 }
