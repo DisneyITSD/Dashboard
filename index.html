@@ -133,6 +133,10 @@ li.sup-h:first-child{margin-top:0}
 #upcomingBreakList li.empty,#upcomingLunchList li.empty{color:var(--gray);font-weight:400}
 #comingOnList li:not(.empty){border-left:3px solid var(--green);padding-left:8px;margin-bottom:4px}
 #goingOffList li:not(.empty){border-left:3px solid var(--red);padding-left:8px;margin-bottom:4px}
+#comingOnList[data-cols],#goingOffList[data-cols]{display:grid;column-gap:14px;align-items:start}
+#comingOnList[data-cols="2"],#goingOffList[data-cols="2"]{grid-template-columns:repeat(2,minmax(0,1fr))}
+#comingOnList[data-cols="3"],#goingOffList[data-cols="3"]{grid-template-columns:repeat(3,minmax(0,1fr))}
+@media(max-width:700px){#comingOnList[data-cols],#goingOffList[data-cols]{grid-template-columns:1fr}}
 .chip{display:inline-block;margin:0 6px 6px 0;padding:6px 10px;border-radius:999px;background:#eef6ff;border:1px solid #cfe0f5;font-size:13px;color:var(--navy)}
 .chip.bad{background:#ffebee;border-color:#ef9a9a;color:#c62828}
 
@@ -4694,6 +4698,8 @@ function buildShiftChanges(date, mins, supFilter) {
     ? coming.sort(byTime).map(x => li(x, 'starts')).join('') : emptyItem('#28a745', 'No one starting');
   $('goingOffList').innerHTML = going.length
     ? going.sort(byTime).map(x => li(x, 'ends')).join('') : emptyItem('#dc3545', 'No one finishing');
+  /* Long lists flow into 2 columns (5+ people) or 3 columns (13+ people) */
+  [['comingOnList', coming.length], ['goingOffList', going.length]].forEach(([id, n]) => { const el = $(id); if (n >= 13) el.dataset.cols = '3'; else if (n >= 5) el.dataset.cols = '2'; else delete el.dataset.cols; });
   $('shiftWindowLabel').textContent = `(${fmtAMPM(toHHMM(mins))} – ${fmtAMPM(toHHMM(mins + WINDOW))})`;
 
   const chips = [];
