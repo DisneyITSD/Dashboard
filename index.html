@@ -474,6 +474,8 @@ html[data-theme=dark] #lbprrTable td.ut-yel{background:#854d0e;color:#fef9c3}
 .qq-sub{color:var(--muted);font-size:12px}
 .qq-ctl{margin-left:auto;display:flex;gap:8px}
 .qq-ctl select,.qq-ctl button{padding:6px 12px;font-size:13px;min-width:0}
+.qq-ctl button.on{background:#1e3a8a;border-color:#1e3a8a;color:#fff}
+.qq-ctl button[hidden]{display:none}
 .qq-body{display:flex;flex-wrap:wrap;gap:18px}
 .qq-bars{flex:1 1 380px;min-width:280px}
 .qq-trend{flex:1 1 300px;min-width:260px}
@@ -481,7 +483,7 @@ html[data-theme=dark] #lbprrTable td.ut-yel{background:#854d0e;color:#fef9c3}
 .qq-row:hover{background:var(--paper)}
 .qq-row.sel{background:color-mix(in srgb,var(--blue) 12%,transparent);box-shadow:inset 3px 0 0 var(--blue)}
 .qq-lab{font-weight:700}
-.qq-qt{grid-column:2 / -1;font-size:12px;line-height:1.3;opacity:.75;margin:-2px 0 3px}
+.qq-qt{grid-column:2;min-width:0;overflow-wrap:anywhere;font-size:12px;line-height:1.3;opacity:.75;margin:-2px 0 3px}
 .qq-qfull{font-size:14px;line-height:1.35;margin:0 0 12px}
 .qq-qfull small{display:block;opacity:.7;margin-top:2px}
 .qd-qt{opacity:.7;font-size:12px}
@@ -508,6 +510,110 @@ html[data-theme=dark] .qq-crit.no b{color:#f87171}
 .qq.yes .qq-fill{background:var(--green)}
 .qq.yes .qq-line{stroke:var(--green)}
 .qq.yes .qq-dot{fill:var(--green)}
+
+/* ---------- Dashboard notes (rich text, saved in this browser) ---------- */
+.notes-box{margin-top:12px;background:var(--surface,#fff);border:1px solid var(--line,#e5e7eb);border-radius:12px;box-shadow:0 2px 8px rgba(0,0,0,.06);overflow:hidden}
+.notes-head{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:12px 14px;border-bottom:1px solid var(--line,#e5e7eb)}
+.notes-head h3{margin:0;font-size:15px;font-weight:600;color:var(--ink,#111827);text-transform:none;letter-spacing:0}
+.notes-saved{font-size:12px;color:var(--muted,#6b7280)}
+.notes-bar{display:flex;flex-wrap:wrap;align-items:center;gap:4px;padding:8px 10px;background:var(--paper,#f8fafc);border-bottom:1px solid var(--line,#e5e7eb)}
+.notes-bar button,.notes-bar select{height:30px;min-width:30px;padding:0 8px;border:1px solid var(--line,#d1d5db);border-radius:6px;background:var(--surface,#fff);color:var(--ink,#111827);font-size:13px;cursor:pointer;line-height:1}
+.notes-bar button:hover,.notes-bar select:hover{background:var(--paper,#eef2f7)}
+.notes-bar button.on{background:#dbeafe;border-color:#93c5fd;color:#1e3a8a}
+.notes-bar .nt-sep{width:1px;height:20px;background:var(--line,#d1d5db);margin:0 4px}
+.notes-bar label.nt-color{display:inline-flex;align-items:center;gap:4px;height:30px;padding:0 6px;border:1px solid var(--line,#d1d5db);border-radius:6px;background:var(--surface,#fff);color:var(--ink,#111827);font-size:13px;cursor:pointer}
+.notes-bar label.nt-color input{width:20px;height:20px;padding:0;border:0;background:none;cursor:pointer}
+.notes-ed{min-height:140px;max-height:60vh;overflow:auto;padding:12px 14px;font-size:14px;line-height:1.5;color:var(--ink,#111827);outline:none;word-break:break-word}
+.notes-ed:empty::before,.notes-ed[data-empty="1"]::before{content:attr(data-ph);color:var(--muted,#9ca3af);pointer-events:none}
+.notes-ed h3{margin:8px 0 4px;font-size:18px;font-weight:700;color:var(--ink,#111827);border:0;padding:0;background:none;position:static;text-transform:none;letter-spacing:0}
+.notes-ed h4{margin:6px 0 3px;font-size:15px;font-weight:700;color:var(--ink,#111827)}
+.notes-ed p,.notes-ed div{margin:0 0 4px}
+.notes-ed ul,.notes-ed ol{margin:4px 0;padding-left:22px}
+.notes-ed a{color:#2563eb}
+.notes-ed ul.nt-chk{list-style:none;padding-left:0}
+.notes-ed ul.nt-chk li{position:relative;padding-left:26px}
+.notes-ed ul.nt-chk li::before{content:"\2610";position:absolute;left:2px;top:0;cursor:pointer;font-size:15px}
+.notes-ed ul.nt-chk li.done::before{content:"\2611";color:#16a34a}
+.notes-ed ul.nt-chk li.done{text-decoration:line-through;opacity:.6}
+
+/* ---------- QA Scoring cheat sheet (questions, Yes / No wording and Score Points from the QA Scoring sheet tab) ---------- */
+#qaScoreTab .qs-wrap{display:grid;grid-template-columns:minmax(0,1fr) 320px;gap:14px;align-items:start}
+@media(max-width:900px){#qaScoreTab .qs-wrap{grid-template-columns:1fr}}
+#qaScoreTab .qs-list{background:var(--surface,#fff);border:1px solid var(--line,#e5e7eb);border-radius:12px;overflow:hidden}
+#qaScoreTab .qs-item{display:grid;grid-template-columns:minmax(0,1fr) 400px;align-items:start;border-bottom:1px solid var(--line,#e5e7eb)}
+#qaScoreTab .qs-main{min-width:0}
+#qaScoreTab .qs-note{padding:10px 16px 10px 4px}
+#qaScoreTab .qs-note textarea{display:block;width:100%;box-sizing:border-box;min-height:76px;max-height:300px;resize:vertical;padding:9px 11px;border:1px solid var(--line,#d1d5db);border-radius:8px;background:var(--surface,#fff);color:var(--ink,#111827);font:inherit;font-size:15px;line-height:1.45}
+#qaScoreTab .qs-note textarea:focus{outline:2px solid #93c5fd;outline-offset:0}
+/* criteria open: the comment box stretches to the full height of the question + criteria */
+#qaScoreTab .qs-item.open{align-items:stretch}
+#qaScoreTab .qs-item.open .qs-note{display:flex;flex-direction:column}
+#qaScoreTab .qs-item.open .qs-note textarea{flex:1 1 auto;max-height:none;min-height:120px}
+@media(max-width:900px){#qaScoreTab .qs-item.open .qs-note textarea{flex:none;min-height:100px}}
+
+/* Yes / No / N/A tick boxes */
+
+#qaScoreTab .qs-row{cursor:default}
+
+#qaScoreTab .qs-row:hover{background:none}
+
+#qaScoreTab .qs-opts{display:flex;flex:none;gap:6px}
+
+#qaScoreTab .qs-opt{display:inline-flex;align-items:center;gap:6px;padding:6px 11px;border:1px solid var(--line,#d1d5db);border-radius:8px;font-size:14px;font-weight:600;color:var(--ink,#111827);background:var(--surface,#fff);cursor:pointer;user-select:none}
+
+#qaScoreTab .qs-opt:hover{background:var(--paper,#f1f5f9)}
+
+#qaScoreTab .qs-opt input{width:20px;height:20px;margin:0;cursor:pointer}
+
+#qaScoreTab .qs-opt.y input{accent-color:#16a34a}#qaScoreTab .qs-opt.n input{accent-color:#dc2626}#qaScoreTab .qs-opt.a input{accent-color:#2563eb}
+
+#qaScoreTab .qs-opt.on.y{background:#dcfce7;border-color:#16a34a;color:#14532d}
+
+#qaScoreTab .qs-opt.on.n{background:#fee2e2;border-color:#dc2626;color:#7f1d1d}
+
+#qaScoreTab .qs-opt.on.a{background:#dbeafe;border-color:#2563eb;color:#1e3a8a}
+
+#qaScoreTab .qs-item.no .qs-row{background:color-mix(in srgb,#dc2626 6%,transparent)}
+
+#qaScoreTab .qs-item.na .qs-row{background:color-mix(in srgb,#2563eb 7%,transparent)}
+
+#qaScoreTab .qs-item.no .qs-pts{color:#b91c1c}
+
+#qaScoreTab .qs-item.na .qs-pts{color:#1d4ed8}
+
+@media(max-width:700px){#qaScoreTab .qs-row{flex-wrap:wrap}#qaScoreTab .qs-text{flex:1 1 100%;order:3}}
+#qaScoreTab .qs-note textarea.has{border-color:#f59e0b;background:color-mix(in srgb,#f59e0b 8%,var(--surface,#fff))}
+@media(max-width:900px){#qaScoreTab .qs-item{grid-template-columns:1fr}#qaScoreTab .qs-note{padding:0 14px 10px}}
+#qaScoreTab .qs-item:last-child{border-bottom:0}
+#qaScoreTab .qs-row{display:flex;align-items:center;gap:14px;padding:16px 16px;cursor:pointer;user-select:none}
+#qaScoreTab .qs-row:hover{background:var(--paper,#f8fafc)}
+#qaScoreTab .qs-row input{width:26px;height:26px;flex:none;accent-color:#16a34a;cursor:pointer}
+#qaScoreTab .qs-num{flex:none;min-width:44px;font-size:16px;font-weight:700;color:var(--navy,#1f3a6e)}
+#qaScoreTab .qs-text{flex:1;font-size:16px;line-height:1.4;color:var(--ink,#111827)}
+#qaScoreTab .qs-pts{flex:none;min-width:84px;text-align:right;font-size:15px;font-weight:700;color:var(--muted,#6b7280)}
+#qaScoreTab .qs-tog{flex:none;height:32px;padding:0 13px;border:1px solid var(--line,#d1d5db);border-radius:99px;background:var(--surface,#fff);color:var(--muted,#475569);font-size:14px;cursor:pointer}
+#qaScoreTab .qs-tog:hover{background:var(--paper,#eef2f7)}
+#qaScoreTab .qs-item.yes .qs-row{background:color-mix(in srgb,#16a34a 7%,transparent)}
+#qaScoreTab .qs-item.yes .qs-pts{color:#15803d}
+#qaScoreTab .qs-crit{display:none;grid-template-columns:1fr 1fr;gap:12px;padding:2px 16px 16px 72px}
+#qaScoreTab .qs-item.open .qs-crit{display:grid}
+@media(max-width:700px){#qaScoreTab .qs-crit{grid-template-columns:1fr;padding-left:16px}}
+#qaScoreTab .qs-col{border-radius:8px;padding:10px 14px;font-size:15px;line-height:1.5;color:var(--ink,#111827)}
+#qaScoreTab .qs-col.y{background:color-mix(in srgb,#16a34a 9%,transparent);border-left:3px solid #16a34a}
+#qaScoreTab .qs-col.n{background:color-mix(in srgb,#dc2626 8%,transparent);border-left:3px solid #dc2626}
+#qaScoreTab .qs-col b{display:block;margin-bottom:4px;font-size:13px;text-transform:uppercase;letter-spacing:.04em}
+#qaScoreTab .qs-col.y b{color:#15803d}#qaScoreTab .qs-col.n b{color:#b91c1c}
+#qaScoreTab .qs-col ul{margin:0;padding-left:16px}
+#qaScoreTab .qs-side{position:sticky;top:76px;background:var(--surface,#fff);border:1px solid var(--line,#e5e7eb);border-radius:12px;padding:20px 16px;text-align:center}
+#qaScoreTab .qs-pct{font-size:52px;font-weight:800;line-height:1.1;margin:6px 0}
+#qaScoreTab .qs-pct.sc-good{color:#2e7d32}#qaScoreTab .qs-pct.sc-mid{color:#b26a00}#qaScoreTab .qs-pct.sc-low{color:#c62828}
+#qaScoreTab .qs-sub{font-size:15px;color:var(--muted,#6b7280);margin-bottom:10px}
+#qaScoreTab .qs-bar{height:12px;border-radius:99px;background:var(--line,#e5e7eb);overflow:hidden;margin:8px 0 12px}
+#qaScoreTab .qs-bar i{display:block;height:100%;background:#16a34a;transition:width .2s}
+#qaScoreTab .qs-btns{display:flex;flex-wrap:wrap;gap:8px;justify-content:center}
+#qaScoreTab .qs-btns button{font-size:15px;padding:8px 14px}
+#qaScoreTab .qs-empty{padding:20px;color:var(--muted,#6b7280)}
+#qaScoreTab .qs-warn{padding:10px 14px;background:#fff7ed;color:#9a3412;font-size:13px;border-bottom:1px solid var(--line,#e5e7eb)}
 </style>
 <script>(function(){try{var m=localStorage.getItem('ditsc_theme')||'system';document.documentElement.dataset.theme=(m==='dark'||(m==='system'&&matchMedia('(prefers-color-scheme: dark)').matches))?'dark':'light'}catch(e){}})()</script>
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet" media="print" onload="this.media='all'"><noscript><link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet"></noscript>
@@ -1143,6 +1249,7 @@ html[data-theme=dark] #dataUpdateNote .du-name{color:#cfdcff}
         <a class="tab-btn" href="#scoreSumTab" data-tab="scoreSumTab"><svg class="ni" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 3v18h18"/><path d="M7 16V9M12 16V5M17 16v-4"/></svg><span>Summary</span></a>
         <a class="tab-btn" href="#agentSumTab" data-tab="agentSumTab" data-title="Agent Summary"><svg class="ni" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4 21v-1a6 6 0 0 1 6-6h4a6 6 0 0 1 6 6v1"/></svg><span>Agent summary</span></a>
         <a class="tab-btn" href="#qaTab" data-tab="qaTab"><svg class="ni" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><path d="m9 12 2 2 4-4"/></svg><span>Quality Assurance</span></a>
+        <a class="tab-btn" href="#qaScoreTab" data-tab="qaScoreTab" data-title="QA Scoring"><svg class="ni" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="m8 12 3 3 5-6"/></svg><span>QA scoring</span></a>
         <a class="tab-btn" href="#metricTab" data-tab="metricTab" data-title="Performance Stack Ranking"><svg class="ni" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 3v18h18"/><path d="M7 8h10M7 13h6M7 18h3"/></svg><span>Stack ranking</span></a>
         <a class="tab-btn" href="#mcsTab" data-tab="mcsTab" data-title="Overall Metric Scorecard"><svg class="ni" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg><span>Metric scorecard</span></a>
       </div></div>
@@ -1231,6 +1338,30 @@ html[data-theme=dark] #dataUpdateNote .du-name{color:#cfdcff}
     </div>
     <h4>📊 Projected headcount (vs. minimum)</h4>
     <div id="projectionRow"></div>
+  </div>
+
+  <div class="notes-box" id="notesBox">
+    <div class="notes-head"><h3>📝 Notes</h3><span class="notes-saved" id="notesSaved">Saved automatically in this browser</span></div>
+    <div class="notes-bar" id="notesBar">
+      <select id="notesBlock" title="Text style"><option value="p">Normal</option><option value="h3">Heading</option><option value="h4">Subheading</option></select>
+      <span class="nt-sep"></span>
+      <button type="button" data-cmd="bold" title="Bold (Ctrl+B)"><b>B</b></button>
+      <button type="button" data-cmd="italic" title="Italic (Ctrl+I)"><i>I</i></button>
+      <button type="button" data-cmd="underline" title="Underline (Ctrl+U)"><u>U</u></button>
+      <button type="button" data-cmd="strikeThrough" title="Strikethrough"><s>S</s></button>
+      <span class="nt-sep"></span>
+      <label class="nt-color" title="Text colour">A <input type="color" id="notesFore" value="#dc2626"></label>
+      <label class="nt-color" title="Highlight colour">🖍 <input type="color" id="notesBack" value="#fde047"></label>
+      <span class="nt-sep"></span>
+      <button type="button" data-cmd="insertUnorderedList" title="Bullet list">• List</button>
+      <button type="button" data-cmd="insertOrderedList" title="Numbered list">1. List</button>
+      <button type="button" data-cmd="checklist" title="Checklist (click the box to tick)">☑ Checklist</button>
+      <span class="nt-sep"></span>
+      <button type="button" data-cmd="createLink" title="Add link">🔗</button>
+      <button type="button" data-cmd="removeFormat" title="Clear formatting">Tx</button>
+      <button type="button" data-cmd="clearAll" title="Delete the whole note">🗑 Clear</button>
+    </div>
+    <div class="notes-ed" id="notesEditor" contenteditable="true" spellcheck="true" data-ph="Type your notes here (shift handover, reminders, to-dos)..."></div>
   </div>
 </section>
 
@@ -1643,6 +1774,27 @@ html[data-theme=dark] #dataUpdateNote .du-name{color:#cfdcff}
 </section>
 
 <!-- ============ SCORECARD: QUALITY ASSURANCE ============ -->
+<section class="tab-panel" id="qaScoreTab" hidden>
+  <div class="view-hint">The score starts at 0. Tick <strong>Yes</strong> to add a question's Score Points (from the QA Scoring tab of your sheet), <strong>No</strong> for 0, or <strong>N/A</strong> to keep the points (N/A still counts as scored). The total updates as you tick. Use <strong>Criteria</strong> to see what counts as Yes or No.</div>
+  <div class="qs-wrap">
+    <div class="qs-list" id="qsList"></div>
+    <div class="qs-side">
+      <div class="qs-sub">Total score</div>
+      <div class="qs-pct" id="qsPct">-</div>
+      <div class="qs-sub" id="qsPts">0 / 0 points</div>
+      <div class="qs-bar"><i id="qsBar" style="width:0"></i></div>
+      <div class="qs-sub" id="qsCount">0 of 0 ticked</div>
+      <div class="qs-btns">
+        <button type="button" onclick="qsAll(true)">All Yes</button>
+        <button type="button" onclick="qsAll(false)">Clear ticks</button>
+        <button type="button" id="qsCritAll" onclick="qsCritAll()">Show all criteria</button>
+        <button type="button" onclick="qsClearNotes()">Clear comments</button>
+        <button type="button" class="blue" onclick="qsCopy()">Copy result</button>
+      </div>
+    </div>
+  </div>
+</section>
+
 <section class="tab-panel" id="qaTab" hidden>
   <div class="view-hint">✅ Quality Assurance scores by analyst, ranked by average score.<br>Tick one or more months (or Year to date); click an agent (▸) to open their audits.</div>
   <div class="controls">
@@ -1669,7 +1821,9 @@ html[data-theme=dark] #dataUpdateNote .du-name{color:#cfdcff}
       <b>📈 What went well</b>
       <span class="qq-sub" id="qySub"></span>
       <div class="qq-ctl">
-        <button type="button" id="qyMore" onclick="qqToggle('yes')">Show all</button>
+        <button type="button" id="qyN5" onclick="qqShow('yes',5)">Top 5</button>
+        <button type="button" id="qyN10" onclick="qqShow('yes',10)">Top 10</button>
+        <button type="button" id="qyN0" onclick="qqShow('yes',0)">Show all</button>
       </div>
     </div>
     <div class="qq-body">
@@ -1683,7 +1837,9 @@ html[data-theme=dark] #dataUpdateNote .du-name{color:#cfdcff}
       <span class="qq-sub" id="qqSub"></span>
       <div class="qq-ctl">
         <input type="hidden" id="qqSort" value="count">
-        <button type="button" id="qqMore" onclick="qqToggle('no')">Show all</button>
+        <button type="button" id="qqN5" onclick="qqShow('no',5)">Top 5</button>
+        <button type="button" id="qqN10" onclick="qqShow('no',10)">Top 10</button>
+        <button type="button" id="qqN0" onclick="qqShow('no',0)">Show all</button>
       </div>
     </div>
     <div class="qq-body">
@@ -2494,11 +2650,11 @@ const loadQAScoring = () => guard('qaScoring', "Couldn't load the QA Scoring tab
   if (h < 0) throw new Error('no "QA#" header found - check the tab gid and sharing');
   const heads = rows[h].map(c => clean(c).toLowerCase());
   const col = re => heads.findIndex(x => re.test(x));
-  const iN = col(/^qa\s*#?$/), iQ = col(/^question/), iY = col(/^yes$/), iNo = col(/^no$/);
+  const iN = col(/^qa\s*#?$/), iQ = col(/^question/), iY = col(/^yes$/), iNo = col(/^no$/), iP = col(/^(score\s*)?points?$|^score$/);
   const map = new Map();
   rows.slice(h + 1).forEach(r => {
     const m = clean(r[iN]).match(/\d+/); if (!m) return;                 // "Q5", "QAQ5", "5" -> 5
-    map.set(parseInt(m[0], 10), { text: iQ >= 0 ? clean(r[iQ]) : '', yes: iY >= 0 ? clean(r[iY]) : '', no: iNo >= 0 ? clean(r[iNo]) : '' });
+    map.set(parseInt(m[0], 10), { text: iQ >= 0 ? clean(r[iQ]) : '', yes: iY >= 0 ? clean(r[iY]) : '', no: iNo >= 0 ? clean(r[iNo]) : '', pts: iP >= 0 ? clean(r[iP]) : '', hasPts: iP >= 0 });
   });
   qaQMap = map;
 });
@@ -2568,6 +2724,7 @@ const TAB_RENDERERS = {
   agentSumTab: buildAgentSummary,
   trackerTab: buildTracker,
   qaTab: buildQA,
+  qaScoreTab: () => buildQaScorer(),
   metricTab: buildMetric,
   mcsTab: buildMcs,
   forecastTab: refreshForecast,
@@ -3752,7 +3909,7 @@ function buildQA() {
 /* ---------- QA: which questions (Q1 - Q25) are answered "No" the most, and how that moves month by month ----------
    Follows the QA filters: the bars use the ticked months + supervisor + search; the trend line uses every month (same supervisor + search).
    Only Yes / No answers count; N/A and blank answers are skipped. "No %" = No / (Yes + No). Click a bar to see that question's trend. */
-const qqUi = { no: { p: 'qq', sel: null, all: false, word: 'No' }, yes: { p: 'qy', sel: null, all: false, word: 'Yes' } };   // What went wrong (No) / What went well (Yes)
+const qqUi = { no: { p: 'qq', sel: null, n: 10, word: 'No' }, yes: { p: 'qy', sel: null, n: 10, word: 'Yes' } };   // What went wrong (No) / What went well (Yes)
 let qqLast = { rows: [], trend: [] }, qqBound = false;
 const qaAnswerKind = v => { const s = String(v ?? '').trim().toLowerCase(); return /^(no|n)$/.test(s) ? 'no' : /^(yes|y)$/.test(s) ? 'yes' : ''; };
 const qaQInfo = label => qaQMap.get(parseInt(String(label).replace(/\D/g, ''), 10) || 0) || null;
@@ -3771,7 +3928,7 @@ function qaQuestionStats(rows) {
   });
   return [...m.values()].map(e => ({ ...e, tot: e.no + e.yes, rate: e.no + e.yes ? e.no / (e.no + e.yes) * 100 : 0, yrate: e.no + e.yes ? e.yes / (e.no + e.yes) * 100 : 0 }));
 }
-function qqToggle(kind) { qqUi[kind].all = !qqUi[kind].all; buildQaQuestions(); }
+function qqShow(kind, n) { qqUi[kind].n = n; buildQaQuestions(); }          // n = 5, 10, or 0 for all
 function qqTrendHtml(label, kind) {
   const W_ = qqUi[kind].word;
   const byMonth = new Map();
@@ -3813,14 +3970,19 @@ function buildQaQuestions(rows, trend) {
     const stats = allStats.slice(), rateOf = s => kind === 'no' ? s.rate : s.yrate, W_ = u.word;
     stats.sort((a, b) => b[kind] - a[kind] || rateOf(b) - rateOf(a) || a.n - b.n);
     $(u.p + 'Sub').textContent = `${qqLast.rows.length} audit${qqLast.rows.length === 1 ? '' : 's'} · N/A and blank answers are skipped`;
-    $(u.p + 'More').hidden = stats.length <= 10;
-    $(u.p + 'More').textContent = u.all ? 'Show top 10' : `Show all ${stats.length}`;
+    const cur = u.n && u.n < stats.length ? u.n : 0;                              // a Top N that is as long as the list is the same as "all"
+    [5, 10, 0].forEach(k => {
+      const b = $(u.p + 'N' + k);
+      b.hidden = k === 0 ? stats.length <= 5 : stats.length <= k;                  // hide a choice that would show everything anyway
+      b.classList.toggle('on', cur === k);
+      if (k === 0) b.textContent = `Show all ${stats.length}`;
+    });
     if (!stats.length) {
       $(u.p + 'Bars').innerHTML = '<div class="qq-note">No Yes / No answers found in the question columns for these filters.</div>';
       $(u.p + 'Trend').innerHTML = ''; return;
     }
     if (!u.sel || !stats.some(s => s.label === u.sel)) u.sel = stats[0].label;
-    const shown = u.all ? stats : stats.slice(0, 10), max = Math.max(...shown.map(s => s[kind])) || 1;
+    const shown = cur ? stats.slice(0, cur) : stats, max = Math.max(...shown.map(s => s[kind])) || 1;
     $(u.p + 'Bars').innerHTML = shown.map(s => `
     <div class="qq-row${s.label === u.sel ? ' sel' : ''}" data-q="${esc(s.label)}" title="${s[kind]} ${W_} of ${s.tot} answered (${rateOf(s).toFixed(1)}%) – click for the monthly trend">
       <span class="qq-lab">${esc(s.label)}</span>
@@ -7320,6 +7482,143 @@ window.addEventListener('load', () => setPageHead(activeTab));
     try { localStorage.setItem(KEY, hide ? '1' : '0'); } catch (e) {}
   });
 })();
+
+/* ---------- Dashboard notes: rich-text editor, autosaved to this browser ---------- */
+(function () {
+  const KEY = 'ditsc_sup_notes';
+  const ed = document.getElementById('notesEditor'), bar = document.getElementById('notesBar'), stamp = document.getElementById('notesSaved');
+  if (!ed || !bar) return;
+  let saved = null, timer = null;
+  const flag = () => { ed.dataset.empty = (ed.textContent.trim() === '' && !ed.querySelector('li,img')) ? '1' : '0'; };
+  try { ed.innerHTML = localStorage.getItem(KEY) || ''; } catch (e) {}
+  flag();
+  const save = () => {
+    flag();
+    try { localStorage.setItem(KEY, ed.innerHTML); stamp.textContent = 'Saved ' + new Date().toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' }); }
+    catch (e) { stamp.textContent = 'Could not save in this browser'; }
+  };
+  const queueSave = () => { stamp.textContent = 'Saving...'; clearTimeout(timer); timer = setTimeout(save, 400); };
+  /* remember the selection so toolbar controls that take focus (colour pickers, the style drop-down) still apply to it */
+  document.addEventListener('selectionchange', () => {
+    const sel = window.getSelection();
+    if (sel.rangeCount && ed.contains(sel.anchorNode)) saved = sel.getRangeAt(0).cloneRange();
+    syncState();
+  });
+  const restore = () => { ed.focus(); if (saved) { const sel = window.getSelection(); sel.removeAllRanges(); sel.addRange(saved); } };
+  const exec = (cmd, val) => { restore(); document.execCommand('styleWithCSS', false, true); document.execCommand(cmd, false, val || null); queueSave(); syncState(); };
+  function syncState() {
+    bar.querySelectorAll('button[data-cmd]').forEach(b => {
+      const c = b.dataset.cmd;
+      if (['bold', 'italic', 'underline', 'strikeThrough', 'insertUnorderedList', 'insertOrderedList'].includes(c)) {
+        let on = false; try { on = document.queryCommandState(c); } catch (e) {}
+        b.classList.toggle('on', on && saved && ed.contains(saved.startContainer));
+      }
+    });
+  }
+  bar.addEventListener('mousedown', e => { if (e.target.closest('button')) e.preventDefault(); });
+  bar.addEventListener('click', e => {
+    const b = e.target.closest('button[data-cmd]'); if (!b) return;
+    const c = b.dataset.cmd;
+    if (c === 'checklist') { restore(); document.execCommand('insertHTML', false, '<ul class="nt-chk"><li><br></li></ul>'); queueSave(); }
+    else if (c === 'createLink') {
+      restore(); const url = prompt('Link address (https://...)'); if (url) exec('createLink', /^https?:\/\//i.test(url) ? url : 'https://' + url);
+    }
+    else if (c === 'clearAll') { if (confirm('Delete the whole note?')) { ed.innerHTML = ''; save(); } }
+    else exec(c);
+  });
+  document.getElementById('notesFore').addEventListener('input', e => exec('foreColor', e.target.value));
+  document.getElementById('notesBack').addEventListener('input', e => exec('hiliteColor', e.target.value));
+  document.getElementById('notesBlock').addEventListener('change', e => { exec('formatBlock', '<' + e.target.value + '>'); });
+  ed.addEventListener('input', queueSave);
+  ed.addEventListener('blur', save);
+  /* tick / untick a checklist item by clicking its box */
+  ed.addEventListener('click', e => {
+    const li = e.target.closest('ul.nt-chk > li');
+    if (li && e.clientX - li.getBoundingClientRect().left < 24) { li.classList.toggle('done'); save(); }
+  });
+  /* links open in a new tab */
+  ed.addEventListener('click', e => { const a = e.target.closest('a[href]'); if (a && (e.ctrlKey || e.metaKey)) window.open(a.href, '_blank', 'noopener'); });
+})();
+
+/* ---------- QA Scoring cheat sheet: tick Yes / No / N/A per question. Yes and N/A earn the question's Score Points (QA Scoring sheet tab), No earns 0; Criteria shows the Yes / No wording ---------- */
+const qsAns = new Map(), qsNotes = new Map();            // question number -> 'yes' | 'no' | 'na', and comment text
+const qsEarns = a => a === 'yes' || a === 'na';
+const qsPoints = v => { const n = parseFloat(String(v == null ? '' : v).replace(/[^0-9.\-]/g, '')); return isNaN(n) ? 0 : n; };
+const qsFmt = n => String(parseFloat(n.toFixed(2)));
+const qsLines = t => String(t || '').split(/\r?\n/).map(x => x.trim()).filter(Boolean);
+const qsList = t => { const l = qsLines(t); return l.length > 1 ? '<ul>' + l.map(x => `<li>${esc(x)}</li>`).join('') + '</ul>' : esc(l[0] || ''); };
+const QS_LABEL = { yes: 'Yes', no: 'No', na: 'N/A' };
+function qsRows() { return [...qaQMap.entries()].sort((a, b) => a[0] - b[0]); }
+function buildQaScorer() {
+  const rows = qsRows(), box = $('qsList');
+  if (!rows.length) {
+    box.innerHTML = `<div class="qs-empty">${esc(loadErrors.qaScoring || 'The QA Scoring tab has no questions yet. Check the tab sharing and that it has QA# | Question | Yes | No | Score Points columns.')}</div>`;
+    qsTotals(); return;
+  }
+  const noPts = !rows.some(([, q]) => q.hasPts);
+  const open = new Set([...document.querySelectorAll('#qsList .qs-item.open')].map(x => +x.dataset.q));
+  const opts = n => [['yes', 'Yes', 'y'], ['no', 'No', 'n'], ['na', 'N/A', 'a']]
+    .map(([v, l, c]) => `<label class="qs-opt ${c}"><input type="checkbox" data-q="${n}" data-v="${v}">${l}</label>`).join('');
+  box.innerHTML = (noPts ? '<div class="qs-warn">Could not find a "Score Points" column in the QA Scoring tab, so every question shows 0 points.</div>' : '') +
+    rows.map(([n, q]) =>
+      `<div class="qs-item${open.has(n) ? ' open' : ''}" data-q="${n}"><div class="qs-main"><div class="qs-row" data-q="${n}">` +
+      `<span class="qs-num">Q${n}</span><span class="qs-text">${esc(q.text || '')}</span><span class="qs-opts">${opts(n)}</span><span class="qs-pts"></span>` +
+      `<button type="button" class="qs-tog" title="Show what counts as Yes or No">Criteria</button></div>` +
+      `<div class="qs-crit"><div class="qs-col y"><b>Yes</b>${qsList(q.yes)}</div><div class="qs-col n"><b>No</b>${qsList(q.no)}</div></div></div>` +
+      `<div class="qs-note"><textarea data-n="${n}" rows="2" placeholder="Comment / recommendation if marked down" class="${qsNotes.get(n) ? 'has' : ''}">${esc(qsNotes.get(n) || '')}</textarea></div></div>`).join('');
+  box.oninput = e => { const t = e.target.closest('textarea[data-n]'); if (!t) return; const n = +t.dataset.n; t.value.trim() ? qsNotes.set(n, t.value) : qsNotes.delete(n); t.classList.toggle('has', !!t.value.trim()); };
+  box.onchange = e => {
+    const c = e.target.closest('input[data-v]'); if (!c) return;
+    const n = +c.dataset.q; c.checked ? qsAns.set(n, c.dataset.v) : qsAns.delete(n);      // one answer per question; unticking clears it
+    qsTotals();
+  };
+  box.onclick = e => { const b = e.target.closest('.qs-tog'); if (!b) return; e.preventDefault(); b.closest('.qs-item').classList.toggle('open'); qsCritBtn(); };
+  qsTotals(); qsCritBtn();
+}
+function qsCritBtn() {
+  const items = [...document.querySelectorAll('#qsList .qs-item')], btn = $('qsCritAll');
+  if (btn) btn.textContent = items.length && items.every(x => x.classList.contains('open')) ? 'Hide all criteria' : 'Show all criteria';
+}
+function qsCritAll() {
+  const items = [...document.querySelectorAll('#qsList .qs-item')], allOpen = items.length && items.every(x => x.classList.contains('open'));
+  items.forEach(x => x.classList.toggle('open', !allOpen)); qsCritBtn();
+}
+function qsTotals() {
+  const rows = qsRows();
+  let got = 0, max = 0, ny = 0, nn = 0, nna = 0;
+  rows.forEach(([n, q]) => {
+    const y = qsPoints(q.pts), a = qsAns.get(n), earned = qsEarns(a);
+    got += earned ? y : 0; max += y;                   // Yes and N/A keep the points, No / not answered = 0; the maximum is every question's Score Points
+    if (a === 'yes') ny++; else if (a === 'no') nn++; else if (a === 'na') nna++;
+    const item = document.querySelector(`#qsList .qs-item[data-q="${n}"]`);
+    if (!item) return;
+    item.classList.toggle('yes', a === 'yes'); item.classList.toggle('no', a === 'no'); item.classList.toggle('na', a === 'na');
+    item.querySelectorAll('input[data-v]').forEach(c => { const on = c.dataset.v === a; c.checked = on; c.closest('.qs-opt').classList.toggle('on', on); });
+    item.querySelector('.qs-pts').textContent = `${qsFmt(earned ? y : 0)} / ${qsFmt(y)} pts`;
+  });
+  const pct = max > 0 ? got / max * 100 : 0;
+  $('qsPct').textContent = pct.toFixed(1) + '%';
+  $('qsPct').className = 'qs-pct' + qaBand(pct);
+  $('qsPts').textContent = `${qsFmt(got)} / ${qsFmt(max)} points`;
+  $('qsBar').style.width = Math.max(0, Math.min(100, pct)) + '%';
+  $('qsCount').innerHTML = `${ny + nn + nna} of ${rows.length} answered<br>Yes ${ny} &middot; No ${nn} &middot; N/A ${nna}`;
+}
+function qsAll(on) {
+  qsRows().forEach(([n]) => on ? qsAns.set(n, 'yes') : qsAns.delete(n));
+  qsTotals();
+}
+function qsClearNotes() {
+  qsNotes.clear();
+  document.querySelectorAll('#qsList textarea[data-n]').forEach(t => { t.value = ''; t.classList.remove('has'); });
+}
+function qsCopy() {
+  const lines = qsRows().map(([n, q]) => {
+    const a = qsAns.get(n), y = qsPoints(q.pts);
+    return `Q${n} ${a ? QS_LABEL[a] : '-'} (${qsFmt(qsEarns(a) ? y : 0)}/${qsFmt(y)}) - ${q.text || ''}` + (qsNotes.get(n) ? `\n    Comment: ${qsNotes.get(n).trim().replace(/\s*\n\s*/g, ' ')}` : '');
+  });
+  const txt = `QA score: ${$('qsPct').textContent} (${$('qsPts').textContent})\n` + lines.join('\n');
+  (navigator.clipboard ? navigator.clipboard.writeText(txt) : Promise.reject()).then(() => toast('QA result copied'), () => toast('Could not copy'));
+}
 </script>
 </body>
 </html>
