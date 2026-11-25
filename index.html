@@ -626,6 +626,8 @@ html[data-theme=dark] .qq-crit.no b{color:#f87171}
 body{font-family:"IBM Plex Sans","Segoe UI",system-ui,sans-serif;background:var(--paper);color:var(--ink);font-size:14px;font-variant-numeric:tabular-nums;-webkit-font-smoothing:antialiased}
 .app{display:flex;min-height:100vh}.main{flex:1;min-width:0}
 .main .tab-panel{padding:0 36px 48px;max-width:1700px}
+/* Table pages fill the window: zooming the browser out gives the table more room instead of leaving an empty strip on the right */
+.main .tab-panel:has(.schedule-container){max-width:none}
 
 /* Dashboard announcements strip */
 .dash-ann{margin:14px 0 4px;border:1px solid var(--line);border-radius:12px;background:var(--surface);overflow:hidden}
@@ -1418,7 +1420,7 @@ html[data-theme=dark] #dataUpdateNote .du-name{color:#cfdcff}
 
 <!-- ============ DAILY SCHEDULE ============ -->
 <section class="tab-panel" id="scheduleTab" hidden>
-  <div class="view-hint">📅 Shifts, breaks, lunches and supervisor for each agent on the selected date, in EST or PH time.<br>Filter by supervisor, search an agent, and click a column title to sort.</div>
+  <div class="view-hint">📅 Shifts, breaks, lunches and supervisor for each agent on the selected date, in EST or PH time.<br>Filter by supervisor or site, search an agent, and click a column title to sort.</div>
   <div class="controls">
     <select id="scheduleTimezone" onchange="buildScheduleView()">
       <option value="EST">EST</option>
@@ -1426,6 +1428,7 @@ html[data-theme=dark] #dataUpdateNote .du-name{color:#cfdcff}
     </select>
     <input type="date" id="scheduleDate" onchange="buildScheduleView()">
     <select id="scheduleSupervisor" onchange="buildScheduleView()"><option>All Supervisors</option></select>
+    <select id="scheduleSite" onchange="buildScheduleView()"><option>All Sites</option></select>
     <input type="text" id="agentSearch" placeholder="🔍 Search Agent..." onkeyup="buildScheduleView()">
   </div>
 
@@ -1451,6 +1454,7 @@ html[data-theme=dark] #dataUpdateNote .du-name{color:#cfdcff}
             <th onclick="sortBy('schedule','Lactation 1')">🍼 Lactation Break 1</th>
             <th onclick="sortBy('schedule','Lactation 2')">🍼 Lactation Break 2</th>
             <th onclick="sortBy('schedule','Supervisor')">🧑‍💼 Supervisor</th>
+            <th onclick="sortBy('schedule','Site')">📍 Site</th>
           </tr>
         </thead>
         <tbody></tbody>
@@ -2285,6 +2289,7 @@ function showTab(id) {
 
   setPageHead(id);
   TAB_RENDERERS[id]?.();
+  if (id === 'lookupTab') window.dashPollIfStale?.();   // back on the Dashboard: catch up if the data is over a minute old
 }
 
 /* Menu items are real links (href="#tabId"), so right-click > "Open link in new tab", Ctrl/Cmd/Shift-click
@@ -2416,6 +2421,7 @@ function normalizeScheduleRow(r) {
   const o = { ...r };
   o.Name = String(r.Name ?? '').trim();
   o.Supervisor = String(r.Supervisor ?? '').trim();
+  o.Site = String(r.Site ?? '').trim();
   WEEK.forEach(d => o[d] = normShift(r[d]));
   TIME_COLS.forEach(c => o[c] = normTime(r[c]));
   return o;
@@ -2436,6 +2442,7 @@ function buildDailyMap(rows) {
     m.set(normName(x.Name) + '|' + d, {
       shift: normShift(x.Shift),
       supervisor: String(x.Supervisor ?? '').trim(),
+      site: String(x.Site ?? '').trim(),
       b1: normTime(x['Break 1']), lunch: normTime(x['Lunch']),
       b2: normTime(x['Break 2']), b3: normTime(x['Break 3']),
       l1: normTime(x['Lactation 1']), l2: normTime(x['Lactation 2'])
@@ -2459,6 +2466,7 @@ const HDR_ALIASES = (() => {
   add('Name', 'Agent', 'Agent Name', 'Analyst', 'Analyst Name', 'Employee', 'Employee Name');
   add('Supervisor', 'Supervisor Name', 'Sup', 'Team Lead', 'TL', 'Manager', 'Leader');
   add('Date'); add('Shift');
+  add('Site', 'Work Site', 'Location', 'Work Location', 'Office');
   add('Team', 'Team Name', 'Skill', 'LOB', 'Line of Business', 'Queue', 'Campaign', 'Department');
   WEEK.forEach(d => add(d, d.slice(0, 3)));
   TIME_COLS.forEach(c => add(c));
@@ -2686,7 +2694,7 @@ const shiftFor = (r, date) => dailyFor(r, date)?.shift ?? r[dayName(date)];
 function rowFor(r, date) {
   const d = dailyFor(r, date);
   if (!d) return r;
-  return { ...r, [dayName(date)]: d.shift, Supervisor: d.supervisor || r.Supervisor,
+  return { ...r, [dayName(date)]: d.shift, Supervisor: d.supervisor || r.Supervisor, Site: d.site || r.Site,
            'Break 1': d.b1, 'Lunch': d.lunch, 'Break 2': d.b2, 'Break 3': d.b3,
            'Lactation 1': d.l1 || r['Lactation 1'], 'Lactation 2': d.l2 || r['Lactation 2'] };
 }
@@ -3304,9 +3312,22 @@ function buildScheduleView() {
   const isPH = $('scheduleTimezone').value === 'PH';
   const source = isPH ? phData : estData;
 
+  /* Site filter: list every site found in the roster / Schedule By Date, keep the current pick */
+  const siteSel = $('scheduleSite'), siteAll = 'All Sites';
+  const sites = [...new Set([...estData, ...phData].map(r => r.Site).concat([...dailyMap.values()].map(d => d.site)).filter(Boolean))].sort();
+  if (siteSel.dataset.opts !== sites.join('|')) {
+    const prevSite = siteSel.value;
+    siteSel.innerHTML = `<option>${siteAll}</option>` + sites.map(x => `<option>${esc(x)}</option>`).join('');
+    siteSel.dataset.opts = sites.join('|');
+    siteSel.value = sites.includes(prevSite) ? prevSite : siteAll;
+  }
+  const site = siteSel.value;
+  const siteByName = new Map(estData.filter(r => r.Site).map(r => [normName(r.Name), r.Site]));
+
   const rows = source
     .map(r => isPH ? r : rowFor(r, date))
-    .filter(r => (sup === ALL || r.Supervisor === sup) && (!q || up(r.Name).includes(q)))
+    .map(r => r.Site ? r : { ...r, Site: siteByName.get(normName(r.Name)) || dailyFor(r, date)?.site || '' })   // PH tab may have no Site column: borrow it from the EST roster
+    .filter(r => (sup === ALL || r.Supervisor === sup) && (site === siteAll || r.Site === site) && (!q || up(r.Name).includes(q)))
     .map(r => ({ r, shift: r[day] || 'OFF', ...getAgentState(r, day, date) }));
 
   const { col, asc } = sortState.schedule;
@@ -3333,6 +3354,7 @@ function buildScheduleView() {
       <td>${isOff(shift) || !isLact(r.Name) ? '' : formatTimeRange(r['Lactation 1'], LACTATION_MIN)}</td>
       <td>${isOff(shift) || !isLact(r.Name) ? '' : formatTimeRange(r['Lactation 2'], LACTATION_MIN)}</td>
       <td>${esc(r.Supervisor)}</td>
+      <td>${esc(r.Site || '')}</td>
     </tr>`).join('');
 
   $('dvWorking').textContent = counts.WORKING;
@@ -7231,12 +7253,13 @@ window.addEventListener('DOMContentLoaded', async () => {
   setInterval(updateClock, 1000);
   let lastPoll = Date.now(), pollBusy = false;
   const poll = async () => {
-    if (document.hidden || pollBusy) return;
+    if (document.hidden || pollBusy || activeTab !== 'lookupTab') return;   // auto-refresh only while the Dashboard is open
     pollBusy = true; lastPoll = Date.now();
     try { await refreshAttendanceData(false, Date.now() - lastScoresLoad > SCORES_REFRESH_MS); } finally { pollBusy = false; }
   };
   setInterval(poll, REFRESH_MS);
   document.addEventListener('visibilitychange', () => { if (!document.hidden && Date.now() - lastPoll > REFRESH_MS) poll(); });
+  window.dashPollIfStale = () => { if (Date.now() - lastPoll > REFRESH_MS) poll(); };   // called when you come back to the Dashboard
 });
 </script>
 <script>
