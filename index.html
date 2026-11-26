@@ -7046,6 +7046,48 @@ function lvSync() {
   else { const R = perpR('lvp'); $('lvMode').value = 'range'; $('lvFrom').value = R.from; $('lvTo').value = R.to; }
   return single;
 }
+/* Attendance trend: show the main chart as bars (default) or as smooth lines, like the Weekly report */
+let lvLine = false;
+const lvLineChart = (labels, series, fmt, zero, noLegend) => {
+    const vals = series.flatMap(x => x.vals).filter(v => v != null);
+    if (!vals.length) return '<div class="wr-note">No data for this period.</div>';
+    const W = 900, H = 320, L = 64, R = 30, T = 30, B = 48, n = labels.length;
+    let lo = Math.min(...vals), hi = Math.max(...vals);
+    if (zero) { lo = 0; hi = hi > 0 ? hi * 1.2 : 1; } else { const sp = (hi - lo) || Math.abs(hi) * 0.1 || 1; lo -= sp * 0.6; hi += sp * 0.6; }
+    const raw = (hi - lo) / 4, mag = Math.pow(10, Math.floor(Math.log10(raw))), st = [1, 2, 2.5, 5, 10].map(m => m * mag).find(v => v >= raw);
+    lo = zero ? 0 : Math.floor(lo / st) * st; hi = Math.ceil(hi / st) * st;
+    const X = i => L + (W - L - R) * (i + 0.5) / n, Y = v => T + (H - T - B) * (1 - (v - lo) / (hi - lo));
+    const clamp = (v, a, b) => Math.max(Math.min(a, b), Math.min(Math.max(a, b), v));
+    const curve = pts => {
+      let d = `M${pts[0][0].toFixed(1)},${pts[0][1].toFixed(1)}`;
+      for (let i = 0; i < pts.length - 1; i++) {
+        const p0 = pts[i - 1] || pts[i], p1 = pts[i], p2 = pts[i + 1], p3 = pts[i + 2] || p2;
+        const c1y = clamp(p1[1] + (p2[1] - p0[1]) / 6, p1[1], p2[1]), c2y = clamp(p2[1] - (p3[1] - p1[1]) / 6, p1[1], p2[1]);
+        d += ` C${(p1[0] + (p2[0] - p0[0]) / 6).toFixed(1)},${c1y.toFixed(1)} ${(p2[0] - (p3[0] - p1[0]) / 6).toFixed(1)},${c2y.toFixed(1)} ${p2[0].toFixed(1)},${p2[1].toFixed(1)}`;
+      }
+      return d;
+    };
+    let g = '';
+    for (let t = lo; t <= hi + st / 1000; t += st) g += `<line x1="${L}" x2="${W - R}" y1="${Y(t).toFixed(1)}" y2="${Y(t).toFixed(1)}" style="stroke:var(--line,#d1d5db)" stroke-width="1.5" stroke-dasharray="2 5" stroke-linecap="round"/><text x="${L - 10}" y="${(Y(t) + 4).toFixed(1)}" text-anchor="end" font-size="12" style="fill:var(--muted,#6b7280)">${esc(fmt(t))}</text>`;
+    const lstep = Math.ceil(n / 12);
+    labels.forEach((l, i) => { if (i % lstep && i !== n - 1) return; g += `<text x="${X(i).toFixed(1)}" y="${H - 16}" text-anchor="middle" font-size="13" style="fill:var(--muted,#6b7280)">${esc(l)}</text>`; });
+    const used = labels.map(() => []);
+    series.forEach(sr => {
+      let seg = [];
+      const flush = () => { if (seg.length > 1) g += `<path d="${curve(seg)}" fill="none" style="stroke:${sr.color}" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"/>`; seg = []; };
+      sr.vals.forEach((v, i) => { if (v == null) flush(); else seg.push([X(i), Y(v)]); });
+      flush();
+      sr.vals.forEach((v, i) => {
+        if (v == null) return;
+        let ly = Y(v) - 12; while (used[i].some(u => Math.abs(u - ly) < 14)) ly -= 14; used[i].push(ly);
+        g += `<circle cx="${X(i).toFixed(1)}" cy="${Y(v).toFixed(1)}" r="5.5" style="stroke:${sr.color};fill:var(--surface,#fff)" stroke-width="3"><title>${esc(labels[i])} · ${esc(sr.name)}: ${esc(fmt(v))}</title></circle>${n <= 16 ? `<text x="${X(i).toFixed(1)}" y="${ly.toFixed(1)}" text-anchor="middle" font-size="13" font-weight="700" style="fill:var(--navy,#0f3b4c)">${esc(fmt(v))}</text>` : ''}`;
+      });
+    });
+    const legend = !noLegend && series.length > 1 ? `<div class="lv-legend">${series.map(x => `<span><i style="background:${x.color}"></i>${esc(x.name)}</span>`).join('')}</div>` : '';
+    return `${legend}<div class="wr-line"><svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Trend chart">${g}</svg></div>`;
+  };
+function lvToggleStyle() { lvLine = !lvLine; buildLeaveTrend(); }
+const lvStyleBtn = () => `<div style="text-align:right"><button type="button" class="wr-btn wr-tgl" style="margin:0 0 6px" onclick="lvToggleStyle()">${lvLine ? 'Show as bars' : 'Show as lines'}</button></div>`;
 function shiftLeaveTrend(d) { perpShift('lvp', d, buildLeaveTrend); }
 function buildLeaveTrend() {
   const lvSingle = lvSync();
@@ -7130,8 +7172,8 @@ function buildLeaveTrend() {
       <div class="lv-card" style="--c:${LV_COL.le}"><b>${tot('le')}</b>Left Early days · ${esc(scope)}<br><small>${rate('le')}</small></div>
     </div>
     <div class="lv-legend"><span><i style="background:${LV_COL.co}"></i>Called Off</span><span><i style="background:${LV_COL.vl}"></i>Vacation Leave</span><span><i style="background:${LV_COL.late}"></i>Running Late</span><span><i style="background:${LV_COL.le}"></i>Left Early</span></div>
-    <div style="overflow-x:auto"><div class="gb${dense ? ' dense' : ''}"${gbStyle}>${items.map(p => `<div class="gb-col"><div class="gb-pair">${bar(p, 'co', 'Called Off')}${bar(p, 'vl', 'Vacation Leave')}${bar(p, 'late', 'Running Late')}${bar(p, 'le', 'Left Early')}</div>
-      <div class="bar-lbl" style="${p.bold ? 'font-weight:800;color:var(--ink)' : ''}${dense ? ';font-size:10px;white-space:nowrap' : ''}">${esc(p.lbl)}</div>${p.sub ? `<div class="gb-sub">${esc(p.sub)}</div>` : ''}</div>`).join('')}</div></div>
+    ${lvStyleBtn()}${lvLine ? lvLineChart(items.map(p => p.lbl), [{ name: 'Called Off', color: LV_COL.co, vals: items.map(p => p.co) }, { name: 'Vacation Leave', color: LV_COL.vl, vals: items.map(p => p.vl) }, { name: 'Running Late', color: LV_COL.late, vals: items.map(p => p.late) }, { name: 'Left Early', color: LV_COL.le, vals: items.map(p => p.le) }], v => String(Math.round(v * 10) / 10), true, true) : `<div style="overflow-x:auto"><div class="gb${dense ? ' dense' : ''}"${gbStyle}>${items.map(p => `<div class="gb-col"><div class="gb-pair">${bar(p, 'co', 'Called Off')}${bar(p, 'vl', 'Vacation Leave')}${bar(p, 'late', 'Running Late')}${bar(p, 'le', 'Left Early')}</div>
+      <div class="bar-lbl" style="${p.bold ? 'font-weight:800;color:var(--ink)' : ''}${dense ? ';font-size:10px;white-space:nowrap' : ''}">${esc(p.lbl)}</div>${p.sub ? `<div class="gb-sub">${esc(p.sub)}</div>` : ''}</div>`).join('')}</div></div>`}
     <div class="bar-axis">Agent-days on scheduled working days · supervisor / search filters apply · counted up to today only (upcoming days are not counted)${range && dayItems.length > 62 ? ' · long range: bars are grouped by month' : ''}</div>`;
 
   /* by supervisor: bars + totals table + trend matrix (only when All Supervisors is picked) */
