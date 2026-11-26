@@ -1378,6 +1378,7 @@ html[data-theme=dark] #dataUpdateNote .du-name{color:#cfdcff}
   </div>
   <div id="dailyOverviewCards" class="cards" style="margin:15px 0"></div>
   <div id="coverageTimelinePanel" class="panel"></div>
+  <div id="weekHeatmapPanel" class="panel" style="margin-top:15px"></div>
 </section>
 
 <!-- ============ PHONE COVERAGE ============ -->
@@ -2772,7 +2773,7 @@ function toggleRealtime() {
   clearInterval(realtimeTimer);
   if (realtimeMode) {
     updateRealtime();
-    realtimeTimer = setInterval(updateRealtime, REFRESH_MS);
+    realtimeTimer = setInterval(() => { if (activeTab === 'lookupTab') updateRealtime(); }, REFRESH_MS);   // Live Mode ticks only while the Dashboard is open
   }
 }
 
@@ -3105,6 +3106,7 @@ function renderHighAnnouncements() {
 function refreshForecast() {
   buildDailyOverview();
   buildCoverageTimeline();
+  buildWeekHeatmap();
 }
 
 /* Coverage for one shift: leave and Called Off / NCNS take the agent out for the whole shift.
@@ -3150,6 +3152,80 @@ function coverageSlots(date) {
     slots.push({ time: toHHMM(m), expected, available });
   }
   return slots;
+}
+
+/* Week heatmap: scheduled headcount per 30-minute interval for the Monday-Sunday week of the chosen date.
+   Pure shift-schedule headcount (same as "Expected" above): NO PTO, called-off, late or left-early deductions. */
+function weekHeatmapData(monday) {
+  const days = [];
+  for (let i = 0; i < 7; i++) {
+    const d = new Date(monday.getFullYear(), monday.getMonth(), monday.getDate() + i), ds = ymd(d);
+    const counts = new Array(48).fill(0);
+    estData.forEach(r => {
+      const shifts = shiftsAround(r, ds);
+      for (let k = 0; k < 48; k++) {
+        const m = k * 30;
+        if (shifts.some(s => s.start <= m && m < s.end)) counts[k]++;
+      }
+    });
+    days.push({ ds, d, counts });
+  }
+  return days;
+}
+
+function buildWeekHeatmap() {
+  const host = $('weekHeatmapPanel');
+  const date = $('forecastDate')?.value;
+  if (!host || !date) return;
+
+  const b = parseYMD(date);
+  const monday = new Date(b.getFullYear(), b.getMonth(), b.getDate() - (b.getDay() + 6) % 7);
+  const days = weekHeatmapData(monday);
+  const all = days.flatMap(x => x.counts), sorted = [...all].sort((a, b) => a - b);
+  const min = sorted[0], max = sorted[sorted.length - 1], mid = (sorted[Math.floor((sorted.length - 1) / 2)] + sorted[Math.ceil((sorted.length - 1) / 2)]) / 2;
+  const sunday = days[6].d, fmt = d => d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+
+  /* Excel-style 3-colour scale: red (lowest) -> yellow (median) -> green (highest) */
+  const RED = [248, 105, 107], YEL = [255, 235, 132], GRN = [99, 190, 123];
+  const mix = (a, b, t) => a.map((v, i) => Math.round(v + (b[i] - v) * t));
+  const colour = n => {
+    let c;
+    if (max === min) c = YEL;
+    else if (n <= mid) c = mid === min ? YEL : mix(RED, YEL, (n - min) / (mid - min));
+    else c = mix(YEL, GRN, (n - mid) / (max - mid));
+    return [`rgb(${c[0]},${c[1]},${c[2]})`, '#1f2937'];
+  };
+
+  const head = days.map(x => {
+    const sel = x.ds === date;
+    return `<th style="padding:6px 4px;font-size:12px;text-align:center;${sel ? 'color:#0d6efd' : ''}">${x.d.toLocaleDateString('en-US', { weekday: 'short' })}<br><span style="font-weight:400">${fmt(x.d)}</span></th>`;
+  }).join('');
+
+  const rows = [];
+  for (let k = 0; k < 48; k++) {
+    const cells = days.map(x => {
+      const n = x.counts[k], [bg, fg] = colour(n);
+      return `<td title="${esc(x.d.toLocaleDateString('en-US', { weekday: 'long', month: 'short', day: 'numeric' }))} ${fmtAMPM(toHHMM(k * 30))}: ${n} scheduled" style="background:${bg};color:${fg};text-align:center;font-size:12px;font-weight:600;padding:4px 2px;border:1px solid #fff;min-width:64px">${n}</td>`;
+    }).join('');
+    const hr = k % 2 === 0;
+    rows.push(`<tr><th style="text-align:right;padding:0 8px 0 0;font-size:11px;font-weight:${hr ? 600 : 400};color:${hr ? '#374151' : '#9ca3af'};white-space:nowrap">${fmtAMPM(toHHMM(k * 30))}</th>${cells}</tr>`);
+  }
+
+  const legend = [...new Set([min, Math.round((min + mid) / 2), Math.round(mid), Math.round((mid + max) / 2), max])].map(n => {
+    const [bg, fg] = colour(n);
+    return `<span style="background:${bg};color:${fg};padding:2px 10px;border-radius:4px;font-size:12px;font-weight:600;border:1px solid var(--border)">${n}</span>`;
+  }).join(' ');
+
+  host.innerHTML = `
+    <h3>🔥 Week Heatmap <span style="font-size:14px;font-weight:500;color:var(--muted)">· ${fmt(monday)} – ${fmt(sunday)}</span></h3>
+    <div style="color:var(--muted);font-size:13px;margin:6px 0 10px;line-height:1.6">Scheduled agents per 30-minute interval, Monday–Sunday, straight from the shift schedule (no PTO, absence or late / left-early deductions). Red = fewest agents, yellow = median, green = most. Follows the date picked above.</div>
+    <div style="display:flex;align-items:center;gap:6px;margin-bottom:10px;font-size:12px;color:var(--muted)">Fewer ${legend} More</div>
+    <div style="overflow-x:auto">
+      <table style="border-collapse:collapse;width:100%;max-width:760px">
+        <thead><tr><th></th>${head}</tr></thead>
+        <tbody>${rows.join('')}</tbody>
+      </table>
+    </div>`;
 }
 
 function buildDailyOverview() {
@@ -7245,8 +7321,21 @@ window.addEventListener('DOMContentLoaded', async () => {
   $('trackerMonth').value = today.slice(0, 7);
   renderDisputeForm(); syncTeamButtons();
 
-  await Promise.all([loadSchedules(), loadAttendance(), loadDaily(), loadQA(), loadQAScoring(), loadMetric(), loadMcs(), loadDailyAgent(), loadCallDrivers(), loadAttendancePoints(), loadPtoWeekly()]);
-  renderAll();
+  /* Fast start: the Dashboard only needs schedules, attendance and daily data, so it opens as soon as those three are in.
+     QA, metrics, scorecards, call drivers etc. load in the background and the open page is re-rendered when they arrive.
+     If the page was opened straight onto another tab (a #link), wait for everything first, as before. */
+  const loadCore = () => [loadSchedules(), loadAttendance(), loadDaily()];
+  const loadScores = () => [loadQA(), loadQAScoring(), loadMetric(), loadMcs(), loadDailyAgent(), loadCallDrivers(), loadAttendancePoints(), loadPtoWeekly()];
+  const hashTab = location.hash.slice(1);
+  if (!hashTab || hashTab === 'lookupTab') {
+    const scoresReady = Promise.all(loadScores());                    // starts now, in parallel with the core data
+    await Promise.all(loadCore());
+    renderAll();
+    scoresReady.then(() => { lastScoresLoad = Date.now(); renderAll(); });
+  } else {
+    await Promise.all([...loadCore(), ...loadScores()]);
+    renderAll();
+  }
   showTabFromHash();
 
   updateClock();
@@ -7341,7 +7430,7 @@ async function loadDataUpdates(){
   try { renderDataUpdate(activeTab); } catch (e) {}
 }
 window.addEventListener('DOMContentLoaded', loadDataUpdates);
-setInterval(() => { if (!document.hidden) loadDataUpdates(); }, 60000);
+setInterval(() => { if (!document.hidden && activeTab === 'lookupTab') loadDataUpdates(); }, 60000);   // auto-refresh only on the Dashboard
 </script>
 <script>
 /* Sidebar: collapsible groups + the "Submit a form" menu */
