@@ -1133,6 +1133,8 @@ html[data-theme=dark] .back-pill:hover{background:#1f2837}
 .wr-slide .gb-pair{height:var(--chh,170px)}
 .wr-line{height:var(--chh,280px)}
 .wr-line svg{width:100%;height:100%;display:block}
+.lv-line{width:100%}
+.lv-line svg{width:100%;height:auto;display:block}
 .wr-hbars{height:var(--chh,260px);display:flex;flex-direction:column;justify-content:space-between}
 .wr-hb{flex:1;min-height:0;display:grid;grid-template-columns:minmax(120px,30%) minmax(0,1fr) 56px;gap:12px;align-items:center;margin:2px 0;font-size:13px}
 .wr-two2{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:22px;align-items:start}
@@ -7047,11 +7049,14 @@ function lvSync() {
   return single;
 }
 /* Attendance trend: show the main chart as bars (default) or as smooth lines, like the Weekly report */
+const lvLW = () => Math.max(700, Math.min(2000, (($('lvChart') || {}).clientWidth - 40) || 1100));
+let lvRsz = 0;
+window.addEventListener('resize', () => { if (!lvLine || activeTab !== 'leaveTrendTab') return; clearTimeout(lvRsz); lvRsz = setTimeout(buildLeaveTrend, 200); });
 let lvLine = false;
 const lvLineChart = (labels, series, fmt, zero, noLegend) => {
     const vals = series.flatMap(x => x.vals).filter(v => v != null);
     if (!vals.length) return '<div class="wr-note">No data for this period.</div>';
-    const W = 900, H = 320, L = 64, R = 30, T = 30, B = 48, n = labels.length;
+    const W = lvLW(), H = Math.max(340, Math.min(520, Math.round(W * 0.28))), L = 64, R = 30, T = 36, B = 52, n = labels.length;
     let lo = Math.min(...vals), hi = Math.max(...vals);
     if (zero) { lo = 0; hi = hi > 0 ? hi * 1.2 : 1; } else { const sp = (hi - lo) || Math.abs(hi) * 0.1 || 1; lo -= sp * 0.6; hi += sp * 0.6; }
     const raw = (hi - lo) / 4, mag = Math.pow(10, Math.floor(Math.log10(raw))), st = [1, 2, 2.5, 5, 10].map(m => m * mag).find(v => v >= raw);
@@ -7084,7 +7089,7 @@ const lvLineChart = (labels, series, fmt, zero, noLegend) => {
       });
     });
     const legend = !noLegend && series.length > 1 ? `<div class="lv-legend">${series.map(x => `<span><i style="background:${x.color}"></i>${esc(x.name)}</span>`).join('')}</div>` : '';
-    return `${legend}<div class="wr-line"><svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Trend chart">${g}</svg></div>`;
+    return `${legend}<div class="lv-line"><svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Trend chart">${g}</svg></div>`;
   };
 function lvToggleStyle() { lvLine = !lvLine; buildLeaveTrend(); }
 const lvStyleBtn = () => `<div style="text-align:right"><button type="button" class="wr-btn wr-tgl" style="margin:0 0 6px" onclick="lvToggleStyle()">${lvLine ? 'Show as bars' : 'Show as lines'}</button></div>`;
