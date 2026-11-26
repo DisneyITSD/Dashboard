@@ -1155,6 +1155,10 @@ html[data-theme=dark] .back-pill:hover{background:#1f2837}
 .gb-bar{flex:1;max-width:28px;display:flex;flex-direction:column;justify-content:flex-end;align-items:center;height:100%}
 .gb-bar span{font-size:11px;font-weight:700;color:var(--navy);margin-bottom:2px}
 .gb-bar div{width:100%;border-radius:4px 4px 0 0}
+/* Attendance trend: taller, wider bars with bigger value labels */
+#leaveTrendTab .gb-pair{height:clamp(280px,44vh,460px)}
+#leaveTrendTab .gb-bar span,#leaveTrendTab .gb.dense .gb-bar span{font-size:12px}
+#leaveTrendTab .bar-lbl{font-size:12px}
 .flag-chip{display:inline-block;padding:2px 10px;border-radius:999px;font-size:12px;font-weight:700;background:#fef3c7;color:#92400e;white-space:nowrap}
 .flag-chip.red{background:#fee2e2;color:#b91c1c}
 html[data-theme=dark] .flag-chip{background:#4a3a0c;color:#fde68a}
@@ -7168,7 +7172,7 @@ function buildLeaveTrend() {
   const bar = (p, k, label) => `<div class="gb-bar" title="${esc(p.title)}: ${p[k]} ${label} day${p[k] === 1 ? '' : 's'}${p.sched ? ' (' + (p[k] / p.sched * 100).toFixed(1) + '% of ' + p.sched + ' scheduled)' : ''}">${!dense || p[k] ? `<span>${p[k]}</span>` : ''}<div style="height:${p[k] ? Math.max(3, p[k] / max * 100) : 0}%;background:${LV_COL[k]}"></div></div>`;
   /* few days = wider bars and columns so each day is easy to compare; many days = thin bars (scrolls sideways past a month) */
   const n = items.length;
-  const gbStyle = !dense ? '' : n <= 7 ? ' style="--bw:34px;--cw:170px;--gg:5px;justify-content:center"' : n <= 14 ? ' style="--bw:22px;--cw:112px;--gg:4px;justify-content:center"' : n <= 31 ? ' style="--bw:11px"' : ` style="min-width:${n * 40}px"`;
+  const gbStyle = !dense ? '' : n <= 7 ? ' style="--bw:50px;--cw:240px;--gg:6px;justify-content:center"' : n <= 14 ? ' style="--bw:34px;--cw:160px;--gg:5px;justify-content:center"' : n <= 31 ? ' style="--bw:20px"' : ` style="min-width:${n * 40}px"`;
   $('lvChart').innerHTML =
     `<div class="lv-top">
       <div class="lv-card" style="--c:${LV_COL.co}"><b>${tot('co')}</b>Called Off days · ${esc(scope)}<br><small>${rate('co')}</small></div>
@@ -7196,7 +7200,7 @@ function buildLeaveTrend() {
     const cell = x => x && (x.co || x.vl || x.late || x.le) ? `<span style="color:${LV_COL.co};font-weight:700">${x.co}</span> · <span style="color:${LV_COL.vl};font-weight:700">${x.vl}</span> · <span style="color:${LV_COL.late};font-weight:700">${x.late}</span> · <span style="color:${LV_COL.le};font-weight:700">${x.le}</span>` : '<span style="color:var(--muted)">–</span>';
     supBox.innerHTML = list.length ? `
       <div class="lv-legend"><span><i style="background:${LV_COL.co}"></i>Called Off</span><span><i style="background:${LV_COL.vl}"></i>Vacation Leave</span><span><i style="background:${LV_COL.late}"></i>Running Late</span><span><i style="background:${LV_COL.le}"></i>Left Early</span></div>
-      <div class="gb dense" style="--bw:34px;--cw:190px;--gg:5px;justify-content:center">${list.map(x => `<div class="gb-col"><div class="gb-pair">${sbar(x, 'co', 'Called Off')}${sbar(x, 'vl', 'Vacation Leave')}${sbar(x, 'late', 'Running Late')}${sbar(x, 'le', 'Left Early')}</div><div class="bar-lbl" style="font-size:12px">${esc(x.sp)}</div></div>`).join('')}</div>
+      <div class="gb dense" style="--bw:50px;--cw:260px;--gg:6px;justify-content:center">${list.map(x => `<div class="gb-col"><div class="gb-pair">${sbar(x, 'co', 'Called Off')}${sbar(x, 'vl', 'Vacation Leave')}${sbar(x, 'late', 'Running Late')}${sbar(x, 'le', 'Left Early')}</div><div class="bar-lbl" style="font-size:12px">${esc(x.sp)}</div></div>`).join('')}</div>
       <div class="schedule-container" style="height:auto;max-height:none;margin-top:14px"><table class="nosort"><thead><tr><th>Supervisor</th><th>Called Off</th><th>Called Off %</th><th>Vacation Leave</th><th>Vacation Leave %</th><th>Running Late</th><th>Running Late %</th><th>Left Early</th><th>Left Early %</th><th>Scheduled days</th></tr></thead><tbody>
         ${list.map(x => `<tr><td>${esc(x.sp)}</td><td>${x.co}</td><td>${pct(x.co, x.sched)}</td><td>${x.vl}</td><td>${pct(x.vl, x.sched)}</td><td>${x.late}</td><td>${pct(x.late, x.sched)}</td><td>${x.le}</td><td>${pct(x.le, x.sched)}</td><td>${x.sched}</td></tr>`).join('')}
         <tr style="font-weight:800"><td>Total</td><td>${sums.co}</td><td>${pct(sums.co, sums.sched)}</td><td>${sums.vl}</td><td>${pct(sums.vl, sums.sched)}</td><td>${sums.late}</td><td>${pct(sums.late, sums.sched)}</td><td>${sums.le}</td><td>${pct(sums.le, sums.sched)}</td><td>${sums.sched}</td></tr></tbody></table></div>
