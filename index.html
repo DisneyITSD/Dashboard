@@ -1879,7 +1879,6 @@ html[data-theme=dark] #dataUpdateNote .du-name{color:#cfdcff}
   <div class="controls">
     <span class="per-host" id="misPerHost"></span>
     <select id="misSupervisor" onchange="buildMisroutes()"><option>All Supervisors</option></select>
-    <select id="misFilter" onchange="buildMisroutes()"><option value="yes">Misrouted only</option><option value="all">All incidents</option></select>
     <input type="text" id="misSearch" placeholder="🔍 Search agent or incident..." onkeyup="buildMisroutes()">
     <button class="blue" onclick="refreshAttendanceData(true)">↻ Refresh</button>
   </div>
@@ -2771,10 +2770,10 @@ function misFillSup() {
   return sel.value;
 }
 function buildMisroutes() {
-  const sup = misFillSup(), R = perRecRange('misPer'), q = up($('misSearch').value), only = $('misFilter').value === 'yes';
+  const sup = misFillSup(), R = perRecRange('misPer'), q = up($('misSearch').value);
   const bySup = misSupMap();
   const rows = misrouteRows.map(x => ({ ...x, supervisor: bySup.get(misNorm(x.agent)) || '' }))
-    .filter(x => (!only || !misHasFlag || x.mis) && (sup === ALL || x.supervisor === sup) && perInRange(x.date, R) && (!q || up(x.agent).includes(q) || up(x.incident).includes(q)))
+    .filter(x => (sup === ALL || x.supervisor === sup) && perInRange(x.date, R) && (!q || up(x.agent).includes(q) || up(x.incident).includes(q)))
     .sort((a, b) => (b.date || '').localeCompare(a.date || '') || a.agent.localeCompare(b.agent));
   $('misTable').tBodies[0].innerHTML = misRowsHtml(rows);
   $('misCount').textContent = rows.length;
