@@ -1259,6 +1259,7 @@ html[data-theme=dark] #dataUpdateNote .du-name{color:#cfdcff}
         <a class="tab-btn" href="#agentSumTab" data-tab="agentSumTab" data-title="Agent Summary"><svg class="ni" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4 21v-1a6 6 0 0 1 6-6h4a6 6 0 0 1 6 6v1"/></svg><span>Agent summary</span></a>
         <a class="tab-btn" href="#qaTab" data-tab="qaTab"><svg class="ni" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><path d="m9 12 2 2 4-4"/></svg><span>Quality Assurance</span></a>
         <a class="tab-btn" href="#qaScoreTab" data-tab="qaScoreTab" data-title="QA Scoring"><svg class="ni" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="m8 12 3 3 5-6"/></svg><span>QA scoring</span></a>
+        <a class="tab-btn" href="#misroutesTab" data-tab="misroutesTab" data-title="Misroutes"><svg class="ni" viewBox="0 0 24 24" aria-hidden="true"><path d="M16 3h5v5M4 20 21 3M21 16v5h-5M15 15l6 6M4 4l5 5"/></svg><span>Misroutes</span></a>
         <a class="tab-btn" href="#metricTab" data-tab="metricTab" data-title="Performance Stack Ranking"><svg class="ni" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 3v18h18"/><path d="M7 8h10M7 13h6M7 18h3"/></svg><span>Stack ranking</span></a>
         <a class="tab-btn" href="#mcsTab" data-tab="mcsTab" data-title="Overall Metric Scorecard"><svg class="ni" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg><span>Metric scorecard</span></a>
       </div></div>
@@ -1873,6 +1874,31 @@ html[data-theme=dark] #dataUpdateNote .du-name{color:#cfdcff}
   </details>
 </section>
 
+<section class="tab-panel" id="misroutesTab" hidden>
+  <div class="view-hint">🔀 Incidents that were routed to the wrong group, from the Misroutes tab of your sheet.<br>Pick a period, supervisor or agent; the Supervisor column comes from the roster.</div>
+  <div class="controls">
+    <span class="per-host" id="misPerHost"></span>
+    <select id="misSupervisor" onchange="buildMisroutes()"><option>All Supervisors</option></select>
+    <select id="misFilter" onchange="buildMisroutes()"><option value="yes">Misrouted only</option><option value="all">All incidents</option></select>
+    <input type="text" id="misSearch" placeholder="🔍 Search agent or incident..." onkeyup="buildMisroutes()">
+    <button class="blue" onclick="refreshAttendanceData(true)">↻ Refresh</button>
+  </div>
+  <div class="daily-summary">
+    <div class="summary-box">📋 Records: <span id="misCount">0</span></div>
+    <div class="summary-box">👤 Agents: <span id="misAgents">0</span></div>
+  </div>
+  <div class="panel">
+    <div class="schedule-container">
+      <table id="misTable" class="nosort">
+        <thead><tr>
+          <th>👤 Agent Name</th><th>🎫 Incident</th><th>📂 OpenGroup</th><th>➡️ FirstAssign</th><th>➡️ SecondAssign</th><th>🏁 CloseGroup</th><th>🕒 ClosedTime</th><th>🧑‍💼 Supervisor</th>
+        </tr></thead>
+        <tbody></tbody>
+      </table>
+    </div>
+  </div>
+</section>
+
 <!-- ============ SCORECARD: OVERALL METRIC ============ -->
 <section class="tab-panel" id="metricTab" hidden>
   <div class="view-hint">📊 Performance stack ranking per agent.<br>Tick one or more months (or Year to date); click an agent (▸) to open their monthly scores.</div>
@@ -2064,6 +2090,10 @@ const SHORT_FORM_URL = 'https://docs.google.com/forms/d/e/1FAIpQLSfuxa8mEM42VrLL
 const SHORT_ENTRY = { supervisor: 'entry.936055940', agent: 'entry.1985544097', date: 'entry.118938995', submittedBy: 'entry.132481408' };
 const SHORT_DISPUTE_GID = '1110634474';
 const SHORT_NEEDS_APPROVAL = true;
+/* Misroutes tab: Incident | ClosedTime | BA Code | OpenGroup | CloseGroup | FirstAssign | SecondAssign | Misrouted? | OpenedBy | Agent Name.
+   Paste the number after "gid=" from the Misroutes tab's address bar here (most reliable). Empty = find the tab by its name. */
+const MISROUTES_GID = '';
+const MISROUTES_URL = MISROUTES_GID ? sheetUrl(MISROUTES_GID) : `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv&sheet=${encodeURIComponent('Misroutes')}`;
 const URLS = {
   pto: sheetUrl(1297010746),
   calledOff: sheetUrl(2139820898),
@@ -2694,6 +2724,63 @@ const loadMetric = () => guard('metric', "Couldn't load the Performance Stack Ra
   }
 });
 
+/* =====================================================================
+   MISROUTES (Misroutes tab)
+   Sheet columns: Incident | ClosedTime | BA Code | OpenGroup | CloseGroup | FirstAssign | SecondAssign | Misrouted? | OpenedBy | Agent Name
+   Shown as: Agent Name | Incident | OpenGroup | FirstAssign | SecondAssign | CloseGroup | ClosedTime | Supervisor
+   The Supervisor is looked up from the roster by the Agent Name column (OpenedBy is ignored).
+   ===================================================================== */
+let misrouteRows = [], misHasFlag = false;
+const misNorm = s => normName(String(s ?? '').replace(/\s*\(\s*\d+\s*\)\s*$/, ''));   // ignores a trailing (ID)
+const misKey = s => clean(s).toLowerCase().replace(/[^a-z0-9]/g, '');
+const misDate = v => { const t = String(v ?? '').trim(), m = t.match(/^(\d{4})[\/-](\d{1,2})[\/-](\d{1,2})/); return m ? m[1] + '-' + m[2].padStart(2, '0') + '-' + m[3].padStart(2, '0') : normalizeDate(t); };
+const misYes = v => /^(y|yes|true|1|x|misrouted)\b/i.test(clean(v));
+const loadMisroutes = () => guard('misroutes', "Couldn't load the Misroutes tab", async () => {
+  const rows = await fetchCSV(MISROUTES_URL, { raw: true });
+  const h = rows.findIndex(r => r.some(c => misKey(c) === 'incident') && r.some(c => misKey(c) === 'agentname'));
+  if (h < 0) throw new Error('no "Incident" / "Agent Name" header found - check the tab is named Misroutes and that the sheet is shared');
+  const heads = rows[h].map(misKey), ix = k => heads.indexOf(k), g = (r, k) => ix(k) >= 0 ? clean(r[ix(k)]) : '';
+  misHasFlag = ix('misrouted') >= 0;
+  misrouteRows = rows.slice(h + 1).map(r => ({
+    agent: g(r, 'agentname'), incident: g(r, 'incident'), openGroup: g(r, 'opengroup'), first: g(r, 'firstassign'), second: g(r, 'secondassign'),
+    closeGroup: g(r, 'closegroup'), closed: g(r, 'closedtime'), date: misDate(g(r, 'closedtime')), mis: misYes(g(r, 'misrouted'))
+  })).filter(x => x.incident || x.agent);
+});
+function misRowsHtml(rows) {
+  return rows.length ? rows.map(x => `
+    <tr class="${supClass(x.supervisor)}" style="${supStyle(x.supervisor)}">
+      <td>${esc(x.agent) || '—'}</td>
+      <td>${esc(x.incident) || '—'}</td>
+      <td>${esc(x.openGroup) || '—'}</td>
+      <td>${esc(x.first) || '—'}</td>
+      <td>${esc(x.second) || '—'}</td>
+      <td>${esc(x.closeGroup) || '—'}</td>
+      <td>${esc(x.closed) || '—'}</td>
+      <td>${esc(x.supervisor) || '—'}</td>
+    </tr>`).join('') : `<tr><td colspan="8">${esc(loadErrors.misroutes || 'No misroutes found')}</td></tr>`;
+}
+function misSupMap() {
+  const m = new Map();
+  [...(typeof RAW !== 'undefined' && RAW.ph || phData), ...(typeof RAW !== 'undefined' && RAW.est || estData)].forEach(r => { if (r.Name && r.Supervisor) m.set(normName(r.Name), r.Supervisor); });
+  return m;
+}
+function misFillSup() {
+  const sel = $('misSupervisor'), prev = sel.value;
+  sel.innerHTML = `<option>${ALL}</option>` + uniqueSupervisors().map(s => `<option>${esc(s)}</option>`).join('');
+  if ([...sel.options].some(o => o.value === prev)) sel.value = prev;
+  return sel.value;
+}
+function buildMisroutes() {
+  const sup = misFillSup(), R = perRecRange('misPer'), q = up($('misSearch').value), only = $('misFilter').value === 'yes';
+  const bySup = misSupMap();
+  const rows = misrouteRows.map(x => ({ ...x, supervisor: bySup.get(misNorm(x.agent)) || '' }))
+    .filter(x => (!only || !misHasFlag || x.mis) && (sup === ALL || x.supervisor === sup) && perInRange(x.date, R) && (!q || up(x.agent).includes(q) || up(x.incident).includes(q)))
+    .sort((a, b) => (b.date || '').localeCompare(a.date || '') || a.agent.localeCompare(b.agent));
+  $('misTable').tBodies[0].innerHTML = misRowsHtml(rows);
+  $('misCount').textContent = rows.length;
+  $('misAgents').textContent = new Set(rows.map(x => misNorm(x.agent))).size;
+}
+
 const addDays = (dateStr, n) => { const d = parseYMD(dateStr); d.setDate(d.getDate() + n); return ymd(d); };
 const dailyFor = (r, date) => dailyMap.get(normName(r.Name) + '|' + date);
 
@@ -2717,7 +2804,7 @@ async function refreshAttendanceData(notify = false, scores = true) {
   if (btn) { btn.disabled = true; btn.classList.add('spinning'); }
   try {
     await Promise.all([loadAttendance(), loadSchedules(), loadDaily(),
-      ...(scores ? [loadQA(), loadQAScoring(), loadMetric(), loadMcs(), loadDailyAgent(), loadCallDrivers(), loadAttendancePoints(), loadPtoWeekly()] : []),
+      ...(scores ? [loadQA(), loadQAScoring(), loadMetric(), loadMcs(), loadDailyAgent(), loadCallDrivers(), loadAttendancePoints(), loadPtoWeekly(), loadMisroutes()] : []),
       ...(notify && typeof loadDataUpdates === 'function' ? [loadDataUpdates()] : [])]);   // also re-read the "Data as of" dates
   } finally { if (btn) { btn.disabled = false; btn.classList.remove('spinning'); } }
   renderAll();
@@ -2742,6 +2829,7 @@ const TAB_RENDERERS = {
   trackerTab: buildTracker,
   qaTab: buildQA,
   qaScoreTab: () => buildQaScorer(),
+  misroutesTab: buildMisroutes,
   metricTab: buildMetric,
   mcsTab: buildMcs,
   forecastTab: refreshForecast,
@@ -4572,7 +4660,7 @@ document.addEventListener('change', e => {
    Date range = one calendar: click the first day, then the last day (the days in between are highlighted)
    ===================================================================== */
 const PERP = {};
-const PERP_FN = { pto: () => buildRecordTable('pto'), calledOff: () => buildRecordTable('att'), late: () => buildLateTable(), lbprr: () => buildLbprr(), lvp: () => buildLeaveTrend(), trk: () => buildTracker(), wrp: () => buildWeeklyReport() };
+const PERP_FN = { pto: () => buildRecordTable('pto'), calledOff: () => buildRecordTable('att'), late: () => buildLateTable(), mis: () => buildMisroutes(), lbprr: () => buildLbprr(), lvp: () => buildLeaveTrend(), trk: () => buildTracker(), wrp: () => buildWeeklyReport() };
 const perFmtMonth = ym => { const [y, m] = ym.split('-').map(Number); return new Date(y, m - 1, 1).toLocaleDateString('en-US', { month: 'short', year: 'numeric' }); };
 const perFmtDay = (d, yr) => parseYMD(d).toLocaleDateString('en-US', yr ? { month: 'short', day: 'numeric', year: 'numeric' } : { month: 'short', day: 'numeric' });
 function perMonthRange(ym) { const [y, m] = ym.split('-').map(Number); return { from: `${ym}-01`, to: ymd(new Date(y, m, 0)) }; }
@@ -4584,6 +4672,7 @@ const PERP_DATES = {
   pto: () => perDm(ptoList, r => normalizeDate(r['EST Date'])),
   calledOff: () => perDm(calledOffList, r => normalizeDate(r['EST Date'])),
   late: () => perDm(lateRows(), x => x.date),
+  mis: () => perDm(misrouteRows, x => x.date),
   lbprr: () => perDm(lbprrRows(), x => x.date),
   lvp: () => [...perDm(ptoList, r => normalizeDate(r['EST Date'])), ...perDm(calledOffList, r => normalizeDate(r['EST Date']))],
   trk: () => [...loliIdx.values()].flatMap(a => a.map(x => x.date)),
@@ -7536,7 +7625,7 @@ window.addEventListener('DOMContentLoaded', async () => {
      QA, metrics, scorecards, call drivers etc. load in the background and the open page is re-rendered when they arrive.
      If the page was opened straight onto another tab (a #link), wait for everything first, as before. */
   const loadCore = () => [loadSchedules(), loadAttendance(), loadDaily()];
-  const loadScores = () => [loadQA(), loadQAScoring(), loadMetric(), loadMcs(), loadDailyAgent(), loadCallDrivers(), loadAttendancePoints(), loadPtoWeekly()];
+  const loadScores = () => [loadQA(), loadQAScoring(), loadMetric(), loadMcs(), loadDailyAgent(), loadCallDrivers(), loadAttendancePoints(), loadPtoWeekly(), loadMisroutes()];
   const hashTab = location.hash.slice(1);
   if (!hashTab || hashTab === 'lookupTab') {
     const scoresReady = Promise.all(loadScores());                    // starts now, in parallel with the core data
