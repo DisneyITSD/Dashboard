@@ -3308,6 +3308,7 @@ function buildWeekHeatmap() {
   const days = weekHeatmapData(monday);
   const all = days.flatMap(x => x.counts), colour = heatScale(all);
   const sorted = [...all].sort((p, q) => p - q), min = sorted[0], max = sorted[sorted.length - 1], mid = heatMid(sorted);
+  const fmt = d => d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }), sunday = days[6].d;
 
   const head = days.map(x => {
     const sel = x.ds === date;
